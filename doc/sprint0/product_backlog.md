@@ -33,4 +33,4 @@
 ### 19. As a beachgoer, I want to compare water temperature across multiple beaches at once so that I can plan group outings more effectively.
 ### 20. As a fisher, I want to flag data points that look wrong so that the community data stays clean and reliable.
 ### 21. As a beachgoer, I want to receive a weekly update about beach temperatures so that I can plan my weekend in advance.
-### 22. As a citizen scientist, I want to use buoy and satellite data alongside contributors data so that I can use multi-source validation.
+### 22. As a citizen scientist, I want to use buoy and satellite data alongside contributors data so that I can use multi-source validation
