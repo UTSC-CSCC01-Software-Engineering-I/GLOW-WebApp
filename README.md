@@ -89,7 +89,7 @@ Our project follows a **Git Flow-inspired** workflow with the following branch s
    - If no conflicts exist, you may merge directly into `develop`
    - If conflicts exist, discuss in the group chat before merging
 
-### Commit Guidelines
+## Commit Guidelines
 
 - **Commit frequently** with meaningful messages
 - Each commit should represent a logical unit of work
@@ -114,7 +114,7 @@ Our project follows a **Git Flow-inspired** workflow with the following branch s
 - Build artifacts
 - Personal configuration files
 
-### Project Management
+## Project Management
 
 #### Ticketing Tool: **Jira**
 - All team members must update their progress on Jira
