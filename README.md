@@ -3,45 +3,165 @@
 
 ## Project Overview
 
-GLOW is a web application developed by the Microsofties team for CSCC01. This project is built using Next.js, a React-based framework that provides server-side rendering and modern web development capabilities.
+GLOW is a full-stack web application developed by the Microsofties team for CSCC01. This project demonstrates a complete **Model-View-Controller (MVC)** architecture with modern web technologies.
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Technical Architecture
 
-## Installation
+### MVC Pattern Implementation
+
+Our application follows the **Model-View-Controller (MVC)** architectural pattern to ensure separation of concerns and maintainable code:
+
+#### **Model (Data Layer)**
+- **Location**: `glow-microsofties/backend/src/models/`
+- **Technology**: MongoDB with Mongoose ODM
+- **Purpose**: Defines data structure, validation rules, and database interactions
+- **Example**: `User.js` - Handles user authentication, profile management, and data validation
+
+#### **View (Presentation Layer)**
+- **Location**: `my-mvc-app/src/` (Frontend)
+- **Technology**: Next.js with React components
+- **Purpose**: User interface, client-side rendering, and user interactions
+- **Features**: Responsive design, dynamic content, form handling
+
+#### **Controller (Business Logic)**
+- **Location**: `glow-microsofties/backend/src/controllers/`
+- **Technology**: Express.js with middleware
+- **Purpose**: Handles HTTP requests, processes business logic, and coordinates between Model and View
+- **Example**: `UserController.js` - Manages user registration, login, profile updates
+
+### Frontend-Backend Connectivity
+
+#### **Frontend (Next.js)**
+- **Framework**: Next.js 15.3.3 with React 19
+- **Styling**: Tailwind CSS for modern, responsive design
+- **API Integration**: Custom API utility functions for seamless backend communication
+- **Location**: `my-mvc-app/`
+
+#### **Backend (Express.js)**
+- **Framework**: Express.js with RESTful API design
+- **Database**: MongoDB with Mongoose for data modeling
+- **Authentication**: JWT (JSON Web Tokens) for secure user sessions
+- **Middleware**: CORS, validation, error handling, and authentication middleware
+- **Location**: `glow-microsofties/backend/`
+
+#### **API Communication**
+- **Protocol**: RESTful HTTP APIs
+- **Data Format**: JSON
+- **Authentication**: Bearer token authentication
+- **Endpoints**: Organized in routes directory with proper validation
+
+## Directory Structure
+
+```
+c01s25-project-microsofties/
+├── README.md                          # This file
+├── team.md                           # Team information
+├── doc/                              # Project documentation
+│   └── sprint0/                      # Sprint 0 deliverables
+├── glow-microsofties/               # Main project directory
+│   └── backend/                     # Backend server (Express.js)
+│       ├── package.json             # Backend dependencies
+│       ├── .env.example             # Environment configuration template
+│       └── src/
+│           ├── app.js               # Main server file
+│           ├── config/
+│           │   └── database.js      # Database connection
+│           ├── models/
+│           │   └── User.js          # User data model (M in MVC)
+│           ├── controllers/
+│           │   └── userController.js # Business logic (C in MVC)
+│           ├── routes/
+│           │   └── authRoutes.js    # API route definitions
+│           └── middleware/
+│               └── authMiddleware.js # Authentication middleware
+└── my-mvc-app/                      # Frontend application (Next.js)
+    ├── package.json                 # Frontend dependencies
+    ├── src/
+    │   ├── app/
+    │   │   ├── page.js              # Main page (V in MVC)
+    │   │   └── layout.js            # App layout
+    │   ├── components/
+    │   │   └── auth/
+    │   │       └── LoginForm.js     # Login component (V in MVC)
+    │   └── lib/
+    │       └── api.js               # API communication utilities
+    └── public/                      # Static assets
+```
+
+## Installation & Setup
 
 ### Prerequisites
-- Install Node.js from https://nodejs.org/ (choose the LTS version)
-- Ensure you have Git installed for version control
+- **Node.js** (LTS version) - [Download from nodejs.org](https://nodejs.org/)
+- **MongoDB** - [Download MongoDB Community Server](https://www.mongodb.com/try/download/community) or use MongoDB Atlas
+- **Git** - For version control
 
-### Setup Instructions
+### Quick Start (Development Environment)
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd c01s25-project-microsofties
-   ```
+#### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd c01s25-project-microsofties
+```
 
-2. **Navigate to the application directory:**
-   ```bash
-   cd glow-microsofties
-   ```
+#### 2. Backend Setup
+```bash
+# Navigate to backend directory
+cd glow-microsofties/backend
 
-3. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
+# Setup environment variables
+cp .env.example .env
+# Edit .env file with your database connection and JWT secret
 
-5. **View the application:**
-   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Start backend development server
+npm run dev
+```
+**Backend will run on**: `http://localhost:5000`
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+#### 3. Frontend Setup
+```bash
+# Navigate to frontend directory (from project root)
+cd my-mvc-app
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Install dependencies
+npm install
+
+# Start frontend development server
+npm run dev
+```
+**Frontend will run on**: `http://localhost:3000`
+
+#### 4. Database Setup
+- **Option 1**: Install MongoDB locally and ensure it's running on default port (27017)
+- **Option 2**: Use MongoDB Atlas (cloud) and update the `MONGODB_URI` in your `.env` file
+
+### Testing the MVC Connectivity
+
+1. **Start both servers** (backend on port 5000, frontend on port 3000)
+2. **Open browser** to `http://localhost:3000`
+3. **Use the login form** on the homepage to test frontend-backend communication
+4. **Check backend health** at `http://localhost:5000/api/health`
+
+### Environment Variables
+
+Create a `.env` file in `glow-microsofties/backend/` based on `.env.example`:
+
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/glow_dev
+
+# Security
+JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+
+# CORS
+FRONTEND_URL=http://localhost:3000
+```
 
 ## Contribution Guidelines
 
