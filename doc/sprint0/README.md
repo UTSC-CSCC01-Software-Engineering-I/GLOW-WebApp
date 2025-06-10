@@ -12,19 +12,19 @@ GLOW is a full-stack web application developed by the Microsofties team for CSCC
 Our application follows the **Model-View-Controller (MVC)** architectural pattern to ensure separation of concerns and maintainable code:
 
 #### **Model (Data Layer)**
-- **Location**: `glow-microsofties/backend/src/models/`
+- **Location**: `backend/src/models/`
 - **Technology**: MongoDB with Mongoose ODM
 - **Purpose**: Defines data structure, validation rules, and database interactions
 - **Example**: `User.js` - Handles user authentication, profile management, and data validation
 
 #### **View (Presentation Layer)**
-- **Location**: `my-mvc-app/src/` (Frontend)
+- **Location**: `frontend/src/` (Frontend)
 - **Technology**: Next.js with React components
 - **Purpose**: User interface, client-side rendering, and user interactions
 - **Features**: Responsive design, dynamic content, form handling
 
 #### **Controller (Business Logic)**
-- **Location**: `glow-microsofties/backend/src/controllers/`
+- **Location**: `backend/src/controllers/`
 - **Technology**: Express.js with middleware
 - **Purpose**: Handles HTTP requests, processes business logic, and coordinates between Model and View
 - **Example**: `UserController.js` - Manages user registration, login, profile updates
@@ -35,14 +35,14 @@ Our application follows the **Model-View-Controller (MVC)** architectural patter
 - **Framework**: Next.js 15.3.3 with React 19
 - **Styling**: Tailwind CSS for modern, responsive design
 - **API Integration**: Custom API utility functions for seamless backend communication
-- **Location**: `my-mvc-app/`
+- **Location**: `frontend/`
 
 #### **Backend (Express.js)**
 - **Framework**: Express.js with RESTful API design
 - **Database**: MongoDB with Mongoose for data modeling
 - **Authentication**: JWT (JSON Web Tokens) for secure user sessions
 - **Middleware**: CORS, validation, error handling, and authentication middleware
-- **Location**: `glow-microsofties/backend/`
+- **Location**: `backend/`
 
 #### **API Communication**
 - **Protocol**: RESTful HTTP APIs
@@ -58,23 +58,22 @@ c01s25-project-microsofties/
 ├── team.md                           # Team information
 ├── doc/                              # Project documentation
 │   └── sprint0/                      # Sprint 0 deliverables
-├── glow-microsofties/               # Main project directory
-│   └── backend/                     # Backend server (Express.js)
-│       ├── package.json             # Backend dependencies
-│       ├── .env.example             # Environment configuration template
-│       └── src/
-│           ├── app.js               # Main server file
-│           ├── config/
-│           │   └── database.js      # Database connection
-│           ├── models/
-│           │   └── User.js          # User data model (M in MVC)
-│           ├── controllers/
-│           │   └── userController.js # Business logic (C in MVC)
-│           ├── routes/
-│           │   └── authRoutes.js    # API route definitions
-│           └── middleware/
-│               └── authMiddleware.js # Authentication middleware
-└── my-mvc-app/                      # Frontend application (Next.js)
+├── backend/                         # Backend server (Express.js)
+│   ├── package.json                 # Backend dependencies
+│   ├── .env.example                 # Environment configuration template
+│   └── src/
+│       ├── app.js                   # Main server file
+│       ├── config/
+│       │   └── database.js          # Database connection
+│       ├── models/
+│       │   └── User.js              # User data model (M in MVC)
+│       ├── controllers/
+│       │   └── userController.js    # Business logic (C in MVC)
+│       ├── routes/
+│       │   └── authRoutes.js        # API route definitions
+│       └── middleware/
+│           └── authMiddleware.js    # Authentication middleware
+└── frontend/                        # Frontend application (Next.js)
     ├── package.json                 # Frontend dependencies
     ├── src/
     │   ├── app/
@@ -106,7 +105,7 @@ cd c01s25-project-microsofties
 #### 2. Backend Setup
 ```bash
 # Navigate to backend directory
-cd glow-microsofties/backend
+cd backend
 
 # Install dependencies
 npm install
@@ -123,7 +122,7 @@ npm run dev
 #### 3. Frontend Setup
 ```bash
 # Navigate to frontend directory (from project root)
-cd my-mvc-app
+cd frontend
 
 # Install dependencies
 npm install
@@ -146,7 +145,7 @@ npm run dev
 
 ### Environment Variables
 
-Create a `.env` file in `glow-microsofties/backend/` based on `.env.example`:
+Create a `.env` file in `backend/` based on `.env.example`:
 
 ```env
 # Server Configuration
