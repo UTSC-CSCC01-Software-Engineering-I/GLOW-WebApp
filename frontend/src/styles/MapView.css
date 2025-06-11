@@ -1,0 +1,14 @@
+/* filepath: frontend/src/styles/MapView.css */
+/* Import Leaflet CSS */
+@import url('https://unpkg.com/leaflet/dist/leaflet.css');
+
+.map-container {
+  height: calc(100vh - 120px); /* Subtract header height */
+  width: 100%;
+}
+
+/* Fix for Leaflet marker icons in webpack builds */
+.leaflet-marker-icon {
+  margin-left: -12px !important;
+  margin-top: -41px !important;
+}

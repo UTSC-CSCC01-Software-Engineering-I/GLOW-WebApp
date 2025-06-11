@@ -8,7 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 dotenv.config();
 
 // Connect to database
-connectDB();
+// connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', require('./routes/waterDataRoute'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
