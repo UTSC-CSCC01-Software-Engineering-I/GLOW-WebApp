@@ -26,8 +26,8 @@
     // 3) Auto‐detect initial theme
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const map = L.map('map', {
-      center: [43.65, -79.38],    // ← Toronto lakeshore
-      zoom: 11.5,
+      center: [43.647216678117736, -79.36719310664458],    // ← Toronto lakeshore
+      zoom: 12,
       layers: [prefersDark ? darkLayer : lightLayer]
     });
 
@@ -40,9 +40,74 @@
     // 5) Listen for OS theme changes and swap layers
     window.matchMedia('(prefers-color-scheme: dark)')
       .addEventListener('change', e => {
-        map.removeLayer(prefersDark ? lightLayer : darkLayer);
+        // remove the old layer and add the new one
+        map.removeLayer(e.matches ? lightLayer : darkLayer);
         map.addLayer(e.matches ? darkLayer : lightLayer);
       });
+
+    const API_KEY = 'etcSSmnQPmlKb84Db3wNVOxLAnbzk5l4';
+    const BASE    = 'https://openwaterdata.webcomand.com/ws/get';
+
+    // your email-provided CQL
+    const CQL = `
+      SELECT
+        WaterSites.Label AS siteName,
+        WaterSites.Longitude AS lng,
+        WaterSites.Latitude  AS lat,
+        Result              AS temp
+      FROM DataSample
+      WHERE
+        WaterSites.City='Toronto' 
+        AND WaterSites.Country='Canada'
+        AND Measurement='Water Temperature'
+      ORDER BY CollectionTime DESC
+    `.trim();
+
+    async function addLiveWaterTempMarkers() {
+      const url = `${BASE}?token=${API_KEY}&query=${encodeURIComponent(CQL)}`;
+      console.log('Fetching →', url);
+
+      try {
+        const res  = await fetch(url, { headers: { Accept: 'application/json' } });
+        const json = await res.json();
+        console.log('Response keys →', Object.keys(json));
+
+        // 1) grab all rows
+        const items = json.contents || json.objects || json.results || json.data || [];
+        console.log('Got items →', items.length, items);
+
+        // 2) dedupe by siteName (keep only first occurrence)
+        const seen = new Set();
+        const uniqueItems = [];
+        items.forEach(item => {
+          const name = item.siteName || item.Label;
+          if (!seen.has(name)) {
+            seen.add(name);
+            uniqueItems.push(item);
+          }
+        });
+        console.log('Unique items →', uniqueItems.length, uniqueItems);
+
+        // 3) plot only uniqueItems
+        uniqueItems.forEach((item, i) => {
+          const lon  = item.lng  || item.Longitude;
+          const lat  = item.lat  || item.Latitude;
+          const t    = item.temp || item.Result;
+          const name = item.siteName || item.Label;
+
+          console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
+          L.marker([lat, lon])
+           .addTo(map)
+           .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+        });
+      }
+      catch (err) {
+        console.error('fetch error →', err);
+      }
+    }
+
+    // invoke after map initialization
+    addLiveWaterTempMarkers();
   </script>
 </body>
 </html>
