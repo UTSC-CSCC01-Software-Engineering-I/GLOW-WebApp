@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get('/water-data', async (req, res) => {
   try {
-    const API_KEY = 'etcSSmnQPmlKb84Db3wNVOxLAnbzk5l4';
+    const API_KEY = process.env.OPENWATER_API_KEY;
     const BASE = 'https://openwaterdata.webcomand.com/ws/get';
     
     const CQL = `
