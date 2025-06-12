@@ -1,7 +1,7 @@
 import Image from "next/image";
-import LoginForm from "../components/auth/LoginForm";
+import LoginForm from "../../components/auth/LoginForm";
 
-export default function Home() {
+export default function Hello() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
