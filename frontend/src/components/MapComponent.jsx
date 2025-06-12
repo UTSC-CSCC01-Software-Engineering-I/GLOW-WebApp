@@ -1,0 +1,125 @@
+"use client";
+
+import React, { useEffect, useRef } from 'react';
+
+export default function MapComponent() {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    // Only import Leaflet on the client side
+    const initMap = async () => {
+      // Don't initialize if map already exists
+      if (mapInstanceRef.current) {
+        return;
+      }
+
+      const L = (await import('leaflet')).default;
+      
+      // Add Leaflet CSS dynamically
+      if (!document.querySelector('link[href*="leaflet.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
+
+      // Define tile layers
+      const lightURL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      const darkURL = 'https://api.maptiler.com/maps/streets-v2-dark/256/{z}/{x}/{y}.png?key=L5q2BtlaSVpbYdOmasce';
+
+      const lightLayer = L.tileLayer(lightURL, {
+        maxZoom: 19, 
+        attribution: '© OpenStreetMap'
+      });
+      
+      const darkLayer = L.tileLayer(darkURL, {
+        maxZoom: 19, 
+        attribution: '© MapTiler © OpenStreetMap contributors'
+      });
+
+      // Auto-detect initial theme
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      // Initialize map only if container exists and map doesn't exist yet
+      if (mapRef.current && !mapInstanceRef.current) {
+        const map = L.map(mapRef.current, {
+          center: [43.647216678117736, -79.36719310664458], // Toronto lakeshore
+          zoom: 12,
+          layers: [prefersDark ? darkLayer : lightLayer]
+        });
+
+        // Store map instance for cleanup
+        mapInstanceRef.current = map;
+
+        // Add layer switcher
+        L.control.layers({
+          'Light': lightLayer,
+          'Dark': darkLayer 
+        }).addTo(map);
+
+        // Listen for OS theme changes
+        window.matchMedia('(prefers-color-scheme: dark)')
+          .addEventListener('change', e => {
+            if (e.matches) {
+              map.removeLayer(lightLayer);
+              map.addLayer(darkLayer);
+            } else {
+              map.removeLayer(darkLayer);
+              map.addLayer(lightLayer);
+            }
+          });
+
+        // Function to add water temperature markers
+        async function addLiveWaterTempMarkers() {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
+            const data = await response.json();
+            
+            console.log('Got data →', data);
+            
+            if (data && data.items) {
+              data.items.forEach((item, i) => {
+                // Use the correct field names from your API
+                const lon = item.lng || item.Longitude;
+                const lat = item.lat || item.Latitude;
+                const t = item.temp || item.Result;
+                const name = item.siteName || item.Label;
+
+                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
+                L.marker([lat, lon])
+                 .addTo(map)
+                 .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+              });
+            }
+          } catch (err) {
+            console.error('fetch error →', err);
+          }
+        }
+
+        // Add water markers after map loads
+        addLiveWaterTempMarkers();
+      }
+    };
+
+    initMap();
+
+    // Cleanup function
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []); // Empty dependency array to run only once
+
+  return (
+    <div 
+      ref={mapRef}
+      style={{
+        height: 'calc(100vh - 120px)',
+        width: '100%'
+      }}
+    />
+  );
+}
