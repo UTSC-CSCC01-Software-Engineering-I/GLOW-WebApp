@@ -3,6 +3,12 @@
 ## Landing Page
 ![image](https://github.com/user-attachments/assets/c59da4b9-b53c-49fe-a3dd-eb4daffeb407)
 
+## API Fetching
+![image](https://github.com/user-attachments/assets/9b740da3-10eb-419e-a521-b4baae599977)
+
+## API Fetching Complete
+![image](https://github.com/user-attachments/assets/e732481b-eff0-4b32-8856-6386a6bc248b)
+
 
 ## Project Overview
 
