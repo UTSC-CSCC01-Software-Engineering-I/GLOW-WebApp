@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from 'react';
+import '../styles/MapView.css';
 
 export default function MapComponent() {
   const mapRef = useRef(null);
@@ -47,16 +48,19 @@ export default function MapComponent() {
           center: [43.647216678117736, -79.36719310664458], // Toronto lakeshore
           zoom: 12,
           layers: [prefersDark ? darkLayer : lightLayer]
-        });
-
-        // Store map instance for cleanup
+        });        // Store map instance for cleanup
         mapInstanceRef.current = map;
 
+        // Store map and layers globally for HUD access
+        window.leafletMap = map;
+        window.lightLayer = lightLayer;
+        window.darkLayer = darkLayer;
+
         // Add layer switcher
-        L.control.layers({
-          'Light': lightLayer,
-          'Dark': darkLayer 
-        }).addTo(map);
+        // L.control.layers({
+        //   'Light': lightLayer,
+        //   'Dark': darkLayer 
+        // }).addTo(map);
 
         // Listen for OS theme changes
         window.matchMedia('(prefers-color-scheme: dark)')
@@ -86,9 +90,14 @@ export default function MapComponent() {
                 const t = item.temp || item.Result;
                 const name = item.siteName || item.Label;
 
-                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
-                L.marker([lat, lon])
-                 .addTo(map)
+                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-temp-marker', // You can style this class
+                    html: `<div class="temp-label">${t}°C</div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                  })
+                }).addTo(map)
                  .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
               });
             }

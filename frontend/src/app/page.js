@@ -7,9 +7,10 @@ import { HUDleftPoints } from "../components/HUDleftPoints";
 export default function Home() {
   return (
     <div>
+      <HUDright />
       <HUDleftPoints />
       <HUDleft />
-      <HUDright />
+      
       
       <MapView />
     </div>
