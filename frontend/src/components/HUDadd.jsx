@@ -37,19 +37,19 @@ function MenuBlock({ theme }) {
 }
 
 export function HUDadd() {
-  const [theme, setTheme] = useState('light');
-    useEffect(() => {
-      if (typeof window !== 'undefined' && window.globalTheme){
-        setTheme(window.globalTheme);
-      }
-  
-      const handleThemeChange = () => {
-        setTheme(window.globalTheme); // update local state
-      };
-  
-      window.addEventListener('themechange', handleThemeChange);
-      return () => window.removeEventListener('themechange', handleThemeChange);
-    }, []);
+  const [theme, setTheme] = useState('dark');
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.globalTheme){
+      setTheme(window.globalTheme);
+    }
+
+    const handleThemeChange = () => {
+      setTheme(window.globalTheme); // update local state
+    };
+
+    window.addEventListener('themechange', handleThemeChange);
+    return () => window.removeEventListener('themechange', handleThemeChange);
+  }, []);
 
   return <MenuBlock theme={theme}/>;
 }

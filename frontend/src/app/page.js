@@ -4,6 +4,7 @@ import { HUDleft } from "../components/HUDleft";
 import { HUDright } from "../components/HUDright";
 import { HUDlogin } from "../components/HUDlogin";
 import { HUDadd } from "../components/HUDadd";
+import { HUDloading } from "../components/HUDloading";
 import { HUDleftPoints } from "../components/HUDleftPoints";
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
     <div>
       <HUDright />
       <HUDadd />
+      <HUDloading />
       <HUDlogin />
       <HUDleftPoints />
       <HUDleft />

@@ -1,11 +1,17 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 
 export default function MapComponent() {
   const mapRef = useRef(null);
+  const [loading, setLoading] = useState(true); // shaaf here: I am adding this so we can track when the api loads stuff
   const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    window.loadedAPI = loading;
+    window.dispatchEvent(new Event('dataloaded'));
+  });
 
   useEffect(() => {
     // Only import Leaflet on the client side
@@ -107,7 +113,9 @@ export default function MapComponent() {
         }
 
         // Add water markers after map loads
-        addLiveWaterTempMarkers();
+        addLiveWaterTempMarkers().finally(() => {
+          setLoading(false); // shaaf here again: this code is responsible for finish loading signal
+        });
       }
     };
 

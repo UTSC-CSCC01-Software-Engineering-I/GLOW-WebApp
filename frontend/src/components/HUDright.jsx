@@ -21,7 +21,7 @@ function MenuBlock({ theme }) {
 }
 
 export function HUDright() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
     useEffect(() => {
       if (typeof window !== 'undefined' && window.globalTheme){
         setTheme(window.globalTheme);
