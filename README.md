@@ -3,7 +3,27 @@
 
 ## Project Overview
 
-GLOW is a full-stack web application developed by the Microsofties team for CSCC01. This project demonstrates a complete **Model-View-Controller (MVC)** architecture with modern web technologies.
+GLOW is a full-stack web application developed by the Microsofties team for CSCC01. This project is an **interactive water data visualization platform** that displays real-time water temperature and quality data on an interactive map interface. The application demonstrates a complete **Model-View-Controller (MVC)** architecture with modern web technologies.
+
+## Key Features
+
+### 🗺️ **Interactive Map Interface** 
+- Real-time water temperature markers with custom pinpoint-style displays
+- Dynamic light/dark theme switching for map tiles
+- Custom HUD (Heads-Up Display) components for enhanced user experience
+- Responsive design for desktop and mobile devices
+
+### 📊 **Water Data Visualization**
+- Integration with OpenWater API for live water quality data
+- Temperature markers with speech bubble-style backgrounds
+- Interactive popups with detailed location information
+- Real-time data fetching and display
+
+### 🎨 **Modern UI Components**
+- Floating menu system with customizable positioning
+- Multiple HUD components (Login, Navigation, Data Points, Settings)
+- Theme-aware styling with automatic dark/light mode detection
+- Loading screens with branded animations
 
 ## Technical Architecture
 
@@ -13,41 +33,60 @@ Our application follows the **Model-View-Controller (MVC)** architectural patter
 
 #### **Model (Data Layer)**
 - **Location**: `backend/src/models/`
-- **Technology**: MongoDB with Mongoose ODM
+- **Technology**: MongoDB with Mongoose ODM + External API Integration
 - **Purpose**: Defines data structure, validation rules, and database interactions
+- **Data Sources**: 
+  - User data and authentication (MongoDB)
+  - Water quality data (OpenWater API integration)
 - **Example**: `User.js` - Handles user authentication, profile management, and data validation
 
 #### **View (Presentation Layer)**
 - **Location**: `frontend/src/` (Frontend)
-- **Technology**: Next.js with React components
-- **Purpose**: User interface, client-side rendering, and user interactions
-- **Features**: Responsive design, dynamic content, form handling
+- **Technology**: Next.js with React components, Leaflet.js for mapping
+- **Purpose**: Interactive user interface with map visualization and HUD components
+- **Key Components**:
+  - `MapComponent.jsx` - Interactive Leaflet map with water data markers
+  - `MapView.jsx` - Main map container with dynamic loading
+  - `HUD*.jsx` - Various heads-up display components (Login, Settings, Navigation)
+  - `FloatingMenu.jsx` - Reusable floating menu system
+- **Features**: Responsive design, dynamic theming, real-time data visualization
 
 #### **Controller (Business Logic)**
 - **Location**: `backend/src/controllers/`
-- **Technology**: Express.js with middleware
-- **Purpose**: Handles HTTP requests, processes business logic, and coordinates between Model and View
-- **Example**: `UserController.js` - Manages user registration, login, profile updates
+- **Technology**: Express.js with middleware + External API orchestration
+- **Purpose**: Handles HTTP requests, processes business logic, and coordinates between Model, View, and external APIs
+- **Examples**: 
+  - `userController.js` - Manages user registration, login, profile updates
+  - `waterDataController.js` - Fetches and processes water quality data from external APIs
 
 ### Frontend-Backend Connectivity
 
 #### **Frontend (Next.js)**
 - **Framework**: Next.js 15.3.3 with React 19
-- **Styling**: Tailwind CSS for modern, responsive design
+- **Mapping**: Leaflet.js for interactive map functionality
+- **Styling**: Custom CSS with theme-aware components
+- **Key Libraries**: 
+  - Leaflet.js for interactive maps
+  - Dynamic imports for SSR compatibility
+  - Custom HUD component system
 - **API Integration**: Custom API utility functions for seamless backend communication
 - **Location**: `frontend/`
 
 #### **Backend (Express.js)**
 - **Framework**: Express.js with RESTful API design
-- **Database**: MongoDB with Mongoose for data modeling
+- **Database**: MongoDB with Mongoose for user data modeling
+- **External APIs**: OpenWater API integration for real-time water data
 - **Authentication**: JWT (JSON Web Tokens) for secure user sessions
 - **Middleware**: CORS, validation, error handling, and authentication middleware
 - **Location**: `backend/`
 
 #### **API Communication**
-- **Protocol**: RESTful HTTP APIs
+- **Protocol**: RESTful HTTP APIs + External API integration
+- **Data Sources**: 
+  - Internal: User authentication, preferences (MongoDB)
+  - External: Water quality data (OpenWater API)
 - **Data Format**: JSON
-- **Authentication**: Bearer token authentication
+- **Authentication**: Bearer token authentication for user endpoints
 - **Endpoints**: Organized in routes directory with proper validation
 
 ## Directory Structure
@@ -68,9 +107,11 @@ c01s25-project-microsofties/
 │       ├── models/
 │       │   └── User.js              # User data model (M in MVC)
 │       ├── controllers/
-│       │   └── userController.js    # Business logic (C in MVC)
+│       │   ├── userController.js    # User business logic (C in MVC)
+│       │   └── waterDataController.js # Water data API controller (C in MVC)
 │       ├── routes/
-│       │   └── authRoutes.js        # API route definitions
+│       │   ├── authRoutes.js        # Authentication API routes
+│       │   └── waterDataRoute.js    # Water data API routes
 │       └── middleware/
 │           └── authMiddleware.js    # Authentication middleware
 └── frontend/                        # Frontend application (Next.js)
@@ -78,10 +119,23 @@ c01s25-project-microsofties/
     ├── src/
     │   ├── app/
     │   │   ├── page.js              # Main page (V in MVC)
-    │   │   └── layout.js            # App layout
+    │   │   ├── layout.js            # App layout
+    │   │   └── default/
+    │   │       └── page.js          # Default route page
     │   ├── components/
-    │   │   └── auth/
-    │   │       └── LoginForm.js     # Login component (V in MVC)
+    │   │   ├── auth/
+    │   │   │   └── LoginForm.js     # Login component (V in MVC)
+    │   │   ├── MapComponent.jsx     # Main map component with Leaflet
+    │   │   ├── MapView.jsx          # Map container with dynamic loading
+    │   │   ├── FloatingMenu.jsx     # Reusable floating menu system
+    │   │   ├── HUDright.jsx         # Right-side HUD with theme toggle
+    │   │   ├── HUDlogin.jsx         # Login HUD component
+    │   │   ├── HUDleft.jsx          # Left-side HUD component
+    │   │   ├── HUDleftPoints.jsx    # Points display HUD
+    │   │   ├── HUDadd.jsx           # Add data HUD component
+    │   │   └── HUDloading.jsx       # Loading screen component
+    │   ├── styles/
+    │   │   └── MapView.css          # Map and marker styling
     │   └── lib/
     │       └── api.js               # API communication utilities
     └── public/                      # Static assets
@@ -92,6 +146,7 @@ c01s25-project-microsofties/
 ### Prerequisites
 - **Node.js** (LTS version) - [Download from nodejs.org](https://nodejs.org/)
 - **MongoDB** - [Download MongoDB Community Server](https://www.mongodb.com/try/download/community) or use MongoDB Atlas
+- **OpenWater API Key** - Required for water data functionality
 - **Git** - For version control
 
 ### Quick Start (Development Environment)
@@ -136,12 +191,20 @@ npm run dev
 - **Option 1**: Install MongoDB locally and ensure it's running on default port (27017)
 - **Option 2**: Use MongoDB Atlas (cloud) and update the `MONGODB_URI` in your `.env` file
 
-### Testing the MVC Connectivity
+### Testing the Application Features
 
 1. **Start both servers** (backend on port 5000, frontend on port 3000)
 2. **Open browser** to `http://localhost:3000`
-3. **Use the login form** on the homepage to test frontend-backend communication
-4. **Check backend health** at `http://localhost:5000/api/health`
+3. **Interactive Map Features**:
+   - View real-time water temperature markers on the map
+   - Click markers to see detailed information popups
+   - Use theme toggle button (☀️/🌙) in the top-right HUD to switch between light/dark map themes
+   - Test responsive design on different screen sizes
+4. **API Integration**:
+   - Check backend health at `http://localhost:5000/api/health`
+   - Test water data endpoint at `http://localhost:5000/api/water-data`
+5. **User Authentication** (if implemented):
+   - Use the login components to test frontend-backend user authentication
 
 ### Environment Variables
 
@@ -160,7 +223,28 @@ JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 
 # CORS
 FRONTEND_URL=http://localhost:3000
+
+# External APIs
+OPENWATER_API_KEY=your_openwater_api_key_here
 ```
+
+## Application Architecture & Data Flow
+
+### Water Data Visualization Flow
+
+1. **Frontend Request**: User loads the map interface
+2. **Backend API Call**: Frontend requests water data from `/api/water-data`
+3. **External API Integration**: Backend fetches real-time data from OpenWater API
+4. **Data Processing**: Backend processes and formats the water quality data
+5. **Map Rendering**: Frontend receives data and renders custom markers on Leaflet map
+6. **Interactive Display**: Users can interact with markers to view detailed information
+
+### Theme System
+
+- **Automatic Detection**: System detects user's preferred color scheme (light/dark)
+- **Manual Toggle**: Users can manually switch themes using the HUD button
+- **Map Integration**: Theme changes affect both UI components and map tile layers
+- **Persistent State**: Theme preference maintained across user sessions
 
 ## Contribution Guidelines
 
