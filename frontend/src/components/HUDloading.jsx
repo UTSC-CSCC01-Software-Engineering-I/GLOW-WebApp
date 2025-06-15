@@ -8,7 +8,7 @@ function LoginBox({ theme, loading }) {
   return (      
     <div style={{ backgroundColor: !loading ? 'rgba(24, 210, 58, 0.96)': 'rgba(210, 24, 24, 0.4)', width: '19rem', height: '3rem', top: '1rem',
       right: '14.7rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
-      alignItems: 'center', justifyContent: 'left', flexDirection: 'row-reverse', 
+      alignItems: 'center', justifyContent: 'left', flexDirection: 'row-reverse', border: loading ? '1px solid red': '1px solid green',
       opacity: loading ? 1 : 0,
       transition: 'opacity 5s ease-in'}}>
         
