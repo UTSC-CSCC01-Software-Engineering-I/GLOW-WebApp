@@ -1,19 +1,23 @@
 import React from "react";
 import { MapView } from "../components/MapView";
+import { HUDleft } from "../components/HUDleft";
+import { HUDright } from "../components/HUDright";
+import { HUDlogin } from "../components/HUDlogin";
+import { HUDadd } from "../components/HUDadd";
+import { HUDloading } from "../components/HUDloading";
+import { HUDleftPoints } from "../components/HUDleftPoints";
 
 export default function Home() {
   return (
     <div>
-      <header
-        style={{
-          padding: "20px",
-          backgroundColor: "#f8f9fa",
-          textAlign: "center",
-        }}
-      >
-        <h1>🚀 GLOW - Water Quality Monitoring</h1>
-        <p>Interactive Map Application</p>
-      </header>
+      <HUDright />
+      <HUDadd />
+      <HUDloading />
+      <HUDlogin />
+      <HUDleftPoints />
+      <HUDleft />
+      
+      
       <MapView />
     </div>
   );

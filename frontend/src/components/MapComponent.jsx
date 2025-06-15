@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import '../styles/MapView.css';
 
 export default function MapComponent() {
   const mapRef = useRef(null);
+  const [loading, setLoading] = useState(true); // shaaf here: I am adding this so we can track when the api loads stuff
   const mapInstanceRef = useRef(null);
+
+  useEffect(() => {
+    window.loadedAPI = loading;
+    window.dispatchEvent(new Event('dataloaded'));
+  });
 
   useEffect(() => {
     // Only import Leaflet on the client side
@@ -47,16 +54,19 @@ export default function MapComponent() {
           center: [43.647216678117736, -79.36719310664458], // Toronto lakeshore
           zoom: 12,
           layers: [prefersDark ? darkLayer : lightLayer]
-        });
-
-        // Store map instance for cleanup
+        });        // Store map instance for cleanup
         mapInstanceRef.current = map;
 
+        // Store map and layers globally for HUD access
+        window.leafletMap = map;
+        window.lightLayer = lightLayer;
+        window.darkLayer = darkLayer;
+
         // Add layer switcher
-        L.control.layers({
-          'Light': lightLayer,
-          'Dark': darkLayer 
-        }).addTo(map);
+        // L.control.layers({
+        //   'Light': lightLayer,
+        //   'Dark': darkLayer 
+        // }).addTo(map);
 
         // Listen for OS theme changes
         window.matchMedia('(prefers-color-scheme: dark)')
@@ -86,9 +96,14 @@ export default function MapComponent() {
                 const t = item.temp || item.Result;
                 const name = item.siteName || item.Label;
 
-                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
-                L.marker([lat, lon])
-                 .addTo(map)
+                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                L.marker([lat, lon], {
+                  icon: L.divIcon({
+                    className: 'custom-temp-marker', // You can style this class
+                    html: `<div class="temp-label">${t}°C</div>`,
+                    iconSize: [40, 40],
+                    iconAnchor: [20, 20]
+                  })
+                }).addTo(map)
                  .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
               });
             }
@@ -98,7 +113,9 @@ export default function MapComponent() {
         }
 
         // Add water markers after map loads
-        addLiveWaterTempMarkers();
+        addLiveWaterTempMarkers().finally(() => {
+          setLoading(false); // shaaf here again: this code is responsible for finish loading signal
+        });
       }
     };
 
@@ -117,7 +134,7 @@ export default function MapComponent() {
     <div 
       ref={mapRef}
       style={{
-        height: 'calc(100vh - 120px)',
+        height: '100vh',
         width: '100%'
       }}
     />
