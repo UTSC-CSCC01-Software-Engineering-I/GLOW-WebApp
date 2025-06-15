@@ -46,7 +46,7 @@ function LoginBox({ toggleTheme, theme }) {
         }}
         onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
         onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-        >login</button>
+        >Login/Sign up</button>
         
         
     </div>

@@ -11,9 +11,10 @@ class UserController {
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        const errorMessages = errors.array().map(error => error.msg).join('; '); // Combine error messages
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: `Validation failed: ${errorMessages}`,
           errors: errors.array()
         });
       }
@@ -83,9 +84,10 @@ class UserController {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        const errorMessages = errors.array().map(error => error.msg).join('; '); // Combine error messages
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: `Validation failed: ${errorMessages}`,
           errors: errors.array()
         });
       }
