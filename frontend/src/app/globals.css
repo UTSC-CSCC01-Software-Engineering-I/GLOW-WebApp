@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+.top-left-hud {
+  position: 'absolute';
+  zIndex: '999999';
+  width: '200px';
+  height: '100px';
+  backgroundColor: '#333';
+  color: 'white';
+  padding: '16px';
+  borderRadius: '8px';
+  top: '1rem';
+  left: '1rem';
+}
