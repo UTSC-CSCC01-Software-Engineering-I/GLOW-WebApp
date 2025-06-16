@@ -34,7 +34,16 @@ List any process-related changes you are planning to make (if there are any)
 
 #### Goals and/or tasks that were met/completed:
 
-[ SHAAF ATTACH PROOF OF COMPLETION]
+### Application Themes
+![image](https://github.com/user-attachments/assets/423a6938-ac8a-4fa8-9053-4a1df4953a29)
+
+![image](https://github.com/user-attachments/assets/c59da4b9-b53c-49fe-a3dd-eb4daffeb407)
+
+## API Fetching
+![image](https://github.com/user-attachments/assets/616d476c-deea-4b9a-b23d-420893362116)
+
+## API Fetching Complete
+![image](https://github.com/user-attachments/assets/50c3953d-5757-4cd9-b82e-e3ec8df14004)
 
 - Temperature data from Toronto beaches using API: We successfully fetched and displayed live temperature data using an external API, enabling real-time updates for users.
 - Login/signup page: A basic UI was implemented with separate forms for new user registration and existing user login.
