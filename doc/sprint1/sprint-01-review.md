@@ -45,6 +45,13 @@ List any process-related changes you are planning to make (if there are any)
 ## API Fetching Complete
 ![image](https://github.com/user-attachments/assets/50c3953d-5757-4cd9-b82e-e3ec8df14004)
 
+## Login Page
+![WhatsApp Image 2025-06-15 at 23 29 49_586d286b](https://github.com/user-attachments/assets/8a10d38e-2bef-4449-9b9a-6501a997ed5c)
+
+## SignUp Page
+![WhatsApp Image 2025-06-15 at 23 30 02_9d9fe67f](https://github.com/user-attachments/assets/1c2df73e-c96c-4b69-8976-92d5eabf48ea)
+
+
 - Temperature data from Toronto beaches using API: We successfully fetched and displayed live temperature data using an external API, enabling real-time updates for users.
 - Login/signup page: A basic UI was implemented with separate forms for new user registration and existing user login.
 - Visual feedback on API fetch progress: We added a status indicator to improve user experience while waiting for data to load.
