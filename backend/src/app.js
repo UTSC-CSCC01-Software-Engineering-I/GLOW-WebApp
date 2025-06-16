@@ -8,7 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 dotenv.config();
 
 // Connect to database
-// connectDB();
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
