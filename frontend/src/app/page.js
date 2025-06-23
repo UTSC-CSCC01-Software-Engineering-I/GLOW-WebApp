@@ -6,6 +6,7 @@ import { HUDlogin } from "../components/HUDlogin";
 import { HUDadd } from "../components/HUDadd";
 import { HUDloading } from "../components/HUDloading";
 import { HUDleftPoints } from "../components/HUDleftPoints";
+import { HUDunitToggle } from '../components/HUDunitToggle';
 
 export default function Home() {
   return (
@@ -16,8 +17,7 @@ export default function Home() {
       <HUDlogin />
       <HUDleftPoints />
       <HUDleft />
-      
-      
+      <HUDunitToggle />
       <MapView />
     </div>
   );

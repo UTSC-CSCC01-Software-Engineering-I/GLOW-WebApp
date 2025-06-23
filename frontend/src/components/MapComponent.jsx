@@ -7,6 +7,7 @@ export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true); // shaaf here: I am adding this so we can track when the api loads stuff
   const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
   useEffect(() => {
     window.loadedAPI = loading;
@@ -16,11 +17,7 @@ export default function MapComponent() {
   useEffect(() => {
     // Only import Leaflet on the client side
     const initMap = async () => {
-      // Don't initialize if map already exists
-      if (mapInstanceRef.current) {
-        return;
-      }
-
+      if (mapInstanceRef.current) return;
       const L = (await import('leaflet')).default;
       
       // Add Leaflet CSS dynamically
@@ -96,15 +93,18 @@ export default function MapComponent() {
                 const t = item.temp || item.Result;
                 const name = item.siteName || item.Label;
 
-                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                L.marker([lat, lon], {
-                  icon: L.divIcon({
-                    className: 'custom-temp-marker', // You can style this class
-                    html: `<div class="temp-label">${t}°C</div>`,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20]
-                  })
-                }).addTo(map)
-                 .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
+                  className: 'custom-temp-marker',
+                  html: `<div class="temp-label">${t}°C</div>`,
+                  iconSize: [40,40],
+                  iconAnchor: [20,20]
+                });
+
+                const marker = L.marker([lat, lon], { icon })
+                                .addTo(map)
+                                .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+
+                markersRef.current.push({ marker, tempC: t, name });
               });
             }
           } catch (err) {
@@ -114,21 +114,39 @@ export default function MapComponent() {
 
         // Add water markers after map loads
         addLiveWaterTempMarkers().finally(() => {
-          setLoading(false); // shaaf here again: this code is responsible for finish loading signal
+          // shaaf here: this code is responsible for finish loading signal
+          // setLoading(false); 
         });
       }
     };
 
     initMap();
 
-    // Cleanup function
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+    // Listen for unit toggles
+    const onUnitChange = () => {
+      const unit = window.temperatureUnit || 'C';
+      markersRef.current.forEach(({ marker, tempC, name }) => {
+        const display = unit === 'F'
+          ? (tempC * 9/5 + 32).toFixed(1)
+          : tempC;
+        // update icon
+        marker.setIcon(window.L.divIcon({
+          className: 'custom-temp-marker',
+          html: `<div class="temp-label">${display}°${unit}</div>`,
+          iconSize: [40,40],
+          iconAnchor: [20,20]
+        }));
+        // update popup
+        marker.getPopup().setContent(`<strong>${name}</strong><br/>${display}°${unit}`);
+      });
     };
-  }, []); // Empty dependency array to run only once
+
+    window.addEventListener('unitchange', onUnitChange);
+    return () => {
+      window.removeEventListener('unitchange', onUnitChange);
+      if (mapInstanceRef.current) mapInstanceRef.current.remove();
+    };
+  }, []);
 
   return (
     <div 
