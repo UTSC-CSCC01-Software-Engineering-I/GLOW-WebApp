@@ -200,7 +200,7 @@ npm run dev
 ```
 **Frontend will run on**: `http://localhost:3000`
 
-#### 4. Database Setup
+#### 4. Database Setup (important if you are getting MongoDB errors)
 - **Option 1**: Install MongoDB locally and ensure it's running on default port (27017)
 - **Option 2**: Use MongoDB Atlas (cloud) and update the `MONGODB_URI` in your `.env` file
 
