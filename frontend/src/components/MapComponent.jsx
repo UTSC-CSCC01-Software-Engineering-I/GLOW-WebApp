@@ -115,7 +115,7 @@ export default function MapComponent() {
         // Add water markers after map loads
         addLiveWaterTempMarkers().finally(() => {
           // shaaf here: this code is responsible for finish loading signal
-          // setLoading(false); 
+          setLoading(false); 
         });
       }
     };
