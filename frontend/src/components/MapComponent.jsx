@@ -5,7 +5,8 @@ import '../styles/MapView.css';
 
 export default function MapComponent() {
   const mapRef = useRef(null);
-  const [loading, setLoading] = useState(true); // shaaf here: I am adding this so we can track when the api loads stuff
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
@@ -104,7 +105,7 @@ export default function MapComponent() {
                                 .addTo(map)
                                 .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
 
-                markersRef.current.push({ marker, tempC: t, name });
+                markersRef.current.push({ marker, tempC: t, name, lat, lon });
               });
             }
           } catch (err) {
@@ -148,13 +149,79 @@ export default function MapComponent() {
     };
   }, []);
 
+  // Handle beach search by name
+  function handleSearch() {
+    if (!mapInstanceRef.current) return;
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return;
+    const match = markersRef.current.find(item =>
+      item.name.toLowerCase().includes(term)
+    );
+    if (match) {
+      mapInstanceRef.current.setZoom(15);
+      mapInstanceRef.current.panTo([match.lat, match.lon], { animate: true });
+      setTimeout(() => {
+        match.marker.openPopup();
+      }, 400); // allow pan animation to finish
+    } else {
+      alert('Beach not found');
+    }
+  }
+
   return (
-    <div 
-      ref={mapRef}
-      style={{
-        height: '100vh',
-        width: '100%'
-      }}
-    />
+    <div style={{ position: 'relative' }}>
+     <div
+       style={{
+         position: 'absolute',
+         top: '10px',
+         left: 0,
+         width: '100%',
+         display: 'flex',
+         justifyContent: 'center',
+         zIndex: 1000
+       }}
+     >
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
+          placeholder="Search beach..."
+          style={{
+            padding: '5px',
+            width: '200px',
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: '4px 0 0 4px',
+            outline: 'none',
+            color: '#000',
+            '::placeholder': { color: '#000' }
+          }}
+        />
+        <button
+          onClick={handleSearch}
+          style={{
+            marginLeft: '0',
+            padding: '5px 16px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            background: '#000',
+            color: '#fff',
+            border: '1px solid #000',
+            borderRadius: '0 4px 4px 0',
+            outline: 'none',
+          }}
+        >
+          Search
+        </button>
+     </div>
+      <div
+        ref={mapRef}
+        style={{
+          height: '100vh',
+          width: '100%'
+        }}
+      />
+    </div>
   );
 }
