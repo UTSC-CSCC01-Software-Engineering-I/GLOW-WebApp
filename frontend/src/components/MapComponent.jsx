@@ -158,11 +158,43 @@ export default function MapComponent() {
       item.name.toLowerCase().includes(term)
     );
     if (match) {
-      mapInstanceRef.current.setZoom(15);
-      mapInstanceRef.current.panTo([match.lat, match.lon], { animate: true });
-      setTimeout(() => {
-        match.marker.openPopup();
-      }, 400); // allow pan animation to finish
+      const map = mapInstanceRef.current;
+      const currentZoom = map.getZoom();
+      const targetZoom = 15;
+      
+      // First pan to the location at current zoom level with offset
+      const offsetY = 150;
+      const offsetX = 0;
+      const targetLatLng = [match.lat, match.lon];
+      const pointAtCurrentZoom = map.project(targetLatLng, currentZoom);
+      const offsetPointAtCurrentZoom = pointAtCurrentZoom.subtract([offsetX, offsetY]);
+      const offsetLatLngAtCurrentZoom = map.unproject(offsetPointAtCurrentZoom, currentZoom);
+      
+      // First just pan to the location at the current zoom level
+      map.once('moveend', function() {
+        // After panning completes, smoothly zoom in
+        map.once('zoomend', function() {
+          // After zooming completes, open the popup
+          match.marker.openPopup();
+        });
+        
+        // Animate zoom with a duration in ms
+        map.flyTo(offsetLatLng, targetZoom, {
+          duration: 0.5, // seconds
+          easeLinearity: 0.2
+        });
+      });
+      
+      // Start the sequence by panning
+      map.panTo(offsetLatLngAtCurrentZoom, { 
+        animate: true,
+        duration: 0.75 // seconds
+      });
+      
+      // Calculate the final offset point at target zoom for later use
+      const pointAtTargetZoom = map.project(targetLatLng, targetZoom);
+      const offsetPointAtTargetZoom = pointAtTargetZoom.subtract([offsetX, offsetY]);
+      const offsetLatLng = map.unproject(offsetPointAtTargetZoom, targetZoom);
     } else {
       alert('Beach not found');
     }
