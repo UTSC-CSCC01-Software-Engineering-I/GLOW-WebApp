@@ -7,13 +7,7 @@ const router = express.Router();
 
 // Validation rules for registration
 const registerValidation = [
-  body('username')
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('email')
+body('email')
     .isEmail()
     .normalizeEmail()
     .withMessage('Please provide a valid email'),
@@ -49,14 +43,7 @@ const loginValidation = [
 
 // Validation rules for profile update
 const updateProfileValidation = [
-  body('username')
-    .optional()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('firstName')
+body('firstName')
     .optional()
     .notEmpty()
     .trim()

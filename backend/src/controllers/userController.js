@@ -19,17 +19,15 @@ class UserController {
         });
       }
 
-      const { username, email, password, firstName, lastName } = req.body;
+      const { email, password, firstName, lastName } = req.body;
 
       // Check if user already exists
-      const existingUser = await User.findOne({
-        $or: [{ email }, { username }]
-      });
+      const existingUser = await User.findOne({ email });
 
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: 'User with this email or username already exists'
+          message: 'User with this email already exists'
         });
       }
 
@@ -39,7 +37,6 @@ class UserController {
 
       // Create new user
       const newUser = new User({
-        username: username,
         email: email,
         password: hashedPassword,
         firstName: firstName,
@@ -61,7 +58,6 @@ class UserController {
         data: {
           user: {
             id: newUser._id,
-            username: newUser.username,
             email: newUser.email,
             firstName: newUser.firstName,
             lastName: newUser.lastName
@@ -125,7 +121,6 @@ class UserController {
         data: {
           user: {
             id: user._id,
-            username: user.username,
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName
@@ -180,11 +175,11 @@ class UserController {
         });
       }
 
-      const { firstName, lastName, username } = req.body;
+      const { firstName, lastName } = req.body;
       
       const user = await User.findByIdAndUpdate(
         req.userId,
-        { firstName, lastName, username },
+        { firstName, lastName },
         { new: true, select: '-password' }
       );
 
