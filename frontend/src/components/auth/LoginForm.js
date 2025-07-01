@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { authAPI } from '../../lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ export default function LoginForm() {
   const [user, setUser] = useState(null);
   const [login, setLogin] = useState(true);
   const [signup, setSignup] = useState(false);
+
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,8 +34,11 @@ export default function LoginForm() {
       setMessage('✅ Login successful!');
       setUser(response.data.user);
       console.log('User logged in:', response.data.user);
+      const token = response.data.token;
+      localStorage.setItem('authToken', token); // Store token in localStorage
       setLogin(false);
       setSignup(false);
+      router.push('/'); // Redirect to home page after login
     } catch (error) {
       setMessage(`❌ Login failed: ${error.message}`);
     } finally {
@@ -50,8 +56,11 @@ export default function LoginForm() {
       setMessage('✅ Sign-up successful!');
       setUser(response.data.user);
       console.log('User logged in:', response.data.user);
+      const token = response.data.token;
+      localStorage.setItem('authToken', token); // Store token in localStorage
       setSignup(false);
-      setLogin(true);
+      setLogin(false);
+      router.push('/'); // Redirect to home page after sign-up
     } catch (error) {
       setMessage(`❌ Sign-up failed: ${error.message}`);
     } finally {
@@ -61,6 +70,7 @@ export default function LoginForm() {
 
   const handleLogout = () => {
     authAPI.logout();
+    localStorage.removeItem('authToken'); // Remove the token
     setUser(null);
     setLogin(false);
     setSignup(false);
@@ -82,7 +92,6 @@ export default function LoginForm() {
         <h2 className="text-2xl font-bold mb-4 text-green-600">Welcome!</h2>
         <div className="space-y-2 mb-4">
           <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-          <p><strong>Username:</strong> {user.username}</p>
           <p><strong>Email:</strong> {user.email}</p>
         </div>
         <div className="space-y-2">
@@ -113,22 +122,6 @@ export default function LoginForm() {
       <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Sign Up for GLOW</h2>
         <form onSubmit={handleSignupSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
-              placeholder="Enter your username"
-            />
-          </div>
-
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
