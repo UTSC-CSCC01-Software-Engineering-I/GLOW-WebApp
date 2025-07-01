@@ -34,16 +34,16 @@ class UserController {
       }
 
       // Hash password
-      const saltRounds = 10;
+      const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Create new user
       const newUser = new User({
-        username,
-        email,
+        username: username,
+        email: email,
         password: hashedPassword,
-        firstName,
-        lastName
+        firstName: firstName,
+        lastName: lastName,
       });
 
       await newUser.save();
