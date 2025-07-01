@@ -20,51 +20,32 @@
   border: none !important;
   box-shadow: none !important;
 }
-
+/* frontend/src/styles/MapView.css */
+.custom-temp-marker .temp-label {
+  background-color: #ff0000; /* Change to your desired color */
+  color: #ffffff; /* Text color */
+  border-radius: 50%;
+  padding: 5px;
+  text-align: center;
+}
 .temp-label {
   display: flex;
-  
+  justify-content: center;
+  align-items: center;
+
   transform: translateX(-10%) translateY(0.5rem);
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 0rem 0.3rem 0rem 0.3rem;
-  color: rgb(0, 0, 0);
+  background-color: rgba(255, 255, 255, 0.85); /* will be overridden inline */
+  padding: 0.3rem 0.6rem;
+  color: white;
   border-radius: 10rem;
   font-size: 1rem;
   font-weight: bold;
   width: fit-content;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border: 0.1rem solid rgba(255, 0, 0, 0.1);
   font-family: 'Arial', sans-serif;
   position: relative;
-}
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 
-/* Pinpoint arrow/tail pointing down */
-.temp-label::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid rgba(255, 0, 0, 0.85);
+  /* 🟢 Thin black outline around text */
+  text-shadow: 0 0 2px black;
 }
-
-/* Optional: Add a white border to the arrow for consistency */
-.temp-label::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 9px solid rgba(255, 255, 255, 0.1);
-  z-index: -1;
-}
-

@@ -78,6 +78,25 @@ export default function MapComponent() {
             }
           });
 
+
+          function getTemperatureColor(temp) {
+            if (temp <= 0) {
+              return '#634760'; // Bright purple for freezing
+            } else if (temp <= 7) {
+              return '#12a8a8'; // Bright cyan for cold
+            } else if (temp <= 11) {
+              return '#7cdd06'; // Bright lime green for cool
+            } else if (temp <= 16) {
+              return '#fcfd0b'; // Bright yellow for mild
+            } else if (temp <= 20) {
+              return '#f78e24'; // Bright orange for warm
+            } else if (temp <= 24) {
+              return '#f31250'; // Bright pink for warmer
+            } else {
+              return '#920504'; // Bright red for hot
+            }
+          }
+
         // Function to add water temperature markers
         async function addLiveWaterTempMarkers() {
           try {
@@ -93,10 +112,11 @@ export default function MapComponent() {
                 const lat = item.lat || item.Latitude;
                 const t = item.temp || item.Result;
                 const name = item.siteName || item.Label;
+                const tempColor = getTemperatureColor(t);
 
                 console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
                   className: 'custom-temp-marker',
-                  html: `<div class="temp-label">${t}°C</div>`,
+                  html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
                   iconSize: [40,40],
                   iconAnchor: [20,20]
                 });
@@ -110,7 +130,7 @@ export default function MapComponent() {
             }
           } catch (err) {
             console.error('fetch error →', err);
-          }
+          } 
         }
 
         // Add water markers after map loads
