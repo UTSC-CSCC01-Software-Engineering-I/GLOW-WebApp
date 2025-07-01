@@ -3,17 +3,34 @@
 import Image from "next/image";
 import LoginForm from "../../components/auth/LoginForm";
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Hello() {
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is logged in by checking localStorage for authToken
+    const token = localStorage.getItem('authToken');
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken'); // Remove the token
+    router.push('/'); // Redirect to home page
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Login Demo */}
         <LoginForm />
         <div className="mt-4" style={{display: 'flex', justifyContent: 'center', width: '100%'}}>
-          <button onClick={() => router.push('/')} style={{backgroundColor: 'black', fontFamily: 'hubot', padding: '0.9rem',
-          borderRadius: '5rem', cursor: 'pointer'
+          <button 
+            onClick={() => {
+              handleLogout();
+              router.push('/');
+            }}
+            style={{backgroundColor: 'black', fontFamily: 'hubot', padding: '0.9rem',
+            borderRadius: '5rem', cursor: 'pointer'
         }} 
         onMouseEnter={(e) => e.target.style.backgroundColor = 'blue'}
         onMouseLeave={(e) => e.target.style.backgroundColor = 'black'}

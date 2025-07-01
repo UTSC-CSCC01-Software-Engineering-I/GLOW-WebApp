@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { authAPI } from '../../lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ export default function LoginForm() {
   const [user, setUser] = useState(null);
   const [login, setLogin] = useState(true);
   const [signup, setSignup] = useState(false);
+
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,8 +34,11 @@ export default function LoginForm() {
       setMessage('✅ Login successful!');
       setUser(response.data.user);
       console.log('User logged in:', response.data.user);
+      const token = response.data.token;
+      localStorage.setItem('authToken', token); // Store token in localStorage
       setLogin(false);
       setSignup(false);
+      router.push('/'); // Redirect to home page after login
     } catch (error) {
       setMessage(`❌ Login failed: ${error.message}`);
     } finally {
@@ -50,8 +56,11 @@ export default function LoginForm() {
       setMessage('✅ Sign-up successful!');
       setUser(response.data.user);
       console.log('User logged in:', response.data.user);
+      const token = response.data.token;
+      localStorage.setItem('authToken', token); // Store token in localStorage
       setSignup(false);
-      setLogin(true);
+      setLogin(false);
+      router.push('/'); // Redirect to home page after sign-up
     } catch (error) {
       setMessage(`❌ Sign-up failed: ${error.message}`);
     } finally {
@@ -61,6 +70,7 @@ export default function LoginForm() {
 
   const handleLogout = () => {
     authAPI.logout();
+    localStorage.removeItem('authToken'); // Remove the token
     setUser(null);
     setLogin(false);
     setSignup(false);
