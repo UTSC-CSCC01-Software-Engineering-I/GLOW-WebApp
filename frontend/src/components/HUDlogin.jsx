@@ -110,9 +110,12 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
 
 export function HUDlogin() {
   const [theme, setTheme] = useState('dark');
-  const loggedIn = !!localStorage.getItem('authToken'); // Check if token exists
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    setLoggedIn(!!token); // Update loggedIn state based on token existence
+
     window.globalTheme = theme;
     window.dispatchEvent(new Event('themechange'));
   });
