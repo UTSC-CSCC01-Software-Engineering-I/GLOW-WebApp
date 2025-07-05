@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import '../styles/HudBeaches.css';
+import { globalBeach } from './MapComponent.jsx';
 
 
 
@@ -24,30 +25,25 @@ function LogoBlock() {
     return () => window.removeEventListener('themechange', handleThemeChange);
   }, []);
 
-    useEffect(() => {
-      async function gettempData() {
-        try {
-          setLoading(true);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/water-data`);
-          const data = await response.json();
-          console.log('Got data →', data);
-          
-          if (data && data.items) {
-            setLocaList(data.items);
-          } else {
-            console.log('No items found in response');
-            setLocaList([]);
-          }
-        } catch (err) {
-          console.error('fetch error →', err);
-          setLocaList([]);
-        } finally {
-          setLoading(false);
-        }
+  useEffect(() => {
+    const checkForData = () => {
+      if (globalBeach && globalBeach.items) {
+        setLocaList(globalBeach.items);
+        setLoading(false);
+      } else if (window.loadedAPI === false) { // Map finished loading
+        setLoading(false);
       }
+    };
 
-      gettempData();
-    }, []);
+    // Check immediately
+    checkForData();
+    
+    // Listen for data loaded event from MapComponent
+    const handleDataLoaded = () => checkForData();
+    window.addEventListener('dataloaded', handleDataLoaded);
+    
+    return () => window.removeEventListener('dataloaded', handleDataLoaded);
+  }, []);
     
   return (
   
