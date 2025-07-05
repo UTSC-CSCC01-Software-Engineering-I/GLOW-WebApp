@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 function MenuBlock({ theme }) {
+
+  const router = useRouter();
   
   return (
     <div className='top-right-hud'>
@@ -12,7 +15,7 @@ function MenuBlock({ theme }) {
         <h1 style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'hubot', fontWeight: '900', 
           fontSize: '2rem'
         }}>+</h1>
-        <button onClick={() => router.push('/default')} style={{ 
+        <button onClick={() => router.push('/add-point')} style={{ 
           color: theme === 'light' ? 'white': 'black', 
           fontFamily: 'hubot sans', 
           fontWeight: '500', 
@@ -39,17 +42,18 @@ function MenuBlock({ theme }) {
 export function HUDadd() {
   const [theme, setTheme] = useState('dark');
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.globalTheme){
-      setTheme(window.globalTheme);
-    }
+    
+    if (typeof window !== 'undefined' && window.globalTheme) {
+    setTheme(window.globalTheme);
+  }
 
-    const handleThemeChange = () => {
-      setTheme(window.globalTheme); // update local state
-    };
+  const handleThemeChange = () => {
+    setTheme(window.globalTheme); 
+  };
 
-    window.addEventListener('themechange', handleThemeChange);
-    return () => window.removeEventListener('themechange', handleThemeChange);
-  }, []);
+  window.addEventListener('themechange', handleThemeChange);
+  return () => window.removeEventListener('themechange', handleThemeChange);
+}, []);
 
   return <MenuBlock theme={theme}/>;
 }
