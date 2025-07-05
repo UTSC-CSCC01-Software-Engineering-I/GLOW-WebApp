@@ -103,48 +103,75 @@ export default function MapComponent() {
           });
 
 
+        // Function to add markers from data
+        function addMarkers(items) {
+          items.forEach((item, i) => {
+            const lon = item.lng || item.Longitude;
+            const lat = item.lat || item.Latitude;
+            const t = item.temp || item.Result;
+            const name = item.siteName || item.Label;
+            const tempColor = getTemperatureColor(t);
+
+            console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
+            
+            const icon = L.divIcon({
+              className: 'custom-temp-marker',
+              html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
+              iconSize: [40,40],
+              iconAnchor: [20,20]
+            });
+
+            const marker = L.marker([lat, lon], { icon })
+                            .addTo(map)
+                            .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+
+            markersRef.current.push({ marker, tempC: t, name, lat, lon });
+          });
+        }
+
         // Function to add water temperature markers
         async function addLiveWaterTempMarkers() {
           try {
+            // Step 1: Check cache first and load instantly if available
+            const cache = localStorage.getItem('waterData');
+            if (cache) {
+              const cachedItems = JSON.parse(cache);
+              console.log('📦 Loading from cache:', cachedItems.length, 'items');
+              addMarkers(cachedItems);
+              setLoading(false); // Hide loading immediately
+            }
+
+            // Step 2: Fetch fresh data in background
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
             
-            console.log('Got data →', data);
-            
-            if (data && data.items) {
-              data.items.forEach((item, i) => {
-                // Use the correct field names from your API
-                const lon = item.lng || item.Longitude;
-                const lat = item.lat || item.Latitude;
-                const t = item.temp || item.Result;
-                const name = item.siteName || item.Label;
-                const tempColor = getTemperatureColor(t);
-
-                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
-                  className: 'custom-temp-marker',
-                  html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
-                  iconSize: [40,40],
-                  iconAnchor: [20,20]
-                });
-
-                const marker = L.marker([lat, lon], { icon })
-                                .addTo(map)
-                                .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
-
-                markersRef.current.push({ marker, tempC: t, name, lat, lon });
+            if (data?.items?.length) {
+              console.log('🔄 Got fresh data:', data.items.length, 'items');
+              
+              // Clear existing markers before adding new ones
+              markersRef.current.forEach(({ marker }) => {
+                map.removeLayer(marker);
               });
+              markersRef.current = [];
+              
+              // Add fresh markers
+              addMarkers(data.items);
+              
+              // Update cache with fresh data
+              localStorage.setItem('waterData', JSON.stringify(data.items));
             }
+            
+            setLoading(false);
           } catch (err) {
             console.error('fetch error →', err);
-          } 
+            // If no cache was loaded and fetch failed, still hide loading
+            setLoading(false);
+          }
         }
 
         // Add water markers after map loads
-        addLiveWaterTempMarkers().finally(() => {
-          // shaaf here: this code is responsible for finish loading signal
-          setLoading(false); 
-        });
-      }
+        addLiveWaterTempMarkers();
+              }
     };
 
     initMap();
