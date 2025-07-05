@@ -12,6 +12,28 @@ export default function MapComponent() {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
+  // Temperature color function - works with both Celsius and Fahrenheit
+  function getTemperatureColor(temp, unit = 'C') {
+    // Convert to Celsius for consistent color mapping
+    const tempC = unit === 'F' ? (temp - 32) * 5/9 : temp;
+    
+    if (tempC <= 0) {
+      return '#634760'; // Bright purple for freezing
+    } else if (tempC <= 7) {
+      return '#12a8a8'; // Bright cyan for cold
+    } else if (tempC <= 11) {
+      return '#7cdd06'; // Bright lime green for cool
+    } else if (tempC <= 16) {
+      return '#fcfd0b'; // Bright yellow for mild
+    } else if (tempC <= 20) {
+      return '#f78e24'; // Bright orange for warm
+    } else if (tempC <= 24) {
+      return '#f31250'; // Bright pink for warmer
+    } else {
+      return '#920504'; // Bright red for hot
+    }
+  }
+
   useEffect(() => {
     window.loadedAPI = loading;
     window.dispatchEvent(new Event('dataloaded'));
@@ -81,24 +103,6 @@ export default function MapComponent() {
           });
 
 
-          function getTemperatureColor(temp) {
-            if (temp <= 0) {
-              return '#634760'; // Bright purple for freezing
-            } else if (temp <= 7) {
-              return '#12a8a8'; // Bright cyan for cold
-            } else if (temp <= 11) {
-              return '#7cdd06'; // Bright lime green for cool
-            } else if (temp <= 16) {
-              return '#fcfd0b'; // Bright yellow for mild
-            } else if (temp <= 20) {
-              return '#f78e24'; // Bright orange for warm
-            } else if (temp <= 24) {
-              return '#f31250'; // Bright pink for warmer
-            } else {
-              return '#920504'; // Bright red for hot
-            }
-          }
-
         // Function to add water temperature markers
         async function addLiveWaterTempMarkers() {
           try {
@@ -152,10 +156,15 @@ export default function MapComponent() {
         const display = unit === 'F'
           ? (tempC * 9/5 + 32).toFixed(1)
           : tempC;
-        // update icon
+        
+        // Calculate color based on the temperature in the current unit
+        const tempForColor = unit === 'F' ? (tempC * 9/5 + 32) : tempC;
+        const tempColor = getTemperatureColor(tempForColor, unit);
+        
+        // update icon with proper color
         marker.setIcon(window.L.divIcon({
           className: 'custom-temp-marker',
-          html: `<div class="temp-label">${display}°${unit}</div>`,
+          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
           iconSize: [40,40],
           iconAnchor: [20,20]
         }));
