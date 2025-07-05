@@ -12,7 +12,7 @@ function LoginBox({ theme, loading }) {
       opacity: loading ? 1 : 0,
       transition: 'opacity 5s ease-in'}}>
         
-        <h1 style={{ 
+        <div style={{ 
           color: 'white', 
           fontFamily: 'hubot sans', 
           fontWeight: '300', 
@@ -27,12 +27,8 @@ function LoginBox({ theme, loading }) {
           display:'flex',
           flexDirection: 'row',
           gap: '0.5rem',
-          alignItems: 'center'
-
-          
-          
-        }}
-        ><h1 style={{ fontSize: '1.4rem', marginBottom: '0.1rem' }}>🛈</h1>{loading ? 'Fetching latest data from api...' : 'Latest data loaded!'}</h1>
+          alignItems: 'center'}}
+        ><h1 style={{ fontSize: '1.4rem', marginBottom: '0.1rem' }}>🛈</h1>{loading ? 'Fetching latest data from api...' : 'Latest data loaded!'}</div>
   </div>
     
   

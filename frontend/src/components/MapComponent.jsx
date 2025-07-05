@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 
+let globalBeach = null;
+
 export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,7 @@ export default function MapComponent() {
           try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
-            
+            globalBeach = await data; // idk if this is a good idea but we now have a global variable to access fetched beach data
             console.log('Got data →', data);
             
             if (data && data.items) {
@@ -115,6 +117,8 @@ export default function MapComponent() {
                 const t = item.temp || item.Result;
                 const name = item.siteName || item.Label;
                 const tempColor = getTemperatureColor(t);
+                
+
 
                 console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
                   className: 'custom-temp-marker',
@@ -343,3 +347,5 @@ export default function MapComponent() {
     </div>
   );
 }
+
+export { globalBeach }
