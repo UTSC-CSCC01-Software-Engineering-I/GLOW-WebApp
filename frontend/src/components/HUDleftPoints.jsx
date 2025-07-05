@@ -50,7 +50,7 @@ function LogoBlock() {
     <div className='top-left-hud'>
     <div style={{ backgroundColor: theme === 'light' ? 'rgb(255 255 255 / 48%)': 'rgb(0 0 0 / 38%)', width: '18rem', height: '80vh', top: '4.5rem',
       left: '1rem', position: 'fixed', borderRadius: '0.6rem', 
-      display: 'flex', justifyContent: 'center', padding: '1rem 0.5rem 1rem 1rem ', flexDirection: 'column', justifyContent: 'flex-start',
+      display: 'flex', padding: '1rem 0.5rem 1rem 1rem ', flexDirection: 'column', justifyContent: 'flex-start',
       overflow: 'hidden', scrollBehavior: 'smooth', overflowY: 'scroll', backdropFilter: 'blur(3px)'}}>
         <h1 style={{ color: theme === 'dark' ? 'rgb(255 255 255 / 100%)': 'rgb(0 0 0 / 100%)'}}>Beaches</h1>
         {locaList.map((item, index) => (
