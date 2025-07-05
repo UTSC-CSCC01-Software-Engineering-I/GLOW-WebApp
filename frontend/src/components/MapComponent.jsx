@@ -139,6 +139,13 @@ export default function MapComponent() {
             if (cache) {
               const cachedItems = JSON.parse(cache);
               console.log('📦 Loading from cache:', cachedItems.length, 'items');
+              
+              // Set global variable immediately for HUDleftPoints
+              globalBeach = { items: cachedItems };
+              
+              // Notify HUDleftPoints that cached data is available
+              window.dispatchEvent(new Event('dataloaded'));
+              
               addMarkers(cachedItems);
               setLoading(false); // Hide loading immediately
             }
@@ -147,9 +154,8 @@ export default function MapComponent() {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
             
-            globalBeach = data; // idk if this is a good idea but we now have a global variable to access fetched beach data
-            window.dispatchEvent(new Event('dataloaded')); // Notify listeners that data has been loaded
-            
+            globalBeach = data; // Set global variable
+            console.log('Got data →', data);
                         
             if (data?.items?.length) {
               console.log('🔄 Got fresh data:', data.items.length, 'items');
@@ -157,41 +163,17 @@ export default function MapComponent() {
               // Clear existing markers before adding new ones
               markersRef.current.forEach(({ marker }) => {
                 map.removeLayer(marker);
-            });
-            markersRef.current = [];
-            
-            console.log('Got data →', data);
-            
-            if (data && data.items) {
-              data.items.forEach((item, i) => {
-                // Use the correct field names from your API
-                const lon = item.lng || item.Longitude;
-                const lat = item.lat || item.Latitude;
-                const t = item.temp || item.Result;
-                const name = item.siteName || item.Label;
-                const tempColor = getTemperatureColor(t);
-                
-
-
-                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
-                  className: 'custom-temp-marker',
-                  html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
-                  iconSize: [40,40],
-                  iconAnchor: [20,20]
-                });
-
-                const marker = L.marker([lat, lon], { icon })
-                                .addTo(map)
-                                .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
-
-                markersRef.current.push({ marker, tempC: t, name, lat, lon });
-              
+              });
+              markersRef.current = [];
               
               // Add fresh markers
               addMarkers(data.items);
               
               // Update cache with fresh data
               localStorage.setItem('waterData', JSON.stringify(data.items));
+              
+              // Notify listeners that data has been loaded AFTER markers are added
+              window.dispatchEvent(new Event('dataloaded'));
             }
             
             setLoading(false);
@@ -204,7 +186,7 @@ export default function MapComponent() {
 
         // Add water markers after map loads
         addLiveWaterTempMarkers();
-              }
+      }
     };
 
     initMap();

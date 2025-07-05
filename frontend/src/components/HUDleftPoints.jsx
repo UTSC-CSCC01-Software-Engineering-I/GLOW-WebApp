@@ -27,10 +27,14 @@ function LogoBlock() {
 
   useEffect(() => {
     const checkForData = () => {
+      console.log('🔍 HUD checking for data...', { globalBeach, hasItems: globalBeach?.items?.length });
+      
       if (globalBeach && globalBeach.items) {
+        console.log('✅ HUD found data:', globalBeach.items.length, 'items');
         setLocaList(globalBeach.items);
         setLoading(false);
       } else if (window.loadedAPI === false) { // Map finished loading
+        console.log('⚠️ Map finished loading but no data found');
         setLoading(false);
       }
     };
@@ -38,8 +42,12 @@ function LogoBlock() {
     // Check immediately
     checkForData();
     
-    // Listen for data loaded event from MapComponent
-    const handleDataLoaded = () => checkForData();
+    // Listen for data loaded event from MapComponent (fires for both cache and fresh data)
+    const handleDataLoaded = () => {
+      console.log('📡 HUD received dataloaded event');
+      checkForData();
+    };
+    
     window.addEventListener('dataloaded', handleDataLoaded);
     
     return () => window.removeEventListener('dataloaded', handleDataLoaded);
