@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 
+let globalBeach = null;
+
 export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -145,14 +147,45 @@ export default function MapComponent() {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
             
+            globalBeach = data; // idk if this is a good idea but we now have a global variable to access fetched beach data
+            window.dispatchEvent(new Event('dataloaded')); // Notify listeners that data has been loaded
+            
+                        
             if (data?.items?.length) {
               console.log('🔄 Got fresh data:', data.items.length, 'items');
               
               // Clear existing markers before adding new ones
               markersRef.current.forEach(({ marker }) => {
                 map.removeLayer(marker);
-              });
-              markersRef.current = [];
+            });
+            markersRef.current = [];
+            
+            console.log('Got data →', data);
+            
+            if (data && data.items) {
+              data.items.forEach((item, i) => {
+                // Use the correct field names from your API
+                const lon = item.lng || item.Longitude;
+                const lat = item.lat || item.Latitude;
+                const t = item.temp || item.Result;
+                const name = item.siteName || item.Label;
+                const tempColor = getTemperatureColor(t);
+                
+
+
+                console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);                const icon = L.divIcon({
+                  className: 'custom-temp-marker',
+                  html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
+                  iconSize: [40,40],
+                  iconAnchor: [20,20]
+                });
+
+                const marker = L.marker([lat, lon], { icon })
+                                .addTo(map)
+                                .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+
+                markersRef.current.push({ marker, tempC: t, name, lat, lon });
+              
               
               // Add fresh markers
               addMarkers(data.items);
@@ -379,3 +412,5 @@ export default function MapComponent() {
     </div>
   );
 }
+
+export { globalBeach }
