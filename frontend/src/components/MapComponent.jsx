@@ -107,6 +107,7 @@ export default function MapComponent() {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
             globalBeach = data; // idk if this is a good idea but we now have a global variable to access fetched beach data
+            window.dispatchEvent(new Event('dataloaded')); // Notify listeners that data has been loaded
             console.log('Got data →', data);
             
             if (data && data.items) {
