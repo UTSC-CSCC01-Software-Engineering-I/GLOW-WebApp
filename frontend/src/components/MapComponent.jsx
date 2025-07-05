@@ -14,6 +14,28 @@ export default function MapComponent() {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
+  // Temperature color function - works with both Celsius and Fahrenheit
+  function getTemperatureColor(temp, unit = 'C') {
+    // Convert to Celsius for consistent color mapping
+    const tempC = unit === 'F' ? (temp - 32) * 5/9 : temp;
+    
+    if (tempC <= 0) {
+      return '#634760'; // Bright purple for freezing
+    } else if (tempC <= 7) {
+      return '#12a8a8'; // Bright cyan for cold
+    } else if (tempC <= 11) {
+      return '#7cdd06'; // Bright lime green for cool
+    } else if (tempC <= 16) {
+      return '#fcfd0b'; // Bright yellow for mild
+    } else if (tempC <= 20) {
+      return '#f78e24'; // Bright orange for warm
+    } else if (tempC <= 24) {
+      return '#f31250'; // Bright pink for warmer
+    } else {
+      return '#920504'; // Bright red for hot
+    }
+  }
+
   useEffect(() => {
     window.loadedAPI = loading;
     window.dispatchEvent(new Event('dataloaded'));
@@ -83,31 +105,61 @@ export default function MapComponent() {
           });
 
 
-          function getTemperatureColor(temp) {
-            if (temp <= 0) {
-              return '#634760'; // Bright purple for freezing
-            } else if (temp <= 7) {
-              return '#12a8a8'; // Bright cyan for cold
-            } else if (temp <= 11) {
-              return '#7cdd06'; // Bright lime green for cool
-            } else if (temp <= 16) {
-              return '#fcfd0b'; // Bright yellow for mild
-            } else if (temp <= 20) {
-              return '#f78e24'; // Bright orange for warm
-            } else if (temp <= 24) {
-              return '#f31250'; // Bright pink for warmer
-            } else {
-              return '#920504'; // Bright red for hot
-            }
-          }
+        // Function to add markers from data
+        function addMarkers(items) {
+          items.forEach((item, i) => {
+            const lon = item.lng || item.Longitude;
+            const lat = item.lat || item.Latitude;
+            const t = item.temp || item.Result;
+            const name = item.siteName || item.Label;
+            const tempColor = getTemperatureColor(t);
+
+            console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
+            
+            const icon = L.divIcon({
+              className: 'custom-temp-marker',
+              html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
+              iconSize: [40,40],
+              iconAnchor: [20,20]
+            });
+
+            const marker = L.marker([lat, lon], { icon })
+                            .addTo(map)
+                            .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+
+            markersRef.current.push({ marker, tempC: t, name, lat, lon });
+          });
+        }
 
         // Function to add water temperature markers
         async function addLiveWaterTempMarkers() {
           try {
+            // Step 1: Check cache first and load instantly if available
+            const cache = localStorage.getItem('waterData');
+            if (cache) {
+              const cachedItems = JSON.parse(cache);
+              console.log('📦 Loading from cache:', cachedItems.length, 'items');
+              addMarkers(cachedItems);
+              setLoading(false); // Hide loading immediately
+            }
+
+            // Step 2: Fetch fresh data in background
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
             const data = await response.json();
+            
             globalBeach = data; // idk if this is a good idea but we now have a global variable to access fetched beach data
             window.dispatchEvent(new Event('dataloaded')); // Notify listeners that data has been loaded
+            
+                        
+            if (data?.items?.length) {
+              console.log('🔄 Got fresh data:', data.items.length, 'items');
+              
+              // Clear existing markers before adding new ones
+              markersRef.current.forEach(({ marker }) => {
+                map.removeLayer(marker);
+            });
+            markersRef.current = [];
+            
             console.log('Got data →', data);
             
             if (data && data.items) {
@@ -133,19 +185,26 @@ export default function MapComponent() {
                                 .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
 
                 markersRef.current.push({ marker, tempC: t, name, lat, lon });
-              });
+              
+              
+              // Add fresh markers
+              addMarkers(data.items);
+              
+              // Update cache with fresh data
+              localStorage.setItem('waterData', JSON.stringify(data.items));
             }
+            
+            setLoading(false);
           } catch (err) {
             console.error('fetch error →', err);
-          } 
+            // If no cache was loaded and fetch failed, still hide loading
+            setLoading(false);
+          }
         }
 
         // Add water markers after map loads
-        addLiveWaterTempMarkers().finally(() => {
-          // shaaf here: this code is responsible for finish loading signal
-          setLoading(false); 
-        });
-      }
+        addLiveWaterTempMarkers();
+              }
     };
 
     initMap();
@@ -157,10 +216,15 @@ export default function MapComponent() {
         const display = unit === 'F'
           ? (tempC * 9/5 + 32).toFixed(1)
           : tempC;
-        // update icon
+        
+        // Calculate color based on the temperature in the current unit
+        const tempForColor = unit === 'F' ? (tempC * 9/5 + 32) : tempC;
+        const tempColor = getTemperatureColor(tempForColor, unit);
+        
+        // update icon with proper color
         marker.setIcon(window.L.divIcon({
           className: 'custom-temp-marker',
-          html: `<div class="temp-label">${display}°${unit}</div>`,
+          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
           iconSize: [40,40],
           iconAnchor: [20,20]
         }));
