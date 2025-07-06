@@ -69,7 +69,7 @@ This release (Sprint 2) focuses on establishing the core functionality of the ap
 * App must respond to user actions (e.g., search, toggle) within 500ms.
 * Web application must be functional across modern browsers (Chrome, Firefox, Safari).
 * Codebase should follow modular and maintainable structure using React and Next.js.
-* Deployment must use version-controlled environment with GitHub and Vercel (or equivalent).
+* Deployment must use version-controlled environment with GitHub.
 
 #### **Dependencies and Limitations**
 
