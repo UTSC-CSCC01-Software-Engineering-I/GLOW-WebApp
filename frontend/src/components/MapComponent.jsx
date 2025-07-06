@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 
+let globalBeach = null;
+
 export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -143,6 +145,7 @@ export default function MapComponent() {
             if (isCacheValid) {
               const cachedItems = JSON.parse(cache);
               console.log('📦 Loading from cache:', cachedItems.length, 'items (age:', Math.round((Date.now() - parseInt(cacheTimestamp)) / 1000), 'seconds)');
+
               
               // Set global variable immediately for HUDleftPoints
               globalBeach = { items: cachedItems };
@@ -190,6 +193,7 @@ export default function MapComponent() {
               }
             } else {
               console.log('✅ Using cached data, no fetch needed');
+
             }
             
             setLoading(false);
@@ -202,7 +206,7 @@ export default function MapComponent() {
 
         // Add water markers after map loads
         addLiveWaterTempMarkers();
-              }
+      }
     };
 
     initMap();
@@ -410,3 +414,5 @@ export default function MapComponent() {
     </div>
   );
 }
+
+export { globalBeach }
