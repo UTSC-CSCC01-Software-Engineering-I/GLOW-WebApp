@@ -136,9 +136,16 @@ export default function MapComponent() {
           try {
             // Step 1: Check cache first and load instantly if available
             const cache = localStorage.getItem('waterData');
-            if (cache) {
+            const cacheTimestamp = localStorage.getItem('waterDataTimestamp');
+            const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+            
+            const isCacheValid = cache && cacheTimestamp && 
+              (Date.now() - parseInt(cacheTimestamp)) < CACHE_DURATION;
+            
+            if (isCacheValid) {
               const cachedItems = JSON.parse(cache);
-              console.log('📦 Loading from cache:', cachedItems.length, 'items');
+              console.log('📦 Loading from cache:', cachedItems.length, 'items (age:', Math.round((Date.now() - parseInt(cacheTimestamp)) / 1000), 'seconds)');
+
               
               // Set global variable immediately for HUDleftPoints
               globalBeach = { items: cachedItems };
@@ -148,32 +155,45 @@ export default function MapComponent() {
               
               addMarkers(cachedItems);
               setLoading(false); // Hide loading immediately
+            } else if (cache) {
+              console.log('📦 Cache expired, loading old data while fetching fresh...');
+              const cachedItems = JSON.parse(cache);
+              globalBeach = { items: cachedItems };
+              addMarkers(cachedItems);
+              setLoading(false);
             }
 
-            // Step 2: Fetch fresh data in background
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
-            const data = await response.json();
-            
-            globalBeach = data; // Set global variable
-            console.log('Got data →', data);
-                        
-            if (data?.items?.length) {
-              console.log('🔄 Got fresh data:', data.items.length, 'items');
+            // Step 2: Fetch fresh data in background (always fetch if cache is expired or missing)
+            if (!isCacheValid) {
+              console.log('🔄 Fetching fresh data...');
+              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
+              const data = await response.json();
               
-              // Clear existing markers before adding new ones
-              markersRef.current.forEach(({ marker }) => {
-                map.removeLayer(marker);
-              });
-              markersRef.current = [];
-              
-              // Add fresh markers
-              addMarkers(data.items);
-              
-              // Update cache with fresh data
-              localStorage.setItem('waterData', JSON.stringify(data.items));
-              
-              // Notify listeners that data has been loaded AFTER markers are added
-              window.dispatchEvent(new Event('dataloaded'));
+              globalBeach = data; // Set global variable
+              console.log('Got fresh data →', data);
+                          
+              if (data?.items?.length) {
+                console.log('✅ Got fresh data:', data.items.length, 'items');
+                
+                // Clear existing markers before adding new ones
+                markersRef.current.forEach(({ marker }) => {
+                  map.removeLayer(marker);
+                });
+                markersRef.current = [];
+                
+                // Add fresh markers
+                addMarkers(data.items);
+                
+                // Update cache with fresh data and timestamp
+                localStorage.setItem('waterData', JSON.stringify(data.items));
+                localStorage.setItem('waterDataTimestamp', Date.now().toString());
+                
+                // Notify listeners that data has been loaded AFTER markers are added
+                window.dispatchEvent(new Event('dataloaded'));
+              }
+            } else {
+              console.log('✅ Using cached data, no fetch needed');
+
             }
             
             setLoading(false);
