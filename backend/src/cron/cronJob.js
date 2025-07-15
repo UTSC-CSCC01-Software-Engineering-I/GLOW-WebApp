@@ -1,8 +1,8 @@
 const cron = require('node-cron');
 const APIPoint = require('../models/APIPoint'); // Import your Mongoose model
 
-// Schedule a task to run every 30 minutes
-cron.schedule('0 */2 * * *', async () => {
+// Schedule a task to run every 6 hours
+cron.schedule('0 */6 * * *', async () => {
   console.log('⏰ Running periodic API call...');
 
   try {
@@ -64,9 +64,9 @@ cron.schedule('0 */2 * * *', async () => {
     for (const item of uniqueItems) {
       const { siteName, lng, lat, temp, timestamp } = item;
 
-      // Check if the last saved data point for this site is at least 20 hours old
+      // Check if the last saved data point for this site is at least 6 hours old
       const lastEntry = await APIPoint.findOne({ beachName: siteName }).sort({ timestamp: -1 }); // Use beachName instead of siteName
-      if (!lastEntry || new Date(timestamp) - new Date(lastEntry.timestamp) >= 2 * 60 * 60 * 1000) {
+      if (!lastEntry || new Date(timestamp) - new Date(lastEntry.timestamp) >= 6 * 60 * 60 * 1000) {
         const newEntry = new APIPoint({
           beachName: siteName, // Map siteName to beachName
           lng,
