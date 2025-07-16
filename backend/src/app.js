@@ -18,6 +18,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize cron jobs
+require('./cron/cronJob'); // Start periodic tasks
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', require('./routes/waterDataRoute'));
