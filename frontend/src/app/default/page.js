@@ -49,7 +49,7 @@ export default function Hello() {
             </div>
             <div className="flex items-center">
               <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
-              <span className="text-gray-700">Backend: Express.js configured for port 5000</span>
+              <span className="text-gray-700">Backend: Express.js configured for port 500</span>
             </div>
             <div className="flex items-center">
               <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>

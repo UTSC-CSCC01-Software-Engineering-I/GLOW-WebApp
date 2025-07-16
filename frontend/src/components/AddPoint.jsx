@@ -6,7 +6,6 @@ export default function AddPoint() {
   const [lat, setLat] = useState('');
   const [lon, setLon] = useState('');
   const [temp, setTemp] = useState('');
-  const [label, setLabel] = useState('');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [theme, setTheme] = useState('dark');
@@ -19,7 +18,6 @@ export default function AddPoint() {
     const handleThemeChange = () => setTheme(window.globalTheme);
     window.addEventListener('themechange', handleThemeChange);
 
-    // Geolocation
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -40,13 +38,16 @@ export default function AddPoint() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-point`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon, temp, label }),
+        body: JSON.stringify({
+          lat: parseFloat(lat),
+          lon: parseFloat(lon),
+          temp: parseFloat(temp)
+        }),
       });
 
       if (res.ok) {
         setSuccess(true);
         setTemp('');
-        setLabel('');
       } else {
         setError('Failed to add point');
       }
@@ -113,17 +114,6 @@ export default function AddPoint() {
             type="number"
             value={temp}
             onChange={e => setTemp(e.target.value)}
-            required
-            style={inputStyle(fg, bg, border)}
-          />
-        </label>
-
-        <label>
-          Label (Location Name):
-          <input
-            type="text"
-            value={label}
-            onChange={e => setLabel(e.target.value)}
             required
             style={inputStyle(fg, bg, border)}
           />

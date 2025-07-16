@@ -1,16 +1,14 @@
-const Point = require('../models/Point');
+const Point = require('../models/pointsModel');
 
 exports.addPoint = async (req, res) => {
   try {
-    const { lat, lon, temp, label } = req.body;
+    const { lat, lon, temp } = req.body;
 
-    // Validation
-    if (!lat || !lon || !temp || !label) {
+    if (!lat || !lon || !temp) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Create and save to MongoDB
-    const newPoint = new Point({ lat, lon, temp, label });
+    const newPoint = new Point({ lat, lon, temp });
     await newPoint.save();
 
     return res.status(201).json({ message: 'Point added successfully', point: newPoint });

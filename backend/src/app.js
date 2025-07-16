@@ -11,7 +11,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // Middleware
 app.use(cors());
@@ -21,6 +21,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', require('./routes/waterDataRoute'));
+
+const pointController = require('./controllers/pointController');
+app.post('/api/add-point', pointController.addPoint);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
