@@ -108,10 +108,10 @@ export default function MapComponent() {
         // Function to add markers from data
         function addMarkers(items) {
           items.forEach((item, i) => {
-            const lon = item.lng || item.Longitude;
+            const lon = item.lng || item.lon || item.Longitude;
             const lat = item.lat || item.Latitude;
             const t = item.temp || item.Result;
-            const name = item.siteName || item.Label;
+            const name = item.siteName || item.Label || `User Point ${i + 1}`;
             const tempColor = getTemperatureColor(t);
 
             console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
@@ -166,14 +166,37 @@ export default function MapComponent() {
             // Step 2: Fetch fresh data in background (always fetch if cache is expired or missing)
             if (!isCacheValid) {
               console.log('🔄 Fetching fresh data...');
-              const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`);
-              const data = await response.json();
-              
-              globalBeach = data; // Set global variable
-              console.log('Got fresh data →', data);
+              let officialData = { items: [] }, userData = { items: [] };
+
+              try {
+                const [officialRes, userRes] = await Promise.all([
+                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`),
+                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/userpoints`)
+                ]);
+
+                if (officialRes.ok) {
+                  officialData = await officialRes.json();
+                } else {
+                  console.warn('❌ Failed /water-data:', officialRes.statusText);
+                }
+
+                if (userRes.ok) {
+                  userData = await userRes.json();
+                } else {
+                  console.warn('❌ Failed /userpoints:', userRes.statusText);
+                }
+              } catch (err) {
+                console.error('Network error:', err);
+              }
+
+                
+              const combined = [...(officialData.items || []), ...(userData.items || [])];
+              globalBeach = { items: combined };
+              console.log('Got fresh data →', combined);
+
                           
-              if (data?.items?.length) {
-                console.log('✅ Got fresh data:', data.items.length, 'items');
+              if (combined.length) {
+                console.log('✅ Got fresh data:',combined.length, 'items');
                 
                 // Clear existing markers before adding new ones
                 markersRef.current.forEach(({ marker }) => {
@@ -182,10 +205,10 @@ export default function MapComponent() {
                 markersRef.current = [];
                 
                 // Add fresh markers
-                addMarkers(data.items);
+                addMarkers(combined);
                 
                 // Update cache with fresh data and timestamp
-                localStorage.setItem('waterData', JSON.stringify(data.items));
+                localStorage.setItem('waterData', JSON.stringify(combined));
                 localStorage.setItem('waterDataTimestamp', Date.now().toString());
                 
                 // Notify listeners that data has been loaded AFTER markers are added

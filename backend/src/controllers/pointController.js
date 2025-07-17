@@ -17,3 +17,20 @@ exports.addPoint = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getPoints = async (req, res) => {
+  try {
+    const points = await Point.find({});
+
+    // Tag each point with `source: 'user'`
+    const withSource = points.map(p => ({
+      ...p.toObject(),
+      source: 'user'
+    }));
+
+    return res.json({ items: withSource });
+  } catch (err) {
+    console.error('Error fetching user points:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
