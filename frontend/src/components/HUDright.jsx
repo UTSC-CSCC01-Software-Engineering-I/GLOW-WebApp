@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import '../styles/homepage.css';
+
 
 function MenuBlock({ theme }) {
   
   return (
     <div className='top-right-hud'>
-    <div style={{ backgroundColor: theme === 'dark' ? 'white': 'black', width: '13rem', height: '3rem', top: '1rem',
-      right: '1rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
-      alignItems: 'center', justifyContent: 'right', paddingRight: '1rem', flexDirection: 'row-reverse'}}>
+    <div className='menu' style={{ backgroundColor: theme === 'dark' ? 'white': 'black' }}>
         <h1 style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'sans-serif', fontWeight: '900', 
           fontSize: '1.5rem', transform: 'rotate(90deg)'
         }}>|||</h1>

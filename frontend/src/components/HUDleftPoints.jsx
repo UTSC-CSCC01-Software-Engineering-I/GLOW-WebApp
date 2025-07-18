@@ -56,7 +56,7 @@ function LogoBlock() {
   return (
   
     <div className='top-left-hud'>
-    <div style={{ backgroundColor: theme === 'light' ? 'rgb(255 255 255 / 48%)': 'rgb(0 0 0 / 38%)', width: '18rem', height: '80vh', top: '4.5rem',
+    <div style={{ backgroundColor: theme === 'light' ? 'rgb(255 255 255 / 48%)': 'rgb(0 0 0 / 38%)', width: '18rem', height: '70vh', top: '7.5rem',
       left: '1rem', position: 'fixed', borderRadius: '0.6rem', 
       display: 'flex', padding: '1rem 0.5rem 1rem 1rem ', flexDirection: 'column', justifyContent: 'flex-start',
       overflow: 'hidden', scrollBehavior: 'smooth', overflowY: 'scroll', backdropFilter: 'blur(3px)'}}>

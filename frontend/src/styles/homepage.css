@@ -1,0 +1,35 @@
+.menu {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        border-radius: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-right: 1rem;
+        flex-direction: row-reverse;
+    }
+
+
+/* DESKTOP lol hello there TA, I like this course and my name is def not shaaf */
+@media (max-width: 568px) {
+    .desktop {
+        display: none;
+    }
+    .menu {
+        width: 3.5rem;
+        height: 3rem;
+    }
+
+    
+
+}
+
+/* Mobile side */
+@media (min-width: 568px) {
+    .menu {
+        width: 13rem;
+        height: 3rem;
+    }
+    
+}

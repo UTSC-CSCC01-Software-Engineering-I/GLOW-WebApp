@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
+import '../styles/homepage.css';
 
 let globalBeach = null;
 
@@ -321,24 +322,24 @@ export default function MapComponent() {
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
+      <div 
         style={{
           position: 'absolute',
-          top: '10px',
-          left: 0,
+          top: '74px',
+          left: '17px',
           width: '100%',
           display: 'flex',
-          justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 10000
         }}
       >
-        <div style={{ position: 'relative' }}>
+        <div className='desktop' style={{ position: 'relative' }}>
           <input
             type="text"
             value={searchTerm}
             onChange={handleInputChange}
             onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
             placeholder="Search beach..."
+            
             style={{
               padding: '5px',
               width: '200px',
@@ -387,7 +388,7 @@ export default function MapComponent() {
            </ul>
          )}
         </div>
-        <button
+        <button className='desktop'
           onClick={handleSearch}
           style={{
             marginLeft: '0',
