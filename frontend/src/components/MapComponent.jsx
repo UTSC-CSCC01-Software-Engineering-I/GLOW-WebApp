@@ -181,7 +181,13 @@ export default function MapComponent() {
               }
 
               const labels = historicalData.map((d) => new Date(d.timestamp).toLocaleDateString());
-              const temperatures = historicalData.map((d) => d.temp);
+              let temperatures = historicalData.map((d) => d.temp);
+
+              // Check the current temperature unit and convert if necessary
+              const currentUnit = window.temperatureUnit || 'C';
+              if (currentUnit === 'F') {
+                temperatures = temperatures.map((temp) => (temp * 9) / 5 + 32); // Convert to Fahrenheit
+              }
 
               const graphContainer = document.createElement('div');
               graphContainer.style.width = '300px';
@@ -192,13 +198,13 @@ export default function MapComponent() {
 
               marker.bindPopup(graphContainer).openPopup();
 
-              new Chart(canvas, {
+              const chart = new Chart(canvas, {
                 type: 'line',
                 data: {
                   labels,
                   datasets: [
                     {
-                      label: 'Temperature (°C)',
+                      label: `Temperature (°${currentUnit})`,
                       data: temperatures,
                       borderColor: 'rgba(75, 192, 192, 1)',
                       backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -228,12 +234,15 @@ export default function MapComponent() {
                     y: {
                       title: {
                         display: true,
-                        text: 'Temperature (°C)',
+                        text: `Temperature (°${currentUnit})`,
                       },
                     },
                   },
                 },
               });
+
+              // Store the chart instance for dynamic updates
+              marker.chartInstance = chart;
             });
 
             markersRef.current.push({ marker, tempC: t, name, lat, lon });
@@ -323,31 +332,99 @@ export default function MapComponent() {
     // Listen for unit toggles
     const onUnitChange = () => {
       const unit = window.temperatureUnit || 'C';
+
       markersRef.current.forEach(({ marker, tempC, name }) => {
+        // Convert the original tempC value to the desired unit
         const display = unit === 'F'
-          ? (tempC * 9/5 + 32).toFixed(1)
+          ? ((tempC * 9 / 5) + 32).toFixed(1)
           : tempC;
-        
+
         // Calculate color based on the temperature in the current unit
-        const tempForColor = unit === 'F' ? (tempC * 9/5 + 32) : tempC;
+        const tempForColor = unit === 'F' ? ((tempC * 9 / 5) + 32) : tempC;
         const tempColor = getTemperatureColor(tempForColor, unit);
-        
-        // update icon with proper color
+
+        // Update marker icon
         marker.setIcon(window.L.divIcon({
           className: 'custom-temp-marker',
           html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
-          iconSize: [40,40],
-          iconAnchor: [20,20]
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
         }));
-        // update popup
-        marker.getPopup().setContent(`<strong>${name}</strong><br/>${display}°${unit}`);
+
+        // Update the graph if it exists
+        if (marker.chartInstance) {
+          const chart = marker.chartInstance;
+
+          // Use the original tempC values for conversion
+          chart.data.datasets[0].data = historicalData.map((_, index) =>
+            unit === 'F'
+              ? ((markersRef.current[index].tempC * 9 / 5) + 32).toFixed(1)
+              : markersRef.current[index].tempC
+          );
+
+          // Update the dataset label
+          chart.data.datasets[0].label = `Temperature (°${unit})`;
+
+          // Update the y-axis label
+          if (chart.options.scales.y && chart.options.scales.y.title) {
+            chart.options.scales.y.title.text = `Temperature (°${unit})`;
+          }
+
+          // Apply the updates
+          chart.update();
+        }
       });
     };
 
+    // Add the event listener
     window.addEventListener('unitchange', onUnitChange);
+
+    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener('unitchange', onUnitChange);
       if (mapInstanceRef.current) mapInstanceRef.current.remove();
+    };
+  }, []);
+
+    useEffect(() => {
+    const onUnitChange = () => {
+      const unit = window.temperatureUnit || 'C';
+  
+      markersRef.current.forEach(({ marker, tempC, name }) => {
+        const display = unit === 'F'
+          ? (tempC * 9 / 5 + 32).toFixed(1)
+          : tempC;
+  
+        // Calculate color based on the temperature in the current unit
+        const tempForColor = unit === 'F' ? (tempC * 9 / 5 + 32) : tempC;
+        const tempColor = getTemperatureColor(tempForColor, unit);
+  
+        // Update marker icon
+        marker.setIcon(window.L.divIcon({
+          className: 'custom-temp-marker',
+          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+        }));
+  
+        // Update the graph if it exists
+        if (marker.chartInstance) {
+          const chart = marker.chartInstance;
+          chart.data.datasets[0].data = chart.data.datasets[0].data.map((temp) =>
+            unit === 'F' ? (temp * 9 / 5 + 32).toFixed(1) : ((temp - 32) * 5 / 9).toFixed(1)
+          );
+          chart.data.datasets[0].label = `Temperature (°${unit})`;
+          chart.update();
+        }
+      });
+    };
+  
+    // Add the event listener
+    window.addEventListener('unitchange', onUnitChange);
+  
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('unitchange', onUnitChange);
     };
   }, []);
 
