@@ -2,6 +2,48 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  LineController, // Import LineController
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register the required components
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  LineController, // Register LineController
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Async function to fetch historical data for a specific beach
+async function fetchHistoricalData(beachName) {
+  try {
+    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+    const response = await fetch(`${NEXT_PUBLIC_API_URL}/beach-history?beachName=${encodeURIComponent(beachName)}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch historical data');
+    }
+
+    return data.data; // Return the historical data
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    return []; // Return an empty array if there's an error
+  }
+}
 
 let globalBeach = null;
 
@@ -115,17 +157,84 @@ export default function MapComponent() {
             const tempColor = getTemperatureColor(t);
 
             console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
-            
+
             const icon = L.divIcon({
               className: 'custom-temp-marker',
               html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
-              iconSize: [40,40],
-              iconAnchor: [20,20]
+              iconSize: [40, 40],
+              iconAnchor: [20, 20],
             });
 
-            const marker = L.marker([lat, lon], { icon })
-                            .addTo(map)
-                            .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+            const marker = L.marker([lat, lon], { icon }).addTo(map);
+
+            marker.on('click', async () => {
+              const historicalData = await fetchHistoricalData(name);
+
+              if (historicalData.length === 0) {
+                marker.bindPopup(`<strong>${name}</strong><br/>No historical data available`).openPopup();
+                return;
+              }
+
+              if (historicalData.length < 2) {
+                marker.bindPopup(`<strong>${name}</strong><br/>Not enough data to generate a graph`).openPopup();
+                return;
+              }
+
+              const labels = historicalData.map((d) => new Date(d.timestamp).toLocaleDateString());
+              const temperatures = historicalData.map((d) => d.temp);
+
+              const graphContainer = document.createElement('div');
+              graphContainer.style.width = '300px';
+              graphContainer.style.height = '200px';
+
+              const canvas = document.createElement('canvas');
+              graphContainer.appendChild(canvas);
+
+              marker.bindPopup(graphContainer).openPopup();
+
+              new Chart(canvas, {
+                type: 'line',
+                data: {
+                  labels,
+                  datasets: [
+                    {
+                      label: 'Temperature (°C)',
+                      data: temperatures,
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      fill: true,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: `Historical Data for ${name}`,
+                    },
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    x: {
+                      title: {
+                        display: true,
+                        text: 'Date',
+                      },
+                    },
+                    y: {
+                      title: {
+                        display: true,
+                        text: 'Temperature (°C)',
+                      },
+                    },
+                  },
+                },
+              });
+            });
 
             markersRef.current.push({ marker, tempC: t, name, lat, lon });
           });
