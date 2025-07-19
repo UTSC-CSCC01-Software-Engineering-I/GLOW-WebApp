@@ -196,7 +196,7 @@
     color: rgb(143, 143, 143);
 }
 
-/* DESKTOP lol hello there TA, I like this course and my name is def not shaaf */
+/* Desktop-specific styles for responsive design */
 @media (max-width: 568px) {
     .desktop {
         display: none;
