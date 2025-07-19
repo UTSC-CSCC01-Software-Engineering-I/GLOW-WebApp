@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const waterDataRoutes = require('./routes/waterDataRoute');
 
 // Load environment variables
 dotenv.config();
@@ -23,7 +24,7 @@ require('./cron/cronJob'); // Start periodic tasks
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', require('./routes/waterDataRoute'));
+app.use('/api', waterDataRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

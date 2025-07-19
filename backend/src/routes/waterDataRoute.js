@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 
+const APIPoint = require('../models/APIPoint');
+
 router.get('/water-data', async (req, res) => {
   try {
     const API_KEY = process.env.OPENWATER_API_KEY;
@@ -71,6 +73,36 @@ router.get('/water-data', async (req, res) => {
       error: 'Failed to fetch water data',
       details: error.message 
     });
+  }
+});
+
+// GET /api/beach-history - Fetch historical temperature data for a beach
+router.get('/beach-history', async (req, res) => {
+  const { beachName } = req.query;
+
+  if (!beachName) {
+    return res.status(400).json({ message: 'Beach name is required' });
+  }
+
+  try {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const data = await APIPoint.find({
+      beachName,
+      timestamp: { $gte: oneWeekAgo },
+    })
+      .sort({ timestamp: 1 }) // Sort by oldest first
+      .select('temp timestamp'); // Only return temp and timestamp
+
+    if (data.length === 0) {
+      return res.status(404).json({ message: 'No historical data available for this beach' });
+    }
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    res.status(500).json({ message: 'Failed to fetch historical data' });
   }
 });
 

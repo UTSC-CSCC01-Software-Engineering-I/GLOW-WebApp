@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+
+    "chart.js": "^4.5.0",
+
     "@tailwindcss/postcss": "^4.1.11",
+
     "leaflet": "^1.9.4",
     "next": "15.3.3",
     "react": "^18.3.1",
