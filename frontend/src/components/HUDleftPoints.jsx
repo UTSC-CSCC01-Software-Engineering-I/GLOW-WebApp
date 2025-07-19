@@ -70,12 +70,16 @@ function LogoBlock() {
     }
     
     const lower = value.toLowerCase();
-    const allNames = locaList.map(item => item.siteName);
-    const filtered = allNames.filter(name => name.toLowerCase().includes(lower));
+
+    // make sure siteName is never undefined here:
+    const allNames = locaList.map(item => item.siteName || '');
+    const filtered = allNames.filter(name =>
+      name.toLowerCase().includes(lower)
+    );
   
     // Filter the displayed list
-    const filteredItems = locaList.filter(item => 
-      item.siteName.toLowerCase().includes(lower)
+    const filteredItems = locaList.filter(item =>
+      (item.siteName || '').toLowerCase().includes(lower)
     );
     setFilteredList(filteredItems);
   };
