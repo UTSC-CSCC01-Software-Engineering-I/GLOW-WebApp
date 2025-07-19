@@ -177,8 +177,7 @@ function LogoBlock() {
         {/* Scrollable beaches container */}
         <div style={{
           flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
+          overflowY: 'scroll',
           WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
           scrollbarWidth: 'none', // Firefox
           msOverflowStyle: 'none', // IE/Edge
@@ -214,7 +213,6 @@ function LogoBlock() {
             transform: 'translateY(0)',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
           e.currentTarget.style.boxShadow = theme === 'light' 
             ? '0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08)' 
             : '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)';

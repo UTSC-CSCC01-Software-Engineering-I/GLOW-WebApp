@@ -25,7 +25,7 @@
 }
 
 .boxwithpoints {
-    width: 18rem;
+    width: 17rem;
     height: 80vh;
     top: 4.5rem;
     left: 1rem;
@@ -208,7 +208,7 @@
         z-index: 2000;
     }
     .boxwithpoints {
-        width: 100%;
+        width: 90%;
         height: 70vh;
         top: 60%;
         left: 0;
