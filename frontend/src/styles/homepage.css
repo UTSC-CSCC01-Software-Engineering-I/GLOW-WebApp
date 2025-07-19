@@ -6,10 +6,195 @@
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        padding-right: 1rem;
+        
         flex-direction: row-reverse;
     }
 
+.AppLogoBlock{
+    width: 18rem;
+    height: 3rem;
+    top: 1rem;
+    left: 1rem;
+    position: fixed;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding-left: 1rem;
+    backdrop-filter: blur(10px);
+}
+
+.boxwithpoints {
+    width: 18rem;
+    height: 80vh;
+    top: 4.5rem;
+    left: 1rem;
+    position: fixed;
+    border-radius: 1rem;
+    display: flex;
+    padding: 1.5rem 1rem;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+}
+
+.menubutton {
+    border-color: transparent;
+    border-width: 0;
+    background-color: transparent;
+    transform: rotate(90deg);
+    font-weight: 900;
+    font-size: 1.3rem;
+}
+.menubutton:hover{
+    cursor: pointer;
+    color: rgb(143, 143, 143);
+}
+
+/* Full Screen Menu Styles */
+.fullscreen-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.fullscreen-menu-content {
+    backdrop-filter: blur(20px);
+    border-radius: 1.5rem;
+    margin: 1rem;
+    padding: 3rem 2rem;
+    min-width: 400px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+    .fullscreen-menu-content {
+        background-color: rgba(0, 0, 0, 0.95);
+    }
+}
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .menu-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+.close-button:hover {
+    transform: scale(1.1);
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.menu-item {
+    width: 100%;
+}
+
+.menu-action-button {
+    width: 100%;
+    padding: 1.25rem 2rem;
+    border: none;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transition: all 0.2s ease;
+}
+
+.menu-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.menu-action-button:active {
+    transform: translateY(0);
+}
+
+.menu-footer {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .menu-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .fullscreen-menu-content {
+        min-width: unset;
+        width: 95%;
+        padding: 1rem 1.5rem;
+    }
+    
+    .menu-action-button {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+.menubutton:hover{
+    cursor: pointer;
+    color: rgb(143, 143, 143);
+}
 
 /* DESKTOP lol hello there TA, I like this course and my name is def not shaaf */
 @media (max-width: 568px) {
@@ -17,19 +202,54 @@
         display: none;
     }
     .menu {
-        width: 3.5rem;
+        width: 3rem;
         height: 3rem;
+        justify-content: center;
+        z-index: 2000;
     }
-
-    
-
+    .boxwithpoints {
+        width: 100%;
+        height: 70vh;
+        top: 60%;
+        left: 0;
+        position: fixed;
+        border-radius: 2rem;
+        display: flex;
+        padding: 0;
+        padding-top: 2rem;
+        padding-left: 5%;
+        padding-right: 5%;
+        flex-direction: column;
+        justify-content: flex-start;
+        overflow: hidden;
+        overflow-y: auto;
+        scroll-behavior: smooth;
+        backdrop-filter: blur(20px);
+        transition: all 0.3s ease;
+    }
+    .AppLogoBlock{
+        width: 85%;
+        height: 3rem;
+        top: 1rem;
+        left: 1rem;
+        position: fixed;
+        border-radius: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: left;
+        padding-left: 1rem;
+        backdrop-filter: blur(10px);
+        background-color: transparent;
+        z-index: 1000;
+    }
 }
 
 /* Mobile side */
 @media (min-width: 568px) {
     .menu {
-        width: 13rem;
+        width: 12rem;
         height: 3rem;
+        padding-right: 1rem;
     }
     
 }
