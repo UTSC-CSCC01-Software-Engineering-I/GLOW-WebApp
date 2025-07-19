@@ -212,11 +212,13 @@ function LogoBlock() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowSortMenu(v => !v)}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#fff' : '#333'}
               style={{
                 padding: '0.5rem',
                 borderRadius: '0.25rem',
                 border: '1px solid rgba(0,0,0,0.1)',
-                backgroundColor: theme === 'light' ? '#f0f0f0' : '#333',
+                backgroundColor: theme === 'light' ? '#fff' : '#333',
                 color: theme === 'light' ? '#000' : '#fff',
                 cursor: 'pointer'
               }}
@@ -227,14 +229,17 @@ function LogoBlock() {
                 position: 'absolute',
                 top: '100%',
                 right: 0,
-                backgroundColor: theme === 'light' ? '#fff' : '#222',
+                backgroundColor: theme === 'light' ? '#fff' : '#333',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                color: theme === 'light' ? '#000' : '#fff',
                 borderRadius: '0.25rem',
                 overflow: 'hidden',
                 zIndex: 10
               }}>
                 <button
                   onClick={handleSortAsc}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                   style={{
                     display: 'block',
                     width: '100%',
@@ -249,6 +254,8 @@ function LogoBlock() {
                 </button>
                 <button
                   onClick={handleSortDesc}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                   style={{
                     display: 'block',
                     width: '100%',
@@ -263,6 +270,8 @@ function LogoBlock() {
                 </button>
                 <button
                   onClick={handleSortReset}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                   style={{
                     display: 'block',
                     width: '100%',
