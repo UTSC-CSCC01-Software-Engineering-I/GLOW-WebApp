@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-
+import '../styles/homepage.css';
 
 
 function LogoBlock() {
@@ -22,10 +22,8 @@ function LogoBlock() {
 
   return (
   
-  <div className='top-left-hud'>
-    <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '18rem', height: '3rem', top: '1rem',
-      left: '1rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
-      alignItems: 'center', justifyContent: 'left', paddingLeft: '1rem'}}>
+  <div >
+    <div className='AppLogoBlock' style={{ }}>
         <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'inter', fontWeight: '900', 
           fontSize: '1.5rem'
         }}>GLOW</h1>
