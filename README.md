@@ -1,6 +1,12 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/RwYFkG2A)
 # GLOW by Microsofties
 
+## Updated Mobile + Desktop UI
+<video width="600" controls>
+  <source src="doc/readme1.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ### List Data
 ![WhatsApp Image 2025-07-05 at 02 55 35_83685e48](https://github.com/user-attachments/assets/9b06bec6-53a8-48f1-967e-a847fe7096f1)
 

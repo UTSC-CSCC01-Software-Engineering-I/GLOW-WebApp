@@ -2,6 +2,10 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
+import '../styles/homepage.css'; // Shaafs code
+
+
+// Pranavs Code
 import {
   Chart,
   CategoryScale,
@@ -44,15 +48,15 @@ async function fetchHistoricalData(beachName) {
     return []; // Return an empty array if there's an error
   }
 }
+// Till here
+
+
 
 let globalBeach = null;
 
 export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
@@ -479,117 +483,16 @@ export default function MapComponent() {
     }
   }
 
-  // Autofill suggestions logic
-  function handleInputChange(e) {
-    const value = e.target.value;
-    setSearchTerm(value);
-    if (value.length === 0) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    const lower = value.toLowerCase();
-    const allNames = markersRef.current.map(m => m.name);
-    const filtered = allNames.filter(name => name.toLowerCase().includes(lower));
-    setSuggestions(filtered.slice(0, 6)); // limit to 6 suggestions
-    setShowSuggestions(true);
-  }
-
-  function handleSuggestionClick(name) {
-    setSearchTerm(name);
-    setShowSuggestions(false);
-    handleSearch(name);
-  }
-
-  function handleInputBlur() {
-    setTimeout(() => setShowSuggestions(false), 100); // allow click
-  }
+  // Expose search function globally for other components
+  useEffect(() => {
+    window.handleMapSearch = handleSearch;
+    return () => {
+      window.handleMapSearch = null;
+    };
+  }, []);
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
-        style={{
-          position: 'absolute',
-          top: '10px',
-          left: 0,
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}
-      >
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
-            placeholder="Search beach..."
-            style={{
-              padding: '5px',
-              width: '200px',
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: '4px 0 0 4px',
-              outline: 'none',
-              color: '#000',
-              '::placeholder': { color: '#000' }
-            }}
-            onFocus={() => { if (searchTerm) setShowSuggestions(true); }}
-            onBlur={handleInputBlur}
-          />
-         {showSuggestions && suggestions.length > 0 && (
-           <ul style={{
-             position: 'absolute',
-             top: '36px',
-             left: 0,
-             width: '100%',
-             background: '#fff',
-             border: '1px solid #ccc',
-             borderRadius: '4px 0 0 4px',
-             color: '#000',
-             borderTop: 'none',
-             maxHeight: '180px',
-             overflowY: 'auto',
-             margin: 0,
-             padding: 0,
-             listStyle: 'none',
-             zIndex: 2000
-           }}>
-             {suggestions.map((name, idx) => (
-               <li
-                 key={name + idx}
-                 onMouseDown={() => handleSuggestionClick(name)}
-                 style={{
-                   padding: '6px 10px',
-                   cursor: 'pointer',
-                   background: name === searchTerm ? '#eee' : '#fff',
-                   borderBottom: idx !== suggestions.length - 1 ? '1px solid #eee' : 'none'
-                 }}
-               >
-                 {name}
-               </li>
-             ))}
-           </ul>
-         )}
-        </div>
-        <button
-          onClick={handleSearch}
-          style={{
-            marginLeft: '0',
-            padding: '5px 16px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            background: '#000',
-            color: '#fff',
-            border: '1px solid #000',
-            borderRadius: '0 4px 4px 0',
-            outline: 'none',
-          }}
-        >
-          Search
-        </button>
-      </div>
       <div
         ref={mapRef}
         style={{
