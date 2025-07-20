@@ -15,7 +15,8 @@ function LogoBlock() {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredList, setFilteredList] = useState([]);
-
+  const [sortOrder, setSortOrder] = useState(null);
+  const [showSortMenu, setShowSortMenu] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.globalTheme){
@@ -58,6 +59,32 @@ function LogoBlock() {
     
     return () => window.removeEventListener('dataloaded', handleDataLoaded);
   }, []);
+
+  // Sort functionality
+  useEffect(() => {
+    if (!sortOrder) return;
+    setFilteredList(list =>
+      [...list].sort((a, b) =>
+        sortOrder === 'asc'
+          ? a.temp - b.temp
+          : b.temp - a.temp
+      )
+    );
+  }, [sortOrder]);
+
+  const handleSortAsc = () => {
+    setSortOrder('asc');
+    setShowSortMenu(false);
+  };
+  const handleSortDesc = () => {
+    setSortOrder('desc');
+    setShowSortMenu(false);
+  };
+  const handleSortReset = () => {
+    setSortOrder(null);
+    setFilteredList(locaList);
+    setShowSortMenu(false);
+  };
 
   // Search functionality
   const handleInputChange = (e) => {
@@ -120,64 +147,148 @@ function LogoBlock() {
           flexShrink: 0
         }}>Beaches</h1>
         
-        {/* Search Bar */}
-        <div style={{ 
-          position: 'relative', 
-          marginBottom: '1.5rem',
+        {/* Search + Sort Row */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '1rem',
           flexShrink: 0
         }}>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            onFocus={() => { if (searchTerm) setShowSuggestions(true); }}
-            placeholder="Search beaches..."
-            style={{
-              width: '100%',
-              padding: '0.75rem 2.5rem 0.75rem 1rem',
-              borderRadius: '0.5rem',
-              border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-              backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              fontSize: '0.9rem',
-              outline: 'none',
-              backdropFilter: 'blur(10px)',
-              boxSizing: 'border-box'
-            }}
-          />
-          
-          {/* Clear/Search Icon */}
-          {searchTerm ? (
-            <button
-              onClick={clearSearch}
+          {/* Search bar */}
+          <div style={{ position: 'relative', flex: 1, marginRight: '0.5rem' }}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleInputChange}
+              placeholder="Search beaches…"
               style={{
+                width: '100%',
+                padding: '0.75rem 2.5rem 0.75rem 1rem',
+                borderRadius: '0.5rem',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                fontSize: '0.9rem',
+                outline: 'none',
+                backdropFilter: 'blur(10px)',
+                boxSizing: 'border-box'
+              }}
+            />
+            
+            {/* Clear/Search Icon */}
+            {searchTerm ? (
+              <button
+                onClick={clearSearch}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                  fontSize: '1.2rem'
+                }}
+              >
+                ✕
+              </button>
+            ) : (
+              <div style={{
                 position: 'absolute',
                 right: '0.75rem',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                fontSize: '1.2rem'
+                color: theme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                fontSize: '1rem'
+              }}>
+                🔍
+              </div>
+            )}
+          </div>
+          
+          {/* Sort dropdown trigger */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowSortMenu(v => !v)}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#fff' : '#333'}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '0.25rem',
+                border: '1px solid rgba(0,0,0,0.1)',
+                backgroundColor: theme === 'light' ? '#fff' : '#333',
+                color: theme === 'light' ? '#000' : '#fff',
+                cursor: 'pointer'
               }}
-            >
-              ✕
-            </button>
-          ) : (
-            <div style={{
-              position: 'absolute',
-              right: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: theme === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
-              fontSize: '1rem'
-            }}>
-              🔍
-            </div>
-          )}
+            >Sort</button>
+            
+            {showSortMenu && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                backgroundColor: theme === 'light' ? '#fff' : '#333',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                color: theme === 'light' ? '#000' : '#fff',
+                borderRadius: '0.25rem',
+                overflow: 'hidden',
+                zIndex: 10
+              }}>
+                <button
+                  onClick={handleSortAsc}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'left',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Temp ↑
+                </button>
+                <button
+                  onClick={handleSortDesc}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'left',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Temp ↓
+                </button>
+                <button
+                  onClick={handleSortReset}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'left',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        
+
         {/* Scrollable beaches container */}
         <div style={{
           flex: 1,
