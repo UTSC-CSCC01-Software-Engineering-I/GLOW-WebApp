@@ -2,7 +2,7 @@
 
 ## Iteration 4 - Review & Retrospect
 
- * When: Sunday, July 19th, 2025
+ * When: Sunday, July 20th, 2025
  * Where: 18 Gaslight Cres., Toronto (residence of the team members)
 
 ## Process - Reflection
@@ -15,7 +15,7 @@ List process-related (i.e. team organization) decisions that, in retrospect, tur
 
 
 #### Decisions that did not turn out as well as we hoped
-Having flexible deadlines for everyone. This led to some work getting completed very quick and some had more delay than usual.
+Letting unit test be left for later.
 
 
 #### Planned changes
@@ -36,6 +36,17 @@ Having flexible deadlines for everyone. This led to some work getting completed 
 
 *The search bar was also improved by incorporating it in the side panel. The users now get real-time feedback while searching. The users are also able to click the beaches in the sidepanel and the map zooms into the desired location.*
 
+
+### Developed full functionality of add points by user at a custom location
+<img width="425" height="425" alt="Image" src="https://github.com/user-attachments/assets/154051c6-2376-48e6-8e4f-d77ad827dc77" />
+
+* We used MongoDb to store user points and then we display them on the map.
+
+
+### Implemented sort functionality
+<img width="387" height="872" alt="Image" src="https://github.com/user-attachments/assets/f59d6a16-74a5-4681-9d6f-e4d6e3f754d7" />
+
+* Sorting is done based on the water temperature.
 
 #### Goals and/or tasks that were planned but not met/completed:
 
