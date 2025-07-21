@@ -3,7 +3,7 @@
 ### **Release Name:** Sprint 3
 
 ### **Release Objectives**
-Goal of the sprint 3 is to implement mobile interface, data integration for the GLOW web application and improving the UI, while adding more user friendly features.
+Goal of the sprint 3 is to implement mobile interface, data integration for the GLOW web application and improving the UI, while adding more user friendly features. We also added unit tests that can be seen in the branch feat/unit-test.
 
 #### SMART goals
 * **Implemented a sort function**  
