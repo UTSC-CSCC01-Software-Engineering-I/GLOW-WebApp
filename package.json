@@ -7,11 +7,42 @@
     "tailwind": "^2.3.1"
   },
   "scripts": {
-    "postinstall": "flowbite-react patch && flowbite-react register"
+    "postinstall": "flowbite-react patch && flowbite-react register",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:backend": "jest backend/",
+    "test:frontend": "jest frontend/"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/user-event": "^14.4.3"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/frontend/src/setupTests.js"],
+    "moduleNameMapping": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    },
+    "collectCoverageFrom": [
+      "backend/src/**/*.js",
+      "frontend/src/**/*.{js,jsx}",
+      "!**/node_modules/**",
+      "!**/coverage/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
   }
 }
