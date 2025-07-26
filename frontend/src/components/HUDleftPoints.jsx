@@ -134,7 +134,7 @@ function LogoBlock() {
       boxShadow: theme === 'light' ? '0 8px 32px rgba(0, 0, 0, 0.1)' : '0 8px 32px rgba(0, 0, 0, 0.3)',
       display: 'flex',
       flexDirection: 'column',
-      maxHeight: window.innerWidth <= 768 ? '80vh' : 'auto',
+      // maxHeight: window.innerWidth <= 768 ? '80vh' : 'auto', // Adrit: commented this out coz it was raising error where window is not defined
       overflow: 'hidden'
     }}>
         <h1 style={{ 
@@ -307,82 +307,123 @@ function LogoBlock() {
             `
           }} />
         {filteredList.map((item, index) => (
-          <div 
-          key={index}
-          onClick={() => handleBeachClick(item)}
-          className="beach-item-hover"
-          style={{ 
-            cursor: 'pointer',
-            backdropFilter: 'blur(10px)', 
-            backgroundColor: theme === 'dark' ? 'rgba(25, 25, 25, 0.8)': 'rgba(255, 255, 255, 0.6)',
-            borderRadius: '0.75rem', 
-            padding: '1rem', 
-            marginBottom: '0.75rem', 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            border: theme === 'light' ? '1px solid rgba(255, 255, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: theme === 'light' ? '0 2px 12px rgba(0, 0, 0, 0.05)' : '0 2px 12px rgba(0, 0, 0, 0.2)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            cursor: 'pointer',
-            transform: 'translateY(0)',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.boxShadow = theme === 'light' 
-            ? '0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08)' 
-            : '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)';
-          e.currentTarget.style.backgroundColor = theme === 'dark' 
-            ? 'rgba(35, 35, 35, 0.9)' 
-            : 'rgba(255, 255, 255, 0.8)';
-          e.currentTarget.style.border = theme === 'light' 
-            ? '1px solid rgba(255, 255, 255, 0.6)' 
-            : '1px solid rgba(255, 255, 255, 0.15)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0) scale(1)';
-          e.currentTarget.style.boxShadow = theme === 'light' 
-            ? '0 2px 12px rgba(0, 0, 0, 0.05)' 
-            : '0 2px 12px rgba(0, 0, 0, 0.2)';
-          e.currentTarget.style.backgroundColor = theme === 'dark' 
-            ? 'rgba(25, 25, 25, 0.8)' 
-            : 'rgba(255, 255, 255, 0.6)';
-          e.currentTarget.style.border = theme === 'light' 
-            ? '1px solid rgba(255, 255, 255, 0.4)' 
-            : '1px solid rgba(255, 255, 255, 0.08)';
-        }}>
-          <h2 style={{ 
-            width: '60%', 
-            fontWeight: '500', 
-            fontSize: '1rem',
-            color: theme === 'dark' ? 'rgb(240, 240, 240)': 'rgb(60, 60, 60)',
-            margin: '0',
-            lineHeight: '1.4',
-            transition: 'color 0.3s ease'
-          }}>{item.siteName}</h2>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'flex-end', 
-            alignItems: 'baseline',
-            gap: '0.25rem'
-          }}>
-            <h2 style={{ 
-              fontSize:'2.25rem', 
-              fontWeight: '700', 
-              color: theme === 'dark' ? 'rgb(255, 255, 255)': 'rgb(30, 30, 30)',
-              margin: '0',
-              lineHeight: '1',
-              transition: 'all 0.3s ease'
-            }}>{item.temp}</h2>
-            <h3 style={{ 
-              fontSize:'1rem', 
-              fontWeight: '500', 
-              color: theme === 'dark' ? 'rgb(200, 200, 200)': 'rgb(100, 100, 100)',
-              margin: '0',
-              transition: 'color 0.3s ease'
-            }}>°C</h3>
+          <div
+            key={index}
+            onClick={() => handleBeachClick(item)}
+            className="beach-item-hover"
+            style={{
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)',
+              backgroundColor: theme === 'dark' 
+                ? 'rgba(25, 25, 25, 0.8)' 
+                : 'rgba(255, 255, 255, 0.6)',
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              marginBottom: '0.75rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              border: theme === 'light'
+                ? '1px solid rgba(255,255,255,0.4)'
+                : '1px solid rgba(255,255,255,0.08)',
+              boxShadow: theme === 'light'
+                ? '0 2px 12px rgba(0,0,0,0.05)'
+                : '0 2px 12px rgba(0,0,0,0.2)',
+              transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = theme === 'light' 
+                ? '0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08)' 
+                : '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)';
+              e.currentTarget.style.backgroundColor = theme === 'dark' 
+                ? 'rgba(35, 35, 35, 0.9)' 
+                : 'rgba(255, 255, 255, 0.8)';
+              e.currentTarget.style.border = theme === 'light' 
+                ? '1px solid rgba(255, 255, 255, 0.6)' 
+                : '1px solid rgba(255, 255, 255, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)';
+              e.currentTarget.style.boxShadow = theme === 'light' 
+                ? '0 2px 12px rgba(0, 0, 0, 0.05)' 
+                : '0 2px 12px rgba(0, 0, 0, 0.2)';
+              e.currentTarget.style.backgroundColor = theme === 'dark' 
+                ? 'rgba(25, 25, 25, 0.8)' 
+                : 'rgba(255, 255, 255, 0.6)';
+              e.currentTarget.style.border = theme === 'light' 
+                ? '1px solid rgba(255, 255, 255, 0.4)' 
+                : '1px solid rgba(255, 255, 255, 0.08)';
+            }}>
+            {/* left column: name + timestamp */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.25rem',
+              flex: 1
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontWeight: 500,
+                fontSize: '1rem',
+                color: theme === 'dark' 
+                  ? 'rgb(240,240,240)' 
+                  : 'rgb(60,60,60)',
+                lineHeight: 1.4,
+                transition: 'color 0.3s ease'
+              }}>
+                {item.siteName}
+              </h2>
+              <p style={{
+                fontSize: '0.75rem',
+                margin: 0,
+                color: theme === 'dark'
+                  ? 'rgba(255,255,255,0.6)'
+                  : 'rgba(0,0,0,0.6)'
+              }}>
+                { item.timestamp
+                  ? new Date(
+                      // drop the "Z" so this is parsed as local midnight
+                      item.timestamp.replace(' ', 'T')
+                    ).toLocaleDateString('en-US', {
+                      day:   'numeric',
+                      month: 'short',
+                      year:  'numeric'
+                    })
+                  : '—' }
+              </p>
+            </div>
+
+            {/* right column: temperature */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '0.25rem'
+            }}>
+              <h2 style={{
+                fontSize: '2.25rem',
+                fontWeight: 700,
+                color: theme === 'dark' 
+                  ? 'rgb(255,255,255)' 
+                  : 'rgb(30,30,30)',
+                margin: 0,
+                lineHeight: 1,
+                transition: 'all 0.3s ease'
+              }}>
+                {item.temp}
+              </h2>
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: 500,
+                color: theme === 'dark' 
+                  ? 'rgb(200,200,200)' 
+                  : 'rgb(100,100,100)',
+                margin: 0,
+                transition: 'color 0.3s ease'
+              }}>
+                °C
+              </h3>
+            </div>
           </div>
-          {/* <h2 style={{ color: theme === 'light' ? 'rgb(255 255 255 / 100%)': 'rgb(0 0 0 / 100%)'}}>Location: {item.}</h2> */}
-        </div>
         ))}
         
         <div style={{ 

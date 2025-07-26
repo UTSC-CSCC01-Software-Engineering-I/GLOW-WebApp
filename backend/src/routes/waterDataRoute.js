@@ -11,10 +11,11 @@ router.get('/water-data', async (req, res) => {
     
     const CQL = `
       SELECT
-        WaterSites.Label AS siteName,
+        WaterSites.Label     AS siteName,
         WaterSites.Longitude AS lng,
         WaterSites.Latitude  AS lat,
-        Result              AS temp
+        Result               AS temp,
+        CollectionTime       AS timestamp
       FROM DataSample
       WHERE
         WaterSites.City='Toronto' 
