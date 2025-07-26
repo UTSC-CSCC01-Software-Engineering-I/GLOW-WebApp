@@ -17,6 +17,7 @@ function LogoBlock() {
   const [filteredList, setFilteredList] = useState([]);
   const [sortOrder, setSortOrder] = useState(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [unit, setUnit] = useState(window.temperatureUnit || 'C');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.globalTheme){
@@ -125,6 +126,18 @@ function LogoBlock() {
     setShowSuggestions(false);
   };
     
+  useEffect(() => {
+    const handleUnitChange = () => {
+      setUnit(window.temperatureUnit || 'C');
+    };
+    window.addEventListener('unitchange', handleUnitChange);
+    // initialize on mount
+    handleUnitChange();
+    return () => {
+      window.removeEventListener('unitchange', handleUnitChange);
+    };
+  }, []);
+
   return (
     <div 
     className='boxwithpoints'
@@ -409,7 +422,9 @@ function LogoBlock() {
                 lineHeight: 1,
                 transition: 'all 0.3s ease'
               }}>
-                {item.temp}
+                {unit === 'F'
+                  ? ((item.temp * 9/5) + 32).toFixed(1)
+                  : item.temp}
               </h2>
               <h3 style={{
                 fontSize: '1rem',
@@ -420,7 +435,7 @@ function LogoBlock() {
                 margin: 0,
                 transition: 'color 0.3s ease'
               }}>
-                °C
+                °{unit}
               </h3>
             </div>
           </div>
