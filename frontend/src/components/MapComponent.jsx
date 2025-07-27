@@ -514,6 +514,29 @@ export default function MapComponent() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleFilter = (e) => {
+      const { min, max } = e.detail;
+      markersRef.current.forEach(({ marker, tempC }) => {
+        const keep =
+          (isNaN(min) || tempC >= min) &&
+          (isNaN(max) || tempC <= max);
+
+        if (keep) {
+          // re-add if it was removed
+          marker.addTo(mapInstanceRef.current);
+        } else {
+          mapInstanceRef.current.removeLayer(marker);
+        }
+      });
+    };
+
+    window.addEventListener('filterchange', handleFilter);
+    return () => {
+      window.removeEventListener('filterchange', handleFilter);
+    };
+  }, []);
+
   return (
     <div style={{ position: 'relative' }}>
       <div
