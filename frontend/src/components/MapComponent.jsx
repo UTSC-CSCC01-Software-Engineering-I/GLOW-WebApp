@@ -61,26 +61,22 @@ export default function MapComponent() {
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
   // Temperature color function - works with both Celsius and Fahrenheit
-  function getTemperatureColor(temp, unit = 'C') {
-    // Convert to Celsius for consistent color mapping
-    const tempC = unit === 'F' ? (temp - 32) * 5/9 : temp;
-    
-    if (tempC <= 0) {
-      return '#634760'; // Bright purple for freezing
-    } else if (tempC <= 7) {
-      return '#12a8a8'; // Bright cyan for cold
-    } else if (tempC <= 11) {
-      return '#7cdd06'; // Bright lime green for cool
-    } else if (tempC <= 16) {
-      return '#fcfd0b'; // Bright yellow for mild
-    } else if (tempC <= 20) {
-      return '#f78e24'; // Bright orange for warm
-    } else if (tempC <= 24) {
-      return '#f31250'; // Bright pink for warmer
-    } else {
-      return '#920504'; // Bright red for hot
-    }
+  function getTemperatureColor(temp, unit = 'C', mode = 'light') {
+    const tempC = unit === 'F' ? (temp - 32) * 5 / 9 : parseFloat(temp);
+  
+    const min = 0;
+    const max = 30;
+    const ratio = Math.min(1, Math.max(0, (tempC - min) / (max - min)));
+  
+    const hue = 270 - ratio * 270; // purple → red
+    const saturation = 100;
+    const lightness = mode === 'dark' ? 50 : 60;
+    const alpha = 0.8; // adjust for more or less transparency
+  
+    return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
   }
+  
+  
 
   useEffect(() => {
     window.loadedAPI = loading;
@@ -538,16 +534,31 @@ export default function MapComponent() {
   }, []);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <div
-        ref={mapRef}
-        style={{
-          height: '100vh',
-          width: '100%'
-        }}
-      />
+  <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
+    {/* Map container */}
+    <div
+      ref={mapRef}
+      style={{
+        height: '100%',
+        width: '100%'
+      }}
+    />
+
+    <div className="legend">
+      <div className="legend-bar"></div>
+      <div className="legend-labels">
+        <span>30°C</span>
+        <span>20°C</span>
+        <span>10°C</span>
+        <span>0°C</span>
+      </div>
     </div>
-  );
+  </div>
+
+   
+  
+);
+  
 }
 
 export { globalBeach }
