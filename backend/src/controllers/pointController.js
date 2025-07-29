@@ -1,3 +1,4 @@
+const User = require('../models/User');
 const Point = require('../models/pointsModel');
 
 exports.addPoint = async (req, res) => {
@@ -8,10 +9,28 @@ exports.addPoint = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    const newPoint = new Point({ lat, lon, temp });
+    // Get logged-in user
+    const user = await User.findById(req.userId).select('email');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const newPoint = new Point({
+      lat,
+      lon,
+      temp,
+      user: {
+        id: user._id,
+        email: user.email
+      }
+    });
+
     await newPoint.save();
 
-    return res.status(201).json({ message: 'Point added successfully', point: newPoint });
+    return res.status(201).json({
+      message: 'Point added successfully',
+      point: newPoint
+    });
   } catch (err) {
     console.error('Error saving point:', err);
     return res.status(500).json({ message: 'Server error' });

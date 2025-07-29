@@ -34,28 +34,40 @@ export default function AddPoint() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+  
     try {
+      const token = localStorage.getItem('authToken'); // Get stored token
+  
+      if (!token) {
+        setError('You must be logged in to add a point.');
+        return;
+      }
+  
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-point`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Attach token here
+        },
         body: JSON.stringify({
           lat: parseFloat(lat),
           lon: parseFloat(lon),
           temp: parseFloat(temp)
         }),
       });
-
+  
       if (res.ok) {
         setSuccess(true);
         setTemp('');
       } else {
-        setError('Failed to add point');
+        const errorData = await res.json();
+        setError(errorData.message || 'Failed to add point');
       }
     } catch (err) {
       setError('Error connecting to server');
     }
   };
-
+  
   const isDark = theme === 'dark';
   const bg = isDark ? '#000' : '#fff';
   const fg = isDark ? '#fff' : '#000';

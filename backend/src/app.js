@@ -26,11 +26,8 @@ require('./cron/cronJob'); // Start periodic tasks
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', waterDataRoutes);
-app.use('/api', require('./routes/waterDataRoute'));
 app.use('/api', pointRoutes);
 
-const pointController = require('./controllers/pointController');
-app.post('/api/add-point', pointController.addPoint);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
