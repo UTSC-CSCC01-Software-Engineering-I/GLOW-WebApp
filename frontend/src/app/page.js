@@ -8,6 +8,7 @@ import { HUDloading } from "../components/HUDloading";
 import { HUDleftPoints } from "../components/HUDleftPoints";
 import { HUDunitToggle } from '../components/HUDunitToggle';
 import Head from "next/head"; // THis is important for importing the google fonts
+import '../styles/homepage.css';
 
 export default function Home() {
   return (
@@ -17,11 +18,18 @@ export default function Home() {
       </Head>
       <HUDright />
       <HUDadd />
-      <HUDloading />
-      <HUDlogin />
       <HUDleftPoints />
       <HUDleft />
-      <HUDunitToggle />
+      <div className="desktop">
+        <HUDloading />
+        
+        
+        <HUDlogin />
+        
+        
+        <HUDunitToggle />
+      </div>
+      
       <MapView />
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { authAPI } from '../../lib/api';
 import { useRouter } from 'next/navigation';
+import './loginform.css';
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({

@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const waterDataRoutes = require('./routes/waterDataRoute');
 const pointRoutes = require('./routes/pointRoutes');
 
 // Load environment variables
@@ -19,8 +20,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize cron jobs
+require('./cron/cronJob'); // Start periodic tasks
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', waterDataRoutes);
 app.use('/api', require('./routes/waterDataRoute'));
 app.use('/api', pointRoutes);
 

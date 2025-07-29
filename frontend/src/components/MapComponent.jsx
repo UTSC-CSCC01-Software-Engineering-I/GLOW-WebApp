@@ -2,15 +2,61 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
+import '../styles/homepage.css'; // Shaafs code
+
+
+// Pranavs Code
+import {
+  Chart,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  LineController, // Import LineController
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register the required components
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  LineController, // Register LineController
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Async function to fetch historical data for a specific beach
+async function fetchHistoricalData(beachName) {
+  try {
+    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+    const response = await fetch(`${NEXT_PUBLIC_API_URL}/beach-history?beachName=${encodeURIComponent(beachName)}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch historical data');
+    }
+
+    return data.data; // Return the historical data
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    return []; // Return an empty array if there's an error
+  }
+}
+// Till here
+
+
 
 let globalBeach = null;
 
 export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);      // ← store { marker, tempC, name }
 
@@ -115,17 +161,93 @@ export default function MapComponent() {
             const tempColor = getTemperatureColor(t);
 
             console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
-            
+
             const icon = L.divIcon({
               className: 'custom-temp-marker',
               html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
-              iconSize: [40,40],
-              iconAnchor: [20,20]
+              iconSize: [40, 40],
+              iconAnchor: [20, 20],
             });
 
-            const marker = L.marker([lat, lon], { icon })
-                            .addTo(map)
-                            .bindPopup(`<strong>${name}</strong><br/>${t}°C`);
+            const marker = L.marker([lat, lon], { icon }).addTo(map);
+
+            marker.on('click', async () => {
+              const historicalData = await fetchHistoricalData(name);
+
+              if (historicalData.length === 0) {
+                marker.bindPopup(`<strong>${name}</strong><br/>No historical data available`).openPopup();
+                return;
+              }
+
+              if (historicalData.length < 2) {
+                marker.bindPopup(`<strong>${name}</strong><br/>Not enough data to generate a graph`).openPopup();
+                return;
+              }
+
+              const labels = historicalData.map((d) => new Date(d.timestamp).toLocaleDateString());
+              let temperatures = historicalData.map((d) => d.temp);
+
+              // Check the current temperature unit and convert if necessary
+              const currentUnit = window.temperatureUnit || 'C';
+              if (currentUnit === 'F') {
+                temperatures = temperatures.map((temp) => (temp * 9) / 5 + 32); // Convert to Fahrenheit
+              }
+
+              const graphContainer = document.createElement('div');
+              graphContainer.style.width = '300px';
+              graphContainer.style.height = '200px';
+
+              const canvas = document.createElement('canvas');
+              graphContainer.appendChild(canvas);
+
+              marker.bindPopup(graphContainer).openPopup();
+
+              const chart = new Chart(canvas, {
+                type: 'line',
+                data: {
+                  labels,
+                  datasets: [
+                    {
+                      label: `Temperature (°${currentUnit})`,
+                      data: temperatures,
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      fill: true,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: `Historical Data for ${name}`,
+                    },
+                    legend: {
+                      display: false,
+                    },
+                  },
+                  scales: {
+                    x: {
+                      title: {
+                        display: true,
+                        text: 'Date',
+                      },
+                    },
+                    y: {
+                      title: {
+                        display: true,
+                        text: `Temperature (°${currentUnit})`,
+                      },
+                    },
+                  },
+                },
+              });
+
+              // Store the chart instance for dynamic updates
+              marker.chartInstance = chart;
+            });
 
             markersRef.current.push({ marker, tempC: t, name, lat, lon });
           });
@@ -237,31 +359,99 @@ export default function MapComponent() {
     // Listen for unit toggles
     const onUnitChange = () => {
       const unit = window.temperatureUnit || 'C';
+
       markersRef.current.forEach(({ marker, tempC, name }) => {
+        // Convert the original tempC value to the desired unit
         const display = unit === 'F'
-          ? (tempC * 9/5 + 32).toFixed(1)
+          ? ((tempC * 9 / 5) + 32).toFixed(1)
           : tempC;
-        
+
         // Calculate color based on the temperature in the current unit
-        const tempForColor = unit === 'F' ? (tempC * 9/5 + 32) : tempC;
+        const tempForColor = unit === 'F' ? ((tempC * 9 / 5) + 32) : tempC;
         const tempColor = getTemperatureColor(tempForColor, unit);
-        
-        // update icon with proper color
+
+        // Update marker icon
         marker.setIcon(window.L.divIcon({
           className: 'custom-temp-marker',
           html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
-          iconSize: [40,40],
-          iconAnchor: [20,20]
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
         }));
-        // update popup
-        marker.getPopup().setContent(`<strong>${name}</strong><br/>${display}°${unit}`);
+
+        // Update the graph if it exists
+        if (marker.chartInstance) {
+          const chart = marker.chartInstance;
+
+          // Use the original tempC values for conversion
+          chart.data.datasets[0].data = historicalData.map((_, index) =>
+            unit === 'F'
+              ? ((markersRef.current[index].tempC * 9 / 5) + 32).toFixed(1)
+              : markersRef.current[index].tempC
+          );
+
+          // Update the dataset label
+          chart.data.datasets[0].label = `Temperature (°${unit})`;
+
+          // Update the y-axis label
+          if (chart.options.scales.y && chart.options.scales.y.title) {
+            chart.options.scales.y.title.text = `Temperature (°${unit})`;
+          }
+
+          // Apply the updates
+          chart.update();
+        }
       });
     };
 
+    // Add the event listener
     window.addEventListener('unitchange', onUnitChange);
+
+    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener('unitchange', onUnitChange);
       if (mapInstanceRef.current) mapInstanceRef.current.remove();
+    };
+  }, []);
+
+    useEffect(() => {
+    const onUnitChange = () => {
+      const unit = window.temperatureUnit || 'C';
+  
+      markersRef.current.forEach(({ marker, tempC, name }) => {
+        const display = unit === 'F'
+          ? (tempC * 9 / 5 + 32).toFixed(1)
+          : tempC;
+  
+        // Calculate color based on the temperature in the current unit
+        const tempForColor = unit === 'F' ? (tempC * 9 / 5 + 32) : tempC;
+        const tempColor = getTemperatureColor(tempForColor, unit);
+  
+        // Update marker icon
+        marker.setIcon(window.L.divIcon({
+          className: 'custom-temp-marker',
+          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+        }));
+  
+        // Update the graph if it exists
+        if (marker.chartInstance) {
+          const chart = marker.chartInstance;
+          chart.data.datasets[0].data = chart.data.datasets[0].data.map((temp) =>
+            unit === 'F' ? (temp * 9 / 5 + 32).toFixed(1) : ((temp - 32) * 5 / 9).toFixed(1)
+          );
+          chart.data.datasets[0].label = `Temperature (°${unit})`;
+          chart.update();
+        }
+      });
+    };
+  
+    // Add the event listener
+    window.addEventListener('unitchange', onUnitChange);
+  
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('unitchange', onUnitChange);
     };
   }, []);
 
@@ -316,117 +506,39 @@ export default function MapComponent() {
     }
   }
 
-  // Autofill suggestions logic
-  function handleInputChange(e) {
-    const value = e.target.value;
-    setSearchTerm(value);
-    if (value.length === 0) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    const lower = value.toLowerCase();
-    const allNames = markersRef.current.map(m => m.name);
-    const filtered = allNames.filter(name => name.toLowerCase().includes(lower));
-    setSuggestions(filtered.slice(0, 6)); // limit to 6 suggestions
-    setShowSuggestions(true);
-  }
+  // Expose search function globally for other components
+  useEffect(() => {
+    window.handleMapSearch = handleSearch;
+    return () => {
+      window.handleMapSearch = null;
+    };
+  }, []);
 
-  function handleSuggestionClick(name) {
-    setSearchTerm(name);
-    setShowSuggestions(false);
-    handleSearch(name);
-  }
+  useEffect(() => {
+    const handleFilter = (e) => {
+      const { min, max } = e.detail;
+      markersRef.current.forEach(({ marker, tempC }) => {
+        const keep =
+          (isNaN(min) || tempC >= min) &&
+          (isNaN(max) || tempC <= max);
 
-  function handleInputBlur() {
-    setTimeout(() => setShowSuggestions(false), 100); // allow click
-  }
+        if (keep) {
+          // re-add if it was removed
+          marker.addTo(mapInstanceRef.current);
+        } else {
+          mapInstanceRef.current.removeLayer(marker);
+        }
+      });
+    };
+
+    window.addEventListener('filterchange', handleFilter);
+    return () => {
+      window.removeEventListener('filterchange', handleFilter);
+    };
+  }, []);
 
   return (
     <div style={{ position: 'relative' }}>
-      <div
-        style={{
-          position: 'absolute',
-          top: '10px',
-          left: 0,
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}
-      >
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleInputChange}
-            onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
-            placeholder="Search beach..."
-            style={{
-              padding: '5px',
-              width: '200px',
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: '4px 0 0 4px',
-              outline: 'none',
-              color: '#000',
-              '::placeholder': { color: '#000' }
-            }}
-            onFocus={() => { if (searchTerm) setShowSuggestions(true); }}
-            onBlur={handleInputBlur}
-          />
-         {showSuggestions && suggestions.length > 0 && (
-           <ul style={{
-             position: 'absolute',
-             top: '36px',
-             left: 0,
-             width: '100%',
-             background: '#fff',
-             border: '1px solid #ccc',
-             borderRadius: '4px 0 0 4px',
-             color: '#000',
-             borderTop: 'none',
-             maxHeight: '180px',
-             overflowY: 'auto',
-             margin: 0,
-             padding: 0,
-             listStyle: 'none',
-             zIndex: 2000
-           }}>
-             {suggestions.map((name, idx) => (
-               <li
-                 key={name + idx}
-                 onMouseDown={() => handleSuggestionClick(name)}
-                 style={{
-                   padding: '6px 10px',
-                   cursor: 'pointer',
-                   background: name === searchTerm ? '#eee' : '#fff',
-                   borderBottom: idx !== suggestions.length - 1 ? '1px solid #eee' : 'none'
-                 }}
-               >
-                 {name}
-               </li>
-             ))}
-           </ul>
-         )}
-        </div>
-        <button
-          onClick={handleSearch}
-          style={{
-            marginLeft: '0',
-            padding: '5px 16px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            background: '#000',
-            color: '#fff',
-            border: '1px solid #000',
-            borderRadius: '0 4px 4px 0',
-            outline: 'none',
-          }}
-        >
-          Search
-        </button>
-      </div>
       <div
         ref={mapRef}
         style={{
