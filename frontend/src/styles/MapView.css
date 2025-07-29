@@ -49,3 +49,43 @@
   /* 🟢 Thin black outline around text */
   text-shadow: 0 0 2px black;
 }
+  /* Gradient Legend (temperature scale) */
+  .legend {
+    position: absolute;
+    right: 20px;
+    bottom: 50px;
+    display: flex;
+    flex-direction: row; /* row so bar and labels are side by side */
+    align-items: flex-start;
+    gap: 8px; /* space between bar and labels */
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    color: var(--legend-text-color);
+    z-index: 1000;
+  }
+  
+  .legend-bar {
+    width: 16px;
+    height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--legend-border-color);
+    background: linear-gradient(
+      to bottom,
+      hsl(0, 100%, 60%),   /* red top */
+      hsl(45, 100%, 60%),  /* orange */
+      hsl(90, 100%, 60%),  /* yellow-green */
+      hsl(135, 100%, 60%), /* green */
+      hsl(180, 100%, 60%), /* cyan */
+      hsl(225, 100%, 60%), /* blue */
+      hsl(270, 100%, 60%)  /* purple bottom */
+    );
+    opacity: 0.85;
+  }
+  
+  .legend-labels {
+    display: flex;
+    flex-direction: column; /* stack labels vertically */
+    justify-content: space-between;
+    height: 200px; /* match bar height */
+  }
+  

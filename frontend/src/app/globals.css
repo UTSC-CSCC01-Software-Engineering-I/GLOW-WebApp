@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --legend-text-color: #000;
+  --legend-border-color: #ccc;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --legend-text-color: #fff;
+    --legend-border-color: #555;
   }
 }
 
@@ -31,3 +31,5 @@ body {
   top: 1rem;
   left: 1rem;
 }
+
+
