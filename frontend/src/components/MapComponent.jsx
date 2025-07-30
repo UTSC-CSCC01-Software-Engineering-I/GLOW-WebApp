@@ -209,7 +209,6 @@ export default function MapComponent() {
               timeDiffDiv.style.marginTop = '10px';
               timeDiffDiv.style.fontSize = '12px';
               timeDiffDiv.style.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
-              timeDiffDiv.innerHTML = `<strong>Time gaps:</strong> ${timeDifferences.join(', ')}`;
               graphContainer.appendChild(timeDiffDiv);
               
               console.log('Creating chart with time-based data:', timeBasedData);
@@ -294,13 +293,12 @@ export default function MapComponent() {
                         font: {
                           size: 10
                         },
-                        callback: function(value, index) {
-                          // Convert the linear value back to a proper date string
-                          if (timeBasedData[index]) {
-                            const date = new Date(timeBasedData[index].x);
-                            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                          }
-                          return '';
+                        maxTicksLimit: 5, // Limit to prevent overcrowding
+                        callback: function(value) {
+                          // The value here is the actual timestamp (milliseconds)
+                          const date = new Date(value);
+                          if (isNaN(date.getTime())) return ''; // Invalid date
+                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                         }
                       },
                       grid: {
