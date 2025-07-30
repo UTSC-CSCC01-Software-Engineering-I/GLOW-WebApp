@@ -50,7 +50,7 @@ export function HUDright() {
     // Update global theme
     if (typeof window !== 'undefined') {
       window.globalTheme = newTheme;
-      window.dispatchEvent(new Event('themechange'));
+      window.dispatchEvent(new Event('themechange')); // Add this line!
     }
 
 
@@ -79,7 +79,8 @@ export function HUDright() {
       map.addLayer(lightLayer);
       setTheme('light');
     }
-    
+
+
   };
 
   const closeMenu = () => {

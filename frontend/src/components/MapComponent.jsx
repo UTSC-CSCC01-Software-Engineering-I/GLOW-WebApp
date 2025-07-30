@@ -4,27 +4,30 @@ import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 import '../styles/homepage.css'; // Shaafs code
 
-
-// Pranavs Code
 import {
   Chart,
   CategoryScale,
   LinearScale,
+  TimeScale,
   LineElement,
   PointElement,
-  LineController, // Import LineController
+  LineController,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
 
+// Import the date adapter properly
+import 'chartjs-adapter-date-fns';
+
 // Register the required components
 Chart.register(
   CategoryScale,
   LinearScale,
+  TimeScale,
   LineElement,
   PointElement,
-  LineController, // Register LineController
+  LineController,
   Title,
   Tooltip,
   Legend
@@ -42,15 +45,12 @@ async function fetchHistoricalData(beachName) {
       throw new Error(data.message || 'Failed to fetch historical data');
     }
 
-    return data.data; // Return the historical data
+    return data.data;
   } catch (error) {
     console.error('Error fetching historical data:', error);
-    return []; // Return an empty array if there's an error
+    return [];
   }
 }
-// Till here
-
-
 
 let globalBeach = null;
 
@@ -58,7 +58,7 @@ export default function MapComponent() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);      // ← store { marker, tempC, name }
+  const markersRef = useRef([]);
 
   // Temperature color function - works with both Celsius and Fahrenheit
   function getTemperatureColor(temp, unit = 'C', mode = 'light') {
@@ -71,20 +71,19 @@ export default function MapComponent() {
     const hue = 270 - ratio * 270; // purple → red
     const saturation = 100;
     const lightness = mode === 'dark' ? 50 : 60;
-    const alpha = 0.8; // adjust for more or less transparency
+    const alpha = 0.8;
   
     return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
   }
-  
-  
 
   useEffect(() => {
-    window.loadedAPI = loading;
-    window.dispatchEvent(new Event('dataloaded'));
+    if (typeof window !== 'undefined') {
+      window.loadedAPI = loading;
+      window.dispatchEvent(new Event('dataloaded'));
+    }
   });
 
   useEffect(() => {
-    // Only import Leaflet on the client side
     const initMap = async () => {
       if (mapInstanceRef.current) return;
       const L = (await import('leaflet')).default;
@@ -111,30 +110,20 @@ export default function MapComponent() {
         attribution: '© MapTiler © OpenStreetMap contributors'
       });
 
-      // Auto-detect initial theme
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       
-      // Initialize map only if container exists and map doesn't exist yet
       if (mapRef.current && !mapInstanceRef.current) {
         const map = L.map(mapRef.current, {
-          center: [43.647216678117736, -79.36719310664458], // Toronto lakeshore
+          center: [43.647216678117736, -79.36719310664458],
           zoom: 12,
           layers: [prefersDark ? darkLayer : lightLayer]
-        });        // Store map instance for cleanup
+        });
+        
         mapInstanceRef.current = map;
-
-        // Store map and layers globally for HUD access
         window.leafletMap = map;
         window.lightLayer = lightLayer;
         window.darkLayer = darkLayer;
 
-        // Add layer switcher
-        // L.control.layers({
-        //   'Light': lightLayer,
-        //   'Dark': darkLayer 
-        // }).addTo(map);
-
-        // Listen for OS theme changes
         window.matchMedia('(prefers-color-scheme: dark)')
           .addEventListener('change', e => {
             if (e.matches) {
@@ -146,8 +135,6 @@ export default function MapComponent() {
             }
           });
 
-
-        // Function to add markers from data
         function addMarkers(items) {
           items.forEach((item, i) => {
             const lon = item.lng || item.lon || item.Longitude;
@@ -180,35 +167,62 @@ export default function MapComponent() {
                 return;
               }
 
-              const labels = historicalData.map((d) => new Date(d.timestamp).toLocaleDateString());
-              let temperatures = historicalData.map((d) => d.temp);
+              const sortedData = historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-              // Check the current temperature unit and convert if necessary
+              // Declare currentUnit BEFORE using it
               const currentUnit = window.temperatureUnit || 'C';
-              if (currentUnit === 'F') {
-                temperatures = temperatures.map((temp) => (temp * 9) / 5 + 32); // Convert to Fahrenheit
+
+              // Create time-based data for proper spacing
+              const timeBasedData = sortedData.map((d) => ({
+                x: new Date(d.timestamp),
+                y: currentUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
+              }));
+
+              const timeDifferences = [];
+              for (let i = 1; i < sortedData.length; i++) {
+                const prevTime = new Date(sortedData[i - 1].timestamp);
+                const currTime = new Date(sortedData[i].timestamp);
+                const diffHours = Math.round((currTime - prevTime) / (1000 * 60 * 60));
+                timeDifferences.push(`${diffHours}h gap`);
               }
 
+              // Create graph container
               const graphContainer = document.createElement('div');
-              graphContainer.style.width = '300px';
-              graphContainer.style.height = '200px';
+              graphContainer.style.width = '600px';
+              graphContainer.style.height = '420px';
+              graphContainer.style.padding = '15px';
+              graphContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
+              graphContainer.style.borderRadius = '12px';
+              graphContainer.style.boxShadow = window.globalTheme === 'dark' 
+                ? '0 8px 32px rgba(0,0,0,0.5)' 
+                : '0 8px 32px rgba(0,0,0,0.15)';
+              graphContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
 
               const canvas = document.createElement('canvas');
+              canvas.style.width = '100%';
+              canvas.style.height = 'calc(100% - 40px)';
+              canvas.width = 570;
+              canvas.height = 380;
               graphContainer.appendChild(canvas);
-
-              marker.bindPopup(graphContainer).openPopup();
-
+              
+              console.log('Creating chart with time-based data:', timeBasedData);
+              
+              // Create the chart with time scale - this gives proper spacing
               const chart = new Chart(canvas, {
                 type: 'line',
                 data: {
-                  labels,
                   datasets: [
                     {
-                      label: `Temperature (°${currentUnit})`,
-                      data: temperatures,
-                      borderColor: 'rgba(75, 192, 192, 1)',
-                      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                      data: timeBasedData, // Use time-based data {x: timestamp, y: value}
+                      borderColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
+                      backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 0.1)' : 'rgba(75, 192, 192, 0.2)',
                       fill: true,
+                      tension: 0.3,
+                      pointRadius: 6,
+                      pointHoverRadius: 10,
+                      pointBackgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
+                      pointBorderColor: window.globalTheme === 'dark' ? '#000' : '#fff',
+                      pointBorderWidth: 2,
                     },
                   ],
                 },
@@ -219,30 +233,127 @@ export default function MapComponent() {
                     title: {
                       display: true,
                       text: `Historical Data for ${name}`,
+                      font: {
+                        size: 18,
+                        weight: 'bold'
+                      },
+                      color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                      padding: 20
                     },
                     legend: {
-                      display: false,
+                      display: false
                     },
+                    tooltip: {
+                      backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+                      titleColor: window.globalTheme === 'dark' ? '#fff' : '#000',
+                      bodyColor: window.globalTheme === 'dark' ? '#fff' : '#000',
+                      borderColor: window.globalTheme === 'dark' ? '#444' : '#ddd',
+                      borderWidth: 1,
+                      displayColors: false,
+                      callbacks: {
+                        title: function(context) {
+                          const date = new Date(context[0].parsed.x);
+                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        },
+                        label: function(context) {
+                          return `${context.parsed.y.toFixed(1)}°${currentUnit}`;
+                        },
+                        afterBody: function(context) {
+                          const dataIndex = context[0].dataIndex;
+                          if (dataIndex > 0 && timeDifferences[dataIndex - 1]) {
+                            return [`Gap from previous: ${timeDifferences[dataIndex - 1]}`];
+                          }
+                          return [];
+                        }
+                      }
+                    }
                   },
                   scales: {
                     x: {
+                      type: 'linear', // Use linear instead of time to avoid adapter issues
+                      position: 'bottom',
                       title: {
                         display: true,
-                        text: 'Date',
+                        text: 'Date & Time',
+                        color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                        font: {
+                          size: 14,
+                          weight: 'bold'
+                        }
                       },
+                      ticks: {
+                        color: window.globalTheme === 'dark' ? '#ccc' : '#666',
+                        maxRotation: 45,
+                        font: {
+                          size: 10
+                        },
+                        maxTicksLimit: 5, // Limit to prevent overcrowding
+                        callback: function(value) {
+                          // The value here is the actual timestamp (milliseconds)
+                          const date = new Date(value);
+                          if (isNaN(date.getTime())) return ''; // Invalid date
+                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        }
+                      },
+                      grid: {
+                        color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                      }
                     },
                     y: {
                       title: {
                         display: true,
                         text: `Temperature (°${currentUnit})`,
+                        color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                        font: {
+                          size: 14,
+                          weight: 'bold'
+                        }
                       },
+                      ticks: {
+                        color: window.globalTheme === 'dark' ? '#ccc' : '#666',
+                        font: {
+                          size: 11
+                        },
+                        callback: function(value) {
+                          return `${value}°${currentUnit}`;
+                        }
+                      },
+                      grid: {
+                        color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                      }
                     },
                   },
+                  interaction: {
+                    intersect: false,
+                    mode: 'index'
+                  }
                 },
               });
 
-              // Store the chart instance for dynamic updates
+              console.log('Chart created:', chart);
+
               marker.chartInstance = chart;
+              marker.chartData = sortedData;
+              marker.chartContainer = graphContainer; // Store reference to the container
+
+              // Open popup
+              const popup = L.popup({
+                offset: [10, -20],
+                maxWidth: 650,
+                maxHeight: 470,
+                className: 'custom-popup'
+              })
+              .setLatLng([lat, lon])
+              .setContent(graphContainer)
+              .openOn(mapInstanceRef.current);
+
+              // Force chart resize after popup is opened
+              setTimeout(() => {
+                if (chart && chart.resize) {
+                  chart.resize();
+                  console.log('Chart resized');
+                }
+              }, 100);
             });
 
             markersRef.current.push({ marker, tempC: t, name, lat, lon });
@@ -351,7 +462,7 @@ export default function MapComponent() {
     };
 
     initMap();
-
+    
     // Listen for unit toggles
     const onUnitChange = () => {
       const unit = window.temperatureUnit || 'C';
@@ -375,23 +486,25 @@ export default function MapComponent() {
         }));
 
         // Update the graph if it exists
-        if (marker.chartInstance) {
+        if (marker.chartInstance && marker.chartData) {
           const chart = marker.chartInstance;
+          
+          // Convert original data to new unit with time structure
+          const newTimeBasedData = marker.chartData.map((d) => ({
+            x: new Date(d.timestamp),
+            y: unit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
+          }));
 
-          // Use the original tempC values for conversion
-          chart.data.datasets[0].data = historicalData.map((_, index) =>
-            unit === 'F'
-              ? ((markersRef.current[index].tempC * 9 / 5) + 32).toFixed(1)
-              : markersRef.current[index].tempC
-          );
+          // Update dataset with time-based data
+          chart.data.datasets[0].data = newTimeBasedData;
 
-          // Update the dataset label
-          chart.data.datasets[0].label = `Temperature (°${unit})`;
-
-          // Update the y-axis label
-          if (chart.options.scales.y && chart.options.scales.y.title) {
-            chart.options.scales.y.title.text = `Temperature (°${unit})`;
-          }
+          // Update the y-axis title
+          chart.options.scales.y.title.text = `Temperature (°${unit})`;
+          
+          // Update y-axis tick callback
+          chart.options.scales.y.ticks.callback = function(value) {
+            return `${value}°${unit}`;
+          };
 
           // Apply the updates
           chart.update();
@@ -402,54 +515,118 @@ export default function MapComponent() {
     // Add the event listener
     window.addEventListener('unitchange', onUnitChange);
 
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener('unitchange', onUnitChange);
-      if (mapInstanceRef.current) mapInstanceRef.current.remove();
-    };
-  }, []);
-
-    useEffect(() => {
-    const onUnitChange = () => {
-      const unit = window.temperatureUnit || 'C';
-  
-      markersRef.current.forEach(({ marker, tempC, name }) => {
-        const display = unit === 'F'
-          ? (tempC * 9 / 5 + 32).toFixed(1)
-          : tempC;
-  
-        // Calculate color based on the temperature in the current unit
-        const tempForColor = unit === 'F' ? (tempC * 9 / 5 + 32) : tempC;
-        const tempColor = getTemperatureColor(tempForColor, unit);
-  
-        // Update marker icon
-        marker.setIcon(window.L.divIcon({
-          className: 'custom-temp-marker',
-          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
-        }));
-  
+    // Listen for theme changes
+    const onThemeChange = () => {
+      // Update popup CSS dynamically
+      updatePopupCSS();
+      
+      markersRef.current.forEach(({ marker }) => {
         // Update the graph if it exists
         if (marker.chartInstance) {
-          const chart = marker.chartInstance;
-          chart.data.datasets[0].data = chart.data.datasets[0].data.map((temp) =>
-            unit === 'F' ? (temp * 9 / 5 + 32).toFixed(1) : ((temp - 32) * 5 / 9).toFixed(1)
-          );
-          chart.data.datasets[0].label = `Temperature (°${unit})`;
+          const chart = marker.chartInstance; // Add this line - we need to reference the chart
+          
+          // Update chart colors based on new theme
+          chart.options.plugins.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          
+          // Update tooltip colors
+          chart.options.plugins.tooltip.backgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+          chart.options.plugins.tooltip.titleColor = window.globalTheme === 'dark' ? '#fff' : '#000';
+          chart.options.plugins.tooltip.bodyColor = window.globalTheme === 'dark' ? '#fff' : '#000';
+          chart.options.plugins.tooltip.borderColor = window.globalTheme === 'dark' ? '#444' : '#ddd';
+          
+          // Update dataset colors
+          chart.data.datasets[0].borderColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)';
+          chart.data.datasets[0].backgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 0.1)' : 'rgba(75, 192, 192, 0.2)';
+          chart.data.datasets[0].pointBackgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)';
+          chart.data.datasets[0].pointBorderColor = window.globalTheme === 'dark' ? '#000' : '#fff';
+          
+          // Update axis colors
+          chart.options.scales.x.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          chart.options.scales.x.ticks.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
+          chart.options.scales.x.grid.color = window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+          
+          chart.options.scales.y.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          chart.options.scales.y.ticks.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
+          chart.options.scales.y.grid.color = window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+          // Update the popup container background and border if it exists
+          if (marker.chartContainer) {
+            marker.chartContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
+            marker.chartContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
+            marker.chartContainer.style.boxShadow = window.globalTheme === 'dark' 
+              ? '0 8px 32px rgba(0,0,0,0.5)' 
+              : '0 8px 32px rgba(0,0,0,0.15)';
+          }
+          
+          // Apply the updates
           chart.update();
         }
       });
     };
-  
-    // Add the event listener
-    window.addEventListener('unitchange', onUnitChange);
-  
-    // Cleanup the event listener on component unmount
+
+    // Add the theme event listener - THIS WAS MISSING!
+    window.addEventListener('themechange', onThemeChange);
+
+    // Function to update popup CSS dynamically
+    function updatePopupCSS() {
+      // Remove existing dynamic popup styles
+      const existingStyle = document.querySelector('#dynamic-popup-styles');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      // Create new style element
+      const style = document.createElement('style');
+      style.id = 'dynamic-popup-styles';
+      
+      const isDark = window.globalTheme === 'dark';
+      
+      style.textContent = `
+        .leaflet-popup-content-wrapper {
+          background-color: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
+          border: 1px solid ${isDark ? '#333' : '#ddd'} !important;
+          box-shadow: ${isDark ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.15)'} !important;
+          color: ${isDark ? '#fff' : '#000'} !important;
+        }
+        
+        .leaflet-popup-tip {
+          background-color: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
+          border: 1px solid ${isDark ? '#333' : '#ddd'} !important;
+        }
+        
+        .leaflet-popup-close-button {
+          color: ${isDark ? '#fff' : '#000'} !important;
+        }
+        
+        .leaflet-popup-close-button:hover {
+          color: ${isDark ? '#00d9ff' : '#666'} !important;
+        }
+      `;
+      
+      document.head.appendChild(style);
+    }
+
+    // Initialize popup styles
+    updatePopupCSS();
+
+    // Cleanup the event listeners on component unmount
     return () => {
       window.removeEventListener('unitchange', onUnitChange);
+      window.removeEventListener('themechange', onThemeChange);
+      if (mapInstanceRef.current) mapInstanceRef.current.remove();
     };
   }, []);
+
+  // Remove this duplicate useEffect - it's causing conflicts
+  // useEffect(() => {
+  //   const onUnitChange = () => {
+  //     // ... duplicate code ...
+  //   };
+  //   window.addEventListener('unitchange', onUnitChange);
+  //   return () => {
+  //     window.removeEventListener('unitchange', onUnitChange);
+  //   };
+  // }, []);
 
   // Handle beach search by name
   function handleSearch(selectedName) {

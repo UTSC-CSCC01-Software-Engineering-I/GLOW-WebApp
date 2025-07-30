@@ -1,9 +1,10 @@
 {
   "dependencies": {
-    "chart.js": "^4.5.0",
-    "node-cron": "^4.2.1",
     "@tailwindcss/vite": "^4.1.11",
+    "chart.js": "^4.5.0",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "flowbite-react": "^0.11.9",
+    "node-cron": "^4.2.1",
     "tailwind": "^2.3.1"
   },
   "scripts": {
