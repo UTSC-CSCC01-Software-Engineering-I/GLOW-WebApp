@@ -194,7 +194,7 @@ export default function MapComponent() {
               graphContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
               graphContainer.style.borderRadius = '12px';
               graphContainer.style.boxShadow = window.globalTheme === 'dark' 
-                ? '0 8px 32px rgba(0,255,255,0.2)' 
+                ? '0 8px 32px rgba(0,0,0,0.5)' 
                 : '0 8px 32px rgba(0,0,0,0.15)';
               graphContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
 
@@ -517,10 +517,13 @@ export default function MapComponent() {
 
     // Listen for theme changes
     const onThemeChange = () => {
+      // Update popup CSS dynamically
+      updatePopupCSS();
+      
       markersRef.current.forEach(({ marker }) => {
         // Update the graph if it exists
         if (marker.chartInstance) {
-          const chart = marker.chartInstance;
+          const chart = marker.chartInstance; // Add this line - we need to reference the chart
           
           // Update chart colors based on new theme
           chart.options.plugins.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
@@ -551,14 +554,8 @@ export default function MapComponent() {
             marker.chartContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
             marker.chartContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
             marker.chartContainer.style.boxShadow = window.globalTheme === 'dark' 
-              ? '0 8px 32px rgba(0,255,255,0.2)' 
+              ? '0 8px 32px rgba(0,0,0,0.5)' 
               : '0 8px 32px rgba(0,0,0,0.15)';
-            
-            // Update time differences text color
-            const timeDiffDiv = marker.chartContainer.querySelector('div:last-child');
-            if (timeDiffDiv) {
-              timeDiffDiv.style.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
-            }
           }
           
           // Apply the updates
@@ -567,8 +564,50 @@ export default function MapComponent() {
       });
     };
 
-    // Add the theme event listener
+    // Add the theme event listener - THIS WAS MISSING!
     window.addEventListener('themechange', onThemeChange);
+
+    // Function to update popup CSS dynamically
+    function updatePopupCSS() {
+      // Remove existing dynamic popup styles
+      const existingStyle = document.querySelector('#dynamic-popup-styles');
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+
+      // Create new style element
+      const style = document.createElement('style');
+      style.id = 'dynamic-popup-styles';
+      
+      const isDark = window.globalTheme === 'dark';
+      
+      style.textContent = `
+        .leaflet-popup-content-wrapper {
+          background-color: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
+          border: 1px solid ${isDark ? '#333' : '#ddd'} !important;
+          box-shadow: ${isDark ? '0 8px 32px rgba(0,0,0,0.5)' : '0 8px 32px rgba(0,0,0,0.15)'} !important;
+          color: ${isDark ? '#fff' : '#000'} !important;
+        }
+        
+        .leaflet-popup-tip {
+          background-color: ${isDark ? '#1a1a1a' : '#ffffff'} !important;
+          border: 1px solid ${isDark ? '#333' : '#ddd'} !important;
+        }
+        
+        .leaflet-popup-close-button {
+          color: ${isDark ? '#fff' : '#000'} !important;
+        }
+        
+        .leaflet-popup-close-button:hover {
+          color: ${isDark ? '#00d9ff' : '#666'} !important;
+        }
+      `;
+      
+      document.head.appendChild(style);
+    }
+
+    // Initialize popup styles
+    updatePopupCSS();
 
     // Cleanup the event listeners on component unmount
     return () => {
