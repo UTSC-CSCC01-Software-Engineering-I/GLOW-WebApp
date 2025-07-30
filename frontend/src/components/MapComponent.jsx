@@ -204,12 +204,6 @@ export default function MapComponent() {
               canvas.width = 570;
               canvas.height = 380;
               graphContainer.appendChild(canvas);
-
-              const timeDiffDiv = document.createElement('div');
-              timeDiffDiv.style.marginTop = '10px';
-              timeDiffDiv.style.fontSize = '12px';
-              timeDiffDiv.style.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
-              graphContainer.appendChild(timeDiffDiv);
               
               console.log('Creating chart with time-based data:', timeBasedData);
               
@@ -340,6 +334,7 @@ export default function MapComponent() {
 
               marker.chartInstance = chart;
               marker.chartData = sortedData;
+              marker.chartContainer = graphContainer; // Store reference to the container
 
               // Open popup
               const popup = L.popup({
@@ -520,9 +515,65 @@ export default function MapComponent() {
     // Add the event listener
     window.addEventListener('unitchange', onUnitChange);
 
-    // Cleanup the event listener on component unmount
+    // Listen for theme changes
+    const onThemeChange = () => {
+      markersRef.current.forEach(({ marker }) => {
+        // Update the graph if it exists
+        if (marker.chartInstance) {
+          const chart = marker.chartInstance;
+          
+          // Update chart colors based on new theme
+          chart.options.plugins.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          
+          // Update tooltip colors
+          chart.options.plugins.tooltip.backgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)';
+          chart.options.plugins.tooltip.titleColor = window.globalTheme === 'dark' ? '#fff' : '#000';
+          chart.options.plugins.tooltip.bodyColor = window.globalTheme === 'dark' ? '#fff' : '#000';
+          chart.options.plugins.tooltip.borderColor = window.globalTheme === 'dark' ? '#444' : '#ddd';
+          
+          // Update dataset colors
+          chart.data.datasets[0].borderColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)';
+          chart.data.datasets[0].backgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 0.1)' : 'rgba(75, 192, 192, 0.2)';
+          chart.data.datasets[0].pointBackgroundColor = window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)';
+          chart.data.datasets[0].pointBorderColor = window.globalTheme === 'dark' ? '#000' : '#fff';
+          
+          // Update axis colors
+          chart.options.scales.x.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          chart.options.scales.x.ticks.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
+          chart.options.scales.x.grid.color = window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+          
+          chart.options.scales.y.title.color = window.globalTheme === 'dark' ? '#fff' : '#333';
+          chart.options.scales.y.ticks.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
+          chart.options.scales.y.grid.color = window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+          // Update the popup container background and border if it exists
+          if (marker.chartContainer) {
+            marker.chartContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
+            marker.chartContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
+            marker.chartContainer.style.boxShadow = window.globalTheme === 'dark' 
+              ? '0 8px 32px rgba(0,255,255,0.2)' 
+              : '0 8px 32px rgba(0,0,0,0.15)';
+            
+            // Update time differences text color
+            const timeDiffDiv = marker.chartContainer.querySelector('div:last-child');
+            if (timeDiffDiv) {
+              timeDiffDiv.style.color = window.globalTheme === 'dark' ? '#ccc' : '#666';
+            }
+          }
+          
+          // Apply the updates
+          chart.update();
+        }
+      });
+    };
+
+    // Add the theme event listener
+    window.addEventListener('themechange', onThemeChange);
+
+    // Cleanup the event listeners on component unmount
     return () => {
       window.removeEventListener('unitchange', onUnitChange);
+      window.removeEventListener('themechange', onThemeChange);
       if (mapInstanceRef.current) mapInstanceRef.current.remove();
     };
   }, []);
