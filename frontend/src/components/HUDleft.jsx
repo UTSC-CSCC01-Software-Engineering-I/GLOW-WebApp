@@ -24,10 +24,10 @@ function LogoBlock() {
   
   <div >
     <div className='AppLogoBlock' style={{ }}>
-        <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter, sans-serif', fontWeight: '900', 
+        <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter', fontWeight: '900', 
           fontSize: '1.5rem'
         }}>GLOW</h1>
-        <h1 style={{ color: 'gray', fontFamily: 'Inter, sans-serif', fontWeight: '300', 
+        <h1 style={{ color: 'gray', fontFamily: 'Inter', fontWeight: '300', 
           fontSize: '0.9rem', marginLeft: '0.5rem', marginTop: '0.5rem'
         }}>by MicroSofties</h1>
     </div>

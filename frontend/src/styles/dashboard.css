@@ -1,11 +1,12 @@
 /* Dashboard Styles - Clean Minimal Design inspired by idea.png */
 
 .dashboard-page {
+    z-index: 1;
     min-height: 100vh;
      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter';
 }
 
 @keyframes gradient {
@@ -42,10 +43,12 @@
     font-family: Inter, sans-serif;
     font-weight: 800;
     font-size: 4rem;
+    margin-bottom: -1rem;
 }
 
 .logobottom{
     color: white;
+    margin-left: 0.5rem;
     font-family: 'Inter', sans-serif;
     font-style: italic;
     font-size: 1rem;
@@ -86,6 +89,7 @@
 }
 
 .sidebar-nav {
+    margin-top: 1rem;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -105,9 +109,9 @@
     color: #000000;
 }
 .del{
-    color: rgb(0, 0, 0);
+    color: rgb(255, 0, 0);
     font-weight: 500;
-    background-color: rgb(252, 209, 209);
+    background-color: rgb(255, 255, 255);
 }
 
 .nav-item:hover {
@@ -130,20 +134,7 @@
     font-size: 16px;
 }
 
-.mapbut{
-    margin-top: 1rem;
-    color: white;
-    font-size: 1.5rem;
-    font-weight: 700;
-    background-color: #00000000;
-    
-}
-.mapbut:hover {
-    background-color: #059669;
-    border-color: #059669;
-    color: white;
-    font-weight: 800;
-}
+
 /* Main Content */
 .main-content {
     background-color: white;
@@ -313,9 +304,10 @@
 
 /* Bottom Section */
 .bottom-section {
-    display: grid;
-    grid-template-columns: 1fr 300px;
     gap: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 /* Dashboard Cards */
@@ -329,8 +321,8 @@
 }
 
 .dashboard-card:hover {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.362);
+    /* transform: translateY(-2px); */
 }
 
 /* Manage Points Section */
@@ -681,7 +673,7 @@
 
 .statistics-section {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 20px;
 }
 
@@ -1108,7 +1100,6 @@
 
 /* Profile Management Styles */
 .profile-form-container {
-    max-width: 600px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -1116,11 +1107,7 @@
 }
 
 .profile-form {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f1f5f9;
+    margin-top: 1rem;
 }
 
 .form-section {
@@ -1298,4 +1285,17 @@
     .delete-account-btn {
         width: 100%;
     }
+}
+
+.mapbut{
+    margin-top: 1rem;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 9999999;
+    background-color: rgba(255, 255, 255, 0.132);
+}
+.mapbut:hover {
+    
 }

@@ -16,6 +16,9 @@ export default function Dashboard() {
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+
+  const [isHovered, setIsHovered] = useState(false);
+
   useEffect(() => {
     // Check URL parameters for active view
     const urlParams = new URLSearchParams(window.location.search);
@@ -264,38 +267,35 @@ export default function Dashboard() {
       </div>
     );
   }
-
+  
   return (
     <div className="dashboard-page">
       <div className="dashboard-container">
         {/* Left Sidebar */}
         <div className="sidebar">
-          <h1 className='logotop'>GLOW</h1>
+          <h1 className='logotop' style={{ fontFamily: 'inter'}}
+          >GLOW</h1>
           <h2 className='logobottom'>by Microsofties</h2>
           <div className="user-profile">
             
-            <div className="nav-item mapbut" onClick={() => window.location.href = '/'}
-              style={{ 
-                    backdropFilter: 'blur(30px)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                  }}>
-                <span className="nav-icon">🗺️</span>
-                <span>OPEN MAPS</span>
+            <div className="mapbut nav-item " onClick={() => window.location.href = '/'}
+              >
+                <span>▶ Open Maps </span>
             </div>
           </div>
           
           <nav className="sidebar-nav">
                
             <div className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveView('dashboard')}>
-              <span className="nav-icon">📊</span>
+              <span className="nav-icon"></span>
               <span>Dashboard</span>
             </div>
             <div className={`nav-item ${activeView === 'manage-points' ? 'active' : ''}`} onClick={() => setActiveView('manage-points')}>
-              <span className="nav-icon">⚡</span>
+              <span className="nav-icon"></span>
               <span>Manage Points</span>
             </div>
             <div className={`nav-item ${activeView === 'manage-profile' ? 'active' : ''}`} onClick={() => setActiveView('manage-profile')}>
-              <span className="nav-icon">👤</span>
+              <span className="nav-icon"></span>
               <span>Manage Profile</span>
             </div>
            
@@ -327,6 +327,29 @@ export default function Dashboard() {
 
               {/* Bottom Section */}
               <div className="bottom-section">
+                {/* Statistics */}
+                <div className="dashboard-card">
+                  <div className="statistics-section">
+                    <h3>Your Statistics</h3>
+                    <div className="stat-item">
+                      <div className="stat-number">{userPoints.length}</div>
+                      <div className="stat-label">Points<br/> Contributed</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{tempStats.max}</div>
+                      <div className="stat-label">Max<br/>Temperature From Contributions</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{tempStats.min}</div>
+                      <div className="stat-label">Min<br/>Temperature From Contributions</div>
+                    </div>
+                    <div className="stat-item">
+                      <div className="stat-number">{tempStats.avg}</div>
+                      <div className="stat-label">Average<br/>Temperature From Contributions</div>
+                    </div>
+                    
+                  </div>
+                </div>
                 {/* Tasks for today */}
                 <div className="dashboard-card">
                   <div className="tasks-section">
@@ -348,7 +371,7 @@ export default function Dashboard() {
                               <h4>Temperature Reading</h4>
                               <p>{point.temp}°C at {parseFloat(point.lat).toFixed(2)}, {parseFloat(point.lon).toFixed(2)}</p>
                             </div>
-                            <div className="task-check">✓</div>
+                            
                           </div>
                         ))}
                       </div>
@@ -356,24 +379,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 
-                {/* Statistics */}
-                <div className="dashboard-card">
-                  <div className="statistics-section">
-                    <h3>Statistics</h3>
-                    <div className="stat-item">
-                      <div className="stat-number">{userPoints.length}</div>
-                      <div className="stat-label">Total<br/>Points</div>
-                    </div>
-                    <div className="stat-item">
-                      <div className="stat-number">{tempStats.avg}</div>
-                      <div className="stat-label">Average<br/>Temperature</div>
-                    </div>
-                    <div className="stat-item">
-                      <div className="stat-number">{userPoints.length}</div>
-                      <div className="stat-label">Locations<br/>Tracked</div>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
             </>
           )}
