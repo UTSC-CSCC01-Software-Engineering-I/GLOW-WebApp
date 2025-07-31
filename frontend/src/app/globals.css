@@ -1,57 +1,57 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Regular.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicBook.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Medium.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicMedium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-SemiBold.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicDemi.ttf') format('truetype');
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Bold.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicBold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-ExtraBold.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicExtraBold.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Black.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicHeavy.ttf') format('truetype');
   font-weight: 900;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Light.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicLight.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter_18pt-Thin.ttf') format('truetype');
+  font-family: 'Futura';
+  src: url('/fonts/FuturaCyrillicLight.ttf') format('truetype');
   font-weight: 100;
   font-style: normal;
 }
@@ -71,7 +71,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Futura', sans-serif;
 }
 
 

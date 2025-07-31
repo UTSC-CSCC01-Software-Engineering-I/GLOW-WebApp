@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { FullScreenMenu } from './FullScreenMenu';
+import { HUDadd } from "../components/HUDadd";
 import '../styles/homepage.css';
 
 function MenuBlock({ theme, onMenuToggle }) {
@@ -25,6 +26,12 @@ export function HUDright() {
   const [theme, setTheme] = useState('dark');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+
+   useEffect(() => {
+      const token = localStorage.getItem('authToken');
+      setLoggedIn(!!token); // Update loggedIn state based on token existence
+  });
+
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.globalTheme){
@@ -89,6 +96,8 @@ export function HUDright() {
 
   return (
     <>
+
+      <HUDadd loggedIn={loggedIn} />
       <MenuBlock theme={theme} onMenuToggle={toggleMenu} />
       <FullScreenMenu 
         isOpen={isMenuOpen}

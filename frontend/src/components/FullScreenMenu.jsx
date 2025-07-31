@@ -41,6 +41,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
     onClose();
   };
 
+ 
   if (!isOpen) return null;
 
   return (
@@ -49,7 +50,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
         <div className="menu-header">
           <h1 style={{ 
             color: 'white',
-            fontFamily: 'Inter',
+            fontFamily: 'Inter, sans-serif',
             fontWeight: '900',
             fontSize: '3rem',
             margin: 0
@@ -72,8 +73,26 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
             ×
           </button>
         </div>
+        
 
         <div className="menu-items">
+          <div className="menu-item">
+            <button 
+              onClick={() => {loggedIn ? (router.push('/add-point')) : (router.push('/default'))
+                onClose();
+              }}
+              className="menu-action-button"
+              style={{
+                backgroundColor: '#28a745',
+                color: 'white'
+              }}
+            >
+              <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
+                +
+              </span>
+              Add Water Point
+            </button>
+          </div>
           <div className="menu-item">
             <button 
               onClick={toggleTheme}
@@ -140,24 +159,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
             </div>
           )}
 
-          <div className="menu-item">
-            <button 
-              onClick={() => {
-                router.push('/add-point');
-                onClose();
-              }}
-              className="menu-action-button"
-              style={{
-                backgroundColor: '#28a745',
-                color: 'white'
-              }}
-            >
-              <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
-                +
-              </span>
-              Add Water Point
-            </button>
-          </div>
+          
         </div>
       </div>
     </div>

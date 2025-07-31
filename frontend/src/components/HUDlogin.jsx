@@ -115,7 +115,7 @@ export function HUDlogin() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     setLoggedIn(!!token); // Update loggedIn state based on token existence
-
+    
     window.globalTheme = theme;
     window.dispatchEvent(new Event('themechange'));
   });
