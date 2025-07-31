@@ -14,7 +14,7 @@ function LoginBox({ theme, loading }) {
         
         <div style={{ 
           color: 'white', 
-          fontFamily: 'hubot sans', 
+          fontFamily: 'Inter, sans-serif', 
           fontWeight: '300', 
           fontSize: '1rem', 
           border: 'none',

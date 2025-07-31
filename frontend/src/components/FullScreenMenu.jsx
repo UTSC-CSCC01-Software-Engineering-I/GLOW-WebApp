@@ -31,6 +31,11 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
     onClose();
   };
 
+  const handleDashboard = () => {
+    router.push('/dashboard');
+    onClose();
+  };
+
   const handleLogout = () => {
     // Add logout logic here
     onClose();
@@ -102,6 +107,24 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
               </button>
             ) : (
               <button 
+                onClick={handleDashboard}
+                className="menu-action-button"
+                style={{
+                  backgroundColor: '#007acc',
+                  color: 'white'
+                }}
+              >
+                <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
+                  👤
+                </span>
+                User Dashboard
+              </button>
+            )}
+          </div>
+
+          {loggedIn && (
+            <div className="menu-item">
+              <button 
                 onClick={handleLogout}
                 className="menu-action-button"
                 style={{
@@ -114,8 +137,8 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
                 </span>
                 Logout
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="menu-item">
             <button 

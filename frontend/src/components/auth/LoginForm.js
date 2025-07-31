@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { authAPI } from '../../lib/api';
 import { useRouter } from 'next/navigation';
-import './loginform.css';
+import '../../styles/login.css';
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -90,41 +90,19 @@ export default function LoginForm() {
   if (user) {
     return (
       <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-green-600">Welcome!</h2>
-        <div className="space-y-2 mb-4">
-          <p><strong>Name:</strong> {user.firstName} {user.lastName}</p>
-          <p><strong>Email:</strong> {user.email}</p>
-        </div>
-        <div className="space-y-2">
-          <button
-            onClick={testConnection}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Test Backend Connection
-          </button>
-          <button
-            onClick={handleLogout}
-            className="w-full bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
-        </div>
-        {message && (
-          <div className="mt-4 p-2 text-sm bg-gray-100 rounded">
-            {message}
-          </div>
-        )}
+        <h2 className="text-2xl font-bold mb-4 text-green-600">Loading..</h2>
       </div>
     );
   }
 
   if (signup) {
     return (
-      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Sign Up for GLOW</h2>
+      <div className="loginbox" style={{ backdropFilter: 'blur(10px)'}}>
+        <h2 className='logsignT' >Sign Up</h2>
+        <p className='logsignSmall' >Create your account</p>
         <form onSubmit={handleSignupSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="fieldT">
               Email
             </label>
             <input
@@ -140,7 +118,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="fieldT">
               Password
             </label>
             <input
@@ -156,7 +134,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="firstName" className="fieldT">
               First Name
             </label>
             <input
@@ -172,7 +150,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="lastName" className="fieldT">
               Last Name
             </label>
             <input
@@ -182,7 +160,7 @@ export default function LoginForm() {
               value={formData.lastName}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-yellow-500 text-gray-800"
               placeholder="Enter your last name"
             />
           </div>
@@ -190,9 +168,9 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="buttonTop T"
           >
-            {isLoading ? 'Signing up...' : 'Sign Up'}
+            {isLoading ? 'Signing up...' : 'Get Started'}
           </button>
         </form>
 
@@ -201,7 +179,7 @@ export default function LoginForm() {
             setSignup(false);
             setLogin(true);
           }}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mt-2"
+          className="buttonBottom T"
         >
           Already have an account? Login
         </button>
@@ -211,21 +189,18 @@ export default function LoginForm() {
             {message}
           </div>
         )}
-
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>Demo credentials will be shown once backend is running</p>
-        </div>
       </div>
     );
   }
 
   if (login) {
     return (
-      <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Log in to GLOW</h2>
+      <div className="loginbox" style={{ backdropFilter: 'blur(10px)' }}>
+        <h2 className='logsignT' >Sign In</h2>
+        <p className='logsignSmall' >Lets get your account</p>
         <form onSubmit={handleLoginSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-800">
+            <label htmlFor="email" className="fieldT">
               Email
             </label>
             <input
@@ -241,7 +216,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-800">
+            <label htmlFor="password" className="fieldT">
               Password
             </label>
             <input
@@ -259,9 +234,9 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="buttonTop T"
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
@@ -270,9 +245,9 @@ export default function LoginForm() {
             setSignup(true);
             setLogin(false);
           }}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mt-2"
+          className="buttonBottom T"
         >
-          Don&apos;t have an account? Sign Up
+          Don't have an account? Create one
         </button>
 
         {message && (
@@ -280,65 +255,7 @@ export default function LoginForm() {
             {message}
           </div>
         )}
-
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>Demo credentials will be shown once backend is running</p>
-        </div>
       </div>
     );
   }
-
-  return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center">Welcome to GLOW</h2>
-      
-      {/* <form onSubmit={setLogin(true)} className="space-y-4">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-        >
-          Login
-        </button>
-      </form> */}
-      <button
-        onClick={() => {
-          setLogin(true);
-          setSignup(false);
-        }}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mt-2"
-      >
-        Log in
-      </button>
-      <button
-        onClick={() => {
-          setSignup(true);
-          setLogin(false);
-        }}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mt-2"
-      >
-        Sign Up
-      </button>
-
-      {/* <form onSubmit={setSignup(true)} className="space-y-4 mt-4">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-        >
-          Sign Up
-        </button>
-      </form> */}
-
-      {message && (
-        <div className="mt-4 p-2 text-sm bg-gray-100 rounded">
-          {message}
-        </div>
-      )}
-
-      <div className="mt-4 text-center text-sm text-gray-600">
-        <p>Demo credentials will be shown once backend is running</p>
-      </div>
-    </div>
-  );
 }
