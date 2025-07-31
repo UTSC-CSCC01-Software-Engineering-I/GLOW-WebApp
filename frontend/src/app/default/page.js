@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import LoginForm from "../../components/auth/LoginForm";
+import WelcomeSection from "../../components/WelcomeSection";
 import { useRouter } from 'next/navigation';
+import { HUDleft } from "../../components/HUDleft";
 import { useEffect } from 'react';
+import '../../styles/login.css';
 
 export default function Hello() {
   const router = useRouter();
@@ -19,51 +22,20 @@ export default function Hello() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Login Demo */}
-        <LoginForm />
-        <div className="mt-4" style={{display: 'flex', justifyContent: 'center', width: '100%'}}>
-          <button 
-            onClick={() => {
-              handleLogout();
-              router.push('/');
-            }}
-            style={{backgroundColor: 'black', fontFamily: 'hubot', padding: '0.9rem',
-            borderRadius: '5rem', cursor: 'pointer'
-        }} 
-        onMouseEnter={(e) => e.target.style.backgroundColor = 'blue'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'black'}
-        >GO BACK</button>
-
+    <div className="loginpage">
+      <div className="login-container">
+        <div className="sidepanel">
+          <WelcomeSection />
+        <button onClick={() => router.push('/')} className="back-button">
+            ← Back to Map
+          </button>   
         </div>
         
-        
-        {/* Connection Status */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8 mt-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">System Status</h2>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <span className="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
-              <span className="text-gray-700">Frontend: Next.js running on port 3000</span>
-            </div>
-            <div className="flex items-center">
-              <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
-              <span className="text-gray-700">Backend: Express.js configured for port 500</span>
-            </div>
-            <div className="flex items-center">
-              <span className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
-              <span className="text-gray-700">Database: MongoDB connection configured</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500 mt-4">
-            Start the backend server to test the full MVC connectivity
-          </p>
+        <div className="login-form-container">
+          <LoginForm />
         </div>
-
-        
-         
       </div>
+      
     </div>
   );
 }

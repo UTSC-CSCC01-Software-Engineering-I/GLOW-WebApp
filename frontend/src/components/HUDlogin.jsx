@@ -12,7 +12,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'sans-serif', 
+                    fontFamily: 'Inter, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '1.5rem', 
                     border: 'none',
@@ -34,7 +34,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
           
           <button onClick={() => router.push('/default')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'hubot', 
+            fontFamily: 'Inter, sans-serif', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
@@ -62,7 +62,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'sans-serif', 
+                    fontFamily: 'Inter, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '1.5rem', 
                     border: 'none',
@@ -82,9 +82,9 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
         alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
           
-          <button onClick={() => router.push('/default')} style={{ 
+          <button onClick={() => router.push('/dashboard')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'hubot', 
+            fontFamily: 'Inter, sans-serif', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
@@ -97,7 +97,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
           onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-          >LOG OUT</button>
+          >Dashboard</button>
           
           
       </div>

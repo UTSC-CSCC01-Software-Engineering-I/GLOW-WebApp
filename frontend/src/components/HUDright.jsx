@@ -12,7 +12,7 @@ function MenuBlock({ theme, onMenuToggle }) {
         <button 
           className='menubutton' 
           onClick={onMenuToggle}
-          style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'sans-serif'}}
+          style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'Inter, sans-serif'}}
         >
           |||
         </button>

@@ -32,7 +32,7 @@ function MenuBlock({ theme, loggedIn }) {
       }}>
         <h1 style={{
           color: theme === 'light' ? 'white' : 'black',
-          fontFamily: 'hubot',
+          fontFamily: 'Inter, sans-serif',
           fontWeight: '900',
           fontSize: '2rem'
         }}>+</h1>
@@ -40,7 +40,7 @@ function MenuBlock({ theme, loggedIn }) {
           onClick={handleClick}
           style={{
             color: theme === 'light' ? 'white' : 'black',
-            fontFamily: 'hubot sans',
+            fontFamily: 'Inter, sans-serif',
             fontWeight: '500',
             fontSize: '1.2rem',
             border: 'none',
