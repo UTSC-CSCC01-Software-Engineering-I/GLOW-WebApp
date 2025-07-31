@@ -53,3 +53,39 @@ exports.getPoints = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getUserPoints = async (req, res) => {
+  try {
+    // Get logged-in user
+    const user = await User.findById(req.userId).select('email');
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Find all points for this specific user
+    const points = await Point.find({ 'user.email': user.email });
+
+    // Format the response to match the frontend expectations
+    const formattedPoints = points.map(point => ({
+      lat: point.lat,
+      lon: point.lon,
+      temp: point.temp,
+      timestamp: point.createdAt,
+      source: 'user'
+    }));
+
+    return res.json({ 
+      success: true, 
+      data: formattedPoints 
+    });
+  } catch (err) {
+    console.error('Error fetching user points:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+};

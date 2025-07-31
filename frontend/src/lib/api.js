@@ -91,9 +91,30 @@ export const authAPI = {
   },
 };
 
+// Points API functions
+export const pointsAPI = {
+  // Get all points for the current user
+  getUserPoints: async () => {
+    return apiCall('/points');
+  },
+
+  // Add a new point
+  addPoint: async (pointData) => {
+    return apiCall('/points', {
+      method: 'POST',
+      body: JSON.stringify(pointData),
+    });
+  },
+
+  // Get all points (public)
+  getAllPoints: async () => {
+    return apiCall('/points/all');
+  },
+};
+
 // Health check
 export const healthCheck = async () => {
   return apiCall('/health');
 };
 
-export default { authAPI, healthCheck };
+export default { authAPI, pointsAPI, healthCheck };
