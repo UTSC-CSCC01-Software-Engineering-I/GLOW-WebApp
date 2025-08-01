@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState('light');
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -25,6 +26,26 @@ export default function Dashboard() {
     const view = urlParams.get('view');
     if (view === 'manage-points' || view === 'manage-profile') {
       setActiveView(view);
+    }
+
+    // Initialize theme from localStorage or global theme or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      // Sync with global theme
+      if (typeof window !== 'undefined') {
+        window.globalTheme = savedTheme;
+      }
+    } else if (typeof window !== 'undefined' && window.globalTheme) {
+      setTheme(window.globalTheme);
+    } else {
+      // Default to system preference
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      setTheme(systemTheme);
+      localStorage.setItem('theme', systemTheme);
+      if (typeof window !== 'undefined') {
+        window.globalTheme = systemTheme;
+      }
     }
   }, []);
 
@@ -265,6 +286,23 @@ export default function Dashboard() {
     setMobileMenuOpen(false);
   };
 
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    
+    // Store in localStorage with consistent key
+    localStorage.setItem('theme', newTheme);
+    
+    // Update global theme for consistency with main page
+    if (typeof window !== 'undefined') {
+      window.globalTheme = newTheme;
+      window.dispatchEvent(new Event('themechange'));
+    }
+    
+    setMobileMenuOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="dashboard-page">
@@ -294,16 +332,25 @@ export default function Dashboard() {
   }
   
   return (
-    <div className="dashboard-page">
-      {/* Mobile Menu Button */}
-      <button 
-        className={`mobile-menu-btn ${mobileMenuOpen ? 'active' : ''}`}
-        onClick={toggleMobileMenu}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+    <div className={`dashboard-page ${theme === 'dark' ? 'dark-theme' : ''}`}>
+      {/* Mobile Header */}
+      <div className="mobile-header">
+        <button 
+          className={`mobile-menu-btn ${mobileMenuOpen ? 'active' : ''}`}
+          onClick={toggleMobileMenu}
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div className="mobile-current-menu">
+          <h1 className="mobile-current-menu-title">
+            {activeView === 'dashboard' ? 'Dashboard' : 
+             activeView === 'manage-points' ? 'Manage Points' : 
+             activeView === 'manage-profile' ? 'Manage Profile' : 'Dashboard'}
+          </h1>
+        </div>
+      </div>
 
       {/* Mobile Sidebar Overlay */}
       <div 
@@ -339,6 +386,11 @@ export default function Dashboard() {
           <span>Manage Profile</span>
         </div>
         
+        <div className="nav-item theme-toggle" onClick={toggleTheme}>
+          <span className="theme-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
+          <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>
+        </div>
+        
         <div className="nav-item del" onClick={handleLogout}>
           <span>🢀 Logout</span>
         </div>
@@ -372,7 +424,11 @@ export default function Dashboard() {
               <span className="nav-icon"></span>
               <span>Manage Profile</span>
             </div>
-           
+            
+            <div className="nav-item theme-toggle" onClick={toggleTheme}>
+              <span className="nav-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
+              <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>
+            </div>
 
             <div className="nav-item del " onClick={handleLogout}>
                    <span>🢀 Logout</span>

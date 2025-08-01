@@ -5,17 +5,19 @@ import { FullScreenMenu } from './FullScreenMenu';
 import { HUDadd } from "../components/HUDadd";
 import '../styles/homepage.css';
 
-function MenuBlock({ theme, onMenuToggle }) {
+function MenuBlock({ theme, onMenuToggle, isMenuOpen }) {
   
   return (
     <div className='top-right-hud'>
-    <div className='menu' style={{ backgroundColor: theme === 'dark' ? 'white': 'black' }}>
+      <div className='menu' style={{ backgroundColor: theme === 'dark' ? 'white': 'black' }}>
         <button 
-          className='menubutton' 
+          className={`menubutton mobile-menu-btn-map ${isMenuOpen ? 'active' : ''}`}
           onClick={onMenuToggle}
           style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'Inter, sans-serif'}}
         >
-          |||
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
     </div>
@@ -34,8 +36,23 @@ export function HUDright() {
 
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.globalTheme){
+    // Initialize theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (typeof window !== 'undefined') {
+        window.globalTheme = savedTheme;
+      }
+    } else if (typeof window !== 'undefined' && window.globalTheme) {
       setTheme(window.globalTheme);
+    } else {
+      // Default to system preference
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      setTheme(systemTheme);
+      localStorage.setItem('theme', systemTheme);
+      if (typeof window !== 'undefined') {
+        window.globalTheme = systemTheme;
+      }
     }
 
     const handleThemeChange = () => {
@@ -54,12 +71,14 @@ export function HUDright() {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     
+    // Save to localStorage
+    localStorage.setItem('theme', newTheme);
+    
     // Update global theme
     if (typeof window !== 'undefined') {
       window.globalTheme = newTheme;
-      window.dispatchEvent(new Event('themechange')); // Add this line!
+      window.dispatchEvent(new Event('themechange'));
     }
-
 
     console.log('Toggle theme clicked!'); // Debug log
     console.log('current login state:', loggedIn); // Debug log
@@ -79,15 +98,11 @@ export function HUDright() {
       console.log('Switching to dark theme');
       map.removeLayer(lightLayer);
       map.addLayer(darkLayer);
-      setTheme('dark');
     } else {
       console.log('Switching to light theme');
       map.removeLayer(darkLayer);
       map.addLayer(lightLayer);
-      setTheme('light');
     }
-
-
   };
 
   const closeMenu = () => {
@@ -98,7 +113,7 @@ export function HUDright() {
     <>
 
       <HUDadd loggedIn={loggedIn} />
-      <MenuBlock theme={theme} onMenuToggle={toggleMenu} />
+      <MenuBlock theme={theme} onMenuToggle={toggleMenu} isMenuOpen={isMenuOpen} />
       <FullScreenMenu 
         isOpen={isMenuOpen}
         onClose={closeMenu}
