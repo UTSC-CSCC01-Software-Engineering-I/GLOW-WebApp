@@ -3,6 +3,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import '../styles/MapView.css';
 import '../styles/homepage.css'; // Shaafs code
+import { ThemeManager } from '../utils/themeManager';
+import { UnitManager } from '../utils/unitManager';
+import { formatTemperature } from '../utils/temperatureUtils';
 
 import {
   Chart,
@@ -59,6 +62,7 @@ export default function MapComponent() {
   const [loading, setLoading] = useState(true);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
+  const [unit, setUnit] = useState(() => UnitManager.getUnit());
 
   // Temperature color function - works with both Celsius and Fahrenheit
   function getTemperatureColor(temp, unit = 'C', mode = 'light') {
@@ -110,13 +114,16 @@ export default function MapComponent() {
         attribution: '© MapTiler © OpenStreetMap contributors'
       });
 
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Use ThemeManager to determine initial theme
+      const currentTheme = ThemeManager.getTheme();
+      const isDarkTheme = currentTheme === 'dark';
+      console.log('🗺️ MapComponent: Initializing map with theme:', currentTheme);
       
       if (mapRef.current && !mapInstanceRef.current) {
         const map = L.map(mapRef.current, {
           center: [43.647216678117736, -79.36719310664458],
           zoom: 12,
-          layers: [prefersDark ? darkLayer : lightLayer]
+          layers: [isDarkTheme ? darkLayer : lightLayer]
         });
         
         mapInstanceRef.current = map;
@@ -124,16 +131,20 @@ export default function MapComponent() {
         window.lightLayer = lightLayer;
         window.darkLayer = darkLayer;
 
-        window.matchMedia('(prefers-color-scheme: dark)')
-          .addEventListener('change', e => {
-            if (e.matches) {
-              map.removeLayer(lightLayer);
-              map.addLayer(darkLayer);
-            } else {
-              map.removeLayer(darkLayer);
-              map.addLayer(lightLayer);
-            }
-          });
+        // Listen for theme changes using ThemeManager
+        const removeThemeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+          console.log('🗺️ MapComponent: Theme changed to:', newTheme);
+          if (newTheme === 'dark') {
+            map.removeLayer(lightLayer);
+            map.addLayer(darkLayer);
+          } else {
+            map.removeLayer(darkLayer);
+            map.addLayer(lightLayer);
+          }
+        });
+
+        // Store the cleanup function for later use
+        map._themeCleanup = removeThemeListener;
 
         function addMarkers(items) {
           items.forEach((item, i) => {
@@ -141,13 +152,17 @@ export default function MapComponent() {
             const lat = item.lat || item.Latitude;
             const t = item.temp || item.Result;
             const name = item.siteName || item.Label || `User Point ${i + 1}`;
-            const tempColor = getTemperatureColor(t);
+            
+            // Get current unit and format temperature
+            const currentUnit = UnitManager.getUnit();
+            const formattedTemp = formatTemperature(t, currentUnit);
+            const tempColor = getTemperatureColor(t, 'C'); // Always calculate color from Celsius
 
-            console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${t}°C`);
+            console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${formattedTemp}`);
 
             const icon = L.divIcon({
               className: 'custom-temp-marker',
-              html: `<div class="temp-label" style="background-color: ${tempColor};">${t}°C</div>`,
+              html: `<div class="temp-label" style="background-color: ${tempColor};">${formattedTemp}</div>`,
               iconSize: [40, 40],
               iconAnchor: [20, 20],
             });
@@ -170,7 +185,7 @@ export default function MapComponent() {
               const sortedData = historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
               // Declare currentUnit BEFORE using it
-              const currentUnit = window.temperatureUnit || 'C';
+              const currentUnit = UnitManager.getUnit();
 
               // Create time-based data for proper spacing
               const timeBasedData = sortedData.map((d) => ({
@@ -463,24 +478,19 @@ export default function MapComponent() {
 
     initMap();
     
-    // Listen for unit toggles
-    const onUnitChange = () => {
-      const unit = window.temperatureUnit || 'C';
-
+    // Listen for unit changes using UnitManager
+    const removeUnitListener = UnitManager.addUnitChangeListener((newUnit) => {
+      setUnit(newUnit); // Update local state for legend
+      
       markersRef.current.forEach(({ marker, tempC, name }) => {
-        // Convert the original tempC value to the desired unit
-        const display = unit === 'F'
-          ? ((tempC * 9 / 5) + 32).toFixed(1)
-          : tempC;
-
-        // Calculate color based on the temperature in the current unit
-        const tempForColor = unit === 'F' ? ((tempC * 9 / 5) + 32) : tempC;
-        const tempColor = getTemperatureColor(tempForColor, unit);
+        // Use formatTemperature utility for consistent formatting
+        const formattedTemp = formatTemperature(tempC, newUnit);
+        const tempColor = getTemperatureColor(tempC, 'C'); // Always calculate color from Celsius
 
         // Update marker icon
         marker.setIcon(window.L.divIcon({
           className: 'custom-temp-marker',
-          html: `<div class="temp-label" style="background-color: ${tempColor};">${display}°${unit}</div>`,
+          html: `<div class="temp-label" style="background-color: ${tempColor};">${formattedTemp}</div>`,
           iconSize: [40, 40],
           iconAnchor: [20, 20],
         }));
@@ -492,28 +502,25 @@ export default function MapComponent() {
           // Convert original data to new unit with time structure
           const newTimeBasedData = marker.chartData.map((d) => ({
             x: new Date(d.timestamp),
-            y: unit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
+            y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
           }));
 
           // Update dataset with time-based data
           chart.data.datasets[0].data = newTimeBasedData;
 
           // Update the y-axis title
-          chart.options.scales.y.title.text = `Temperature (°${unit})`;
+          chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
           
           // Update y-axis tick callback
           chart.options.scales.y.ticks.callback = function(value) {
-            return `${value}°${unit}`;
+            return `${value}°${newUnit}`;
           };
 
           // Apply the updates
           chart.update();
         }
       });
-    };
-
-    // Add the event listener
-    window.addEventListener('unitchange', onUnitChange);
+    });
 
     // Listen for theme changes
     const onThemeChange = () => {
@@ -611,9 +618,15 @@ export default function MapComponent() {
 
     // Cleanup the event listeners on component unmount
     return () => {
-      window.removeEventListener('unitchange', onUnitChange);
+      removeUnitListener(); // Clean up UnitManager listener
       window.removeEventListener('themechange', onThemeChange);
-      if (mapInstanceRef.current) mapInstanceRef.current.remove();
+      if (mapInstanceRef.current) {
+        // Clean up ThemeManager listener
+        if (mapInstanceRef.current._themeCleanup) {
+          mapInstanceRef.current._themeCleanup();
+        }
+        mapInstanceRef.current.remove();
+      }
     };
   }, []);
 
@@ -724,10 +737,10 @@ export default function MapComponent() {
     <div className="legend">
       <div className="legend-bar"></div>
       <div className="legend-labels">
-        <span>30°C</span>
-        <span>20°C</span>
-        <span>10°C</span>
-        <span>0°C</span>
+        <span>{unit === 'F' ? '86°F' : '30°C'}</span>
+        <span>{unit === 'F' ? '68°F' : '20°C'}</span>
+        <span>{unit === 'F' ? '50°F' : '10°C'}</span>
+        <span>{unit === 'F' ? '32°F' : '0°C'}</span>
       </div>
     </div>
   </div>

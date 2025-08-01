@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeManager } from '../utils/themeManager';
 
 function MenuBlock({ theme, loggedIn }) {
   const router = useRouter();
@@ -61,20 +62,23 @@ function MenuBlock({ theme, loggedIn }) {
 }
 
 export function HUDadd() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     setLoggedIn(!!token); // true if token exists
 
-    if (typeof window !== 'undefined' && window.globalTheme) {
-      setTheme(window.globalTheme);
-    }
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
 
-    const handleThemeChange = () => setTheme(window.globalTheme);
-    window.addEventListener('themechange', handleThemeChange);
-    return () => window.removeEventListener('themechange', handleThemeChange);
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
+
+    return removeListener;
   }, []);
 
   return <MenuBlock theme={theme} loggedIn={loggedIn} />;

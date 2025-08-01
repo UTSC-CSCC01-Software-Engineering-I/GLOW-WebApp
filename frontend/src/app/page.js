@@ -8,7 +8,6 @@ import { HUDlogin } from "../components/HUDlogin";
 
 import { HUDloading } from "../components/HUDloading";
 import { HUDleftPoints } from "../components/HUDleftPoints";
-import { HUDunitToggle } from '../components/HUDunitToggle';
 import '../styles/homepage.css';
 
 export default function Home() {
@@ -22,7 +21,6 @@ export default function Home() {
       <div className="desktop">
         <HUDloading />
         <HUDlogin />
-        <HUDunitToggle />
       </div>   
       <MapView />
     </div>

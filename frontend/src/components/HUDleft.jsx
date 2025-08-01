@@ -2,21 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import '../styles/homepage.css';
+import { ThemeManager } from '../utils/themeManager';
 
 
 function LogoBlock() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
+  
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.globalTheme){
-      setTheme(window.globalTheme);
-    }
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
 
-    const handleThemeChange = () => {
-      setTheme(window.globalTheme); // update local state
-    };
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
 
-    window.addEventListener('themechange', handleThemeChange);
-    return () => window.removeEventListener('themechange', handleThemeChange);
+    return removeListener;
   }, []);
 
 

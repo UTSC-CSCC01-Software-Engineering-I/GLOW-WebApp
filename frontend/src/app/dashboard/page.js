@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { authAPI, pointsAPI } from '../../lib/api';
+import { ThemeManager } from '../../utils/themeManager';
+import { UnitManager } from '../../utils/unitManager';
+import { formatTemperature, convertTemperature, getTemperatureForInput, convertTemperatureForStorage } from '../../utils/temperatureUtils';
 import '../../styles/dashboard.css';
 
 export default function Dashboard() {
@@ -16,7 +19,8 @@ export default function Dashboard() {
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
+  const [unit, setUnit] = useState(() => UnitManager.getUnit());
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -28,26 +32,40 @@ export default function Dashboard() {
       setActiveView(view);
     }
 
-    // Initialize theme from localStorage or global theme or system preference
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-      // Sync with global theme
-      if (typeof window !== 'undefined') {
-        window.globalTheme = savedTheme;
-      }
-    } else if (typeof window !== 'undefined' && window.globalTheme) {
-      setTheme(window.globalTheme);
-    } else {
-      // Default to system preference
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      setTheme(systemTheme);
-      localStorage.setItem('theme', systemTheme);
-      if (typeof window !== 'undefined') {
-        window.globalTheme = systemTheme;
-      }
-    }
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
+
+    // Listen for theme changes from other components
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
+
+    return removeListener;
   }, []);
+
+  useEffect(() => {
+    // Initialize unit using UnitManager
+    const currentUnit = UnitManager.getUnit();
+    setUnit(currentUnit);
+
+    // Listen for unit changes
+    const removeListener = UnitManager.addUnitChangeListener((newUnit) => {
+      setUnit(newUnit);
+    });
+
+    return removeListener;
+  }, []);
+
+  // Update edit form when unit changes
+  useEffect(() => {
+    if (editingPoint && editForm.temp) {
+      // Convert the current form temperature back to Celsius, then to new unit
+      const tempInCelsius = convertTemperatureForStorage(editForm.temp, unit === 'C' ? 'F' : 'C');
+      const newTemp = getTemperatureForInput(tempInCelsius, unit);
+      setEditForm(prev => ({ ...prev, temp: newTemp }));
+    }
+  }, [unit]);
 
   useEffect(() => {
     // Close mobile menu on escape key
@@ -147,7 +165,7 @@ export default function Dashboard() {
   // Get temperature statistics
   const getTempStats = () => {
     if (userPoints.length === 0) return { avg: 0, min: 0, max: 0 };
-    const temps = userPoints.map(p => parseFloat(p.temp));
+    const temps = userPoints.map(p => convertTemperature(p.temp, unit));
     return {
       avg: (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1),
       min: Math.min(...temps).toFixed(1),
@@ -180,7 +198,7 @@ export default function Dashboard() {
   const handleEditPoint = (point) => {
     setEditingPoint(point);
     setEditForm({
-      temp: point.temp,
+      temp: getTemperatureForInput(point.temp, unit),
       lat: point.lat,
       lon: point.lon
     });
@@ -191,11 +209,19 @@ export default function Dashboard() {
     e.preventDefault();
     
     try {
-      const response = await pointsAPI.updatePoint(editingPoint._id, editForm);
+      // Convert temperature to Celsius for storage
+      const tempForStorage = convertTemperatureForStorage(editForm.temp, unit);
+      const updateData = {
+        temp: tempForStorage,
+        lat: editForm.lat,
+        lon: editForm.lon
+      };
+      
+      const response = await pointsAPI.updatePoint(editingPoint._id, updateData);
       if (response.success) {
         setUserPoints(userPoints.map(point => 
           point._id === editingPoint._id 
-            ? { ...point, ...editForm }
+            ? { ...point, ...updateData }
             : point
         ));
         setEditingPoint(null);
@@ -289,17 +315,14 @@ export default function Dashboard() {
   // Toggle theme
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    
-    // Store in localStorage with consistent key
-    localStorage.setItem('theme', newTheme);
-    
-    // Update global theme for consistency with main page
-    if (typeof window !== 'undefined') {
-      window.globalTheme = newTheme;
-      window.dispatchEvent(new Event('themechange'));
-    }
-    
+    ThemeManager.setTheme(newTheme);
+    setMobileMenuOpen(false);
+  };
+
+  // Toggle unit
+  const toggleUnit = () => {
+    const newUnit = unit === 'C' ? 'F' : 'C';
+    UnitManager.setUnit(newUnit);
     setMobileMenuOpen(false);
   };
 
@@ -308,7 +331,7 @@ export default function Dashboard() {
       <div className="dashboard-page">
         <div className="dashboard-loading">
           <div className="spinner"></div>
-          <span>Loading your dashboard...</span>
+          <span>Loading dashboard...</span>
         </div>
       </div>
     );
@@ -360,8 +383,8 @@ export default function Dashboard() {
 
       {/* Mobile Sidebar */}
       <div className={`mobile-sidebar ${mobileMenuOpen ? 'active' : ''}`}>
-        <h1 className='logotop'>GLOW</h1>
-        <h2 className='logobottom'>by Microsofties</h2>
+        <h1 className='logotop' style={{ fontFamily: 'inter'}}>GLOW</h1>
+        <h2 className='logobottom' style={{ fontFamily: 'inter'}}>by Microsofties</h2>
         
         <div className="mapbut nav-item" onClick={() => window.location.href = '/'}>
           <span>▶ Open Maps</span>
@@ -389,6 +412,11 @@ export default function Dashboard() {
         <div className="nav-item theme-toggle" onClick={toggleTheme}>
           <span className="theme-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
           <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>
+        </div>
+        
+        <div className="nav-item theme-toggle" onClick={toggleUnit}>
+          <span className="theme-icon">°{unit}</span>
+          <span>Switch to °{unit === 'C' ? 'F' : 'C'}</span>
         </div>
         
         <div className="nav-item del" onClick={handleLogout}>
@@ -430,6 +458,11 @@ export default function Dashboard() {
               <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>
             </div>
 
+            <div className="nav-item theme-toggle" onClick={toggleUnit}>
+              <span className="nav-icon">°{unit}</span>
+              <span>Switch to °{unit === 'C' ? 'F' : 'C'}</span>
+            </div>
+
             <div className="nav-item del " onClick={handleLogout}>
                    <span>🢀 Logout</span>
                 </div>
@@ -466,15 +499,15 @@ export default function Dashboard() {
                       <div className="stat-label">Points<br/> Contributed</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">{tempStats.max}</div>
+                      <div className="stat-number">{tempStats.max}°{unit}</div>
                       <div className="stat-label">Your<br/>Max Temperature</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">{tempStats.min}</div>
-                      <div className="stat-label">Youe<br/>MIN Temperature</div>
+                      <div className="stat-number">{tempStats.min}°{unit}</div>
+                      <div className="stat-label">Your<br/>MIN Temperature</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">{tempStats.avg}</div>
+                      <div className="stat-number">{tempStats.avg}°{unit}</div>
                       <div className="stat-label">YOUR<br/>Average Temperature</div>
                     </div>
                     
@@ -499,7 +532,7 @@ export default function Dashboard() {
                             <div className={`task-icon ${index === 0 ? 'orange' : index === 1 ? 'purple' : 'teal'}`}></div>
                             <div className="task-content">
                               <h4>Temperature Reading</h4>
-                              <p>{point.temp}°C at {parseFloat(point.lat).toFixed(2)}, {parseFloat(point.lon).toFixed(2)}</p>
+                              <p>{formatTemperature(point.temp, unit)} at {parseFloat(point.lat).toFixed(2)}, {parseFloat(point.lon).toFixed(2)}</p>
                             </div>
                             
                           </div>
@@ -554,7 +587,7 @@ export default function Dashboard() {
                               <input
                                 type="number"
                                 step="0.1"
-                                placeholder="Temperature (°C)"
+                                placeholder={`Temperature (°${unit})`}
                                 value={editForm.temp}
                                 onChange={(e) => setEditForm({...editForm, temp: e.target.value})}
                                 required
@@ -584,7 +617,7 @@ export default function Dashboard() {
                         ) : (
                           <>
                             <div className="point-info">
-                              <div className="point-temp">{point.temp}°C</div>
+                              <div className="point-temp">{formatTemperature(point.temp, unit)}</div>
                               <div className="point-coords">
                                 Lat: {parseFloat(point.lat).toFixed(4)}<br/>
                                 Lon: {parseFloat(point.lon).toFixed(4)}

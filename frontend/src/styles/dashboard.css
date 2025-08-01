@@ -114,7 +114,7 @@
     transition: all 0.2s ease;
     font-size: 14px;
     font-weight: 500;
-    color: #000000;
+    color: #ffffff;
 }
 .del{
     color: rgb(255, 0, 0);
@@ -1080,7 +1080,7 @@
     left: -100%;
     width: 280px;
     height: 100vh;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background: linear-gradient(-45deg, #2f7994, #206e33);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
     z-index: 1002;
@@ -1150,7 +1150,6 @@
 
 .mobile-sidebar .theme-toggle {
     background-color: rgba(255, 255, 255, 0.2);
-    margin-top: auto;
     margin-bottom: 1rem;
 }
 

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeManager } from '../utils/themeManager';
 
 function LoginBox({ toggleTheme, theme, loggedIn }) {
   const router = useRouter();
@@ -109,44 +110,34 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
 }
 
 export function HUDlogin() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     setLoggedIn(!!token); // Update loggedIn state based on token existence
     
-    window.globalTheme = theme;
-    window.dispatchEvent(new Event('themechange'));
-  });
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
+
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
+
+    return removeListener;
+  }, []);
 
   const toggleTheme = () => {
     console.log('Toggle theme clicked!'); // Debug log
     console.log('current login state:', loggedIn); // Debug log
     
-    const map = window.leafletMap;
-    const lightLayer = window.lightLayer;
-    const darkLayer = window.darkLayer;
-
-    console.log('Map:', map, 'Light:', lightLayer, 'Dark:', darkLayer); // Debug log
-
-    if (!map || !lightLayer || !darkLayer) {
-      console.log('Map or layers not available yet');
-      return;
-    }
-
-    if (theme === 'light') {
-      console.log('Switching to dark theme');
-      map.removeLayer(lightLayer);
-      map.addLayer(darkLayer);
-      setTheme('dark');
-    } else {
-      console.log('Switching to light theme');
-      map.removeLayer(darkLayer);
-      map.addLayer(lightLayer);
-      setTheme('light');
-    }
+    const newTheme = theme === 'light' ? 'dark' : 'light';
     
+    // Use ThemeManager to update theme globally
+    // The map will automatically switch layers via its own theme listener
+    ThemeManager.setTheme(newTheme);
   };
 
   return <LoginBox toggleTheme={toggleTheme} theme={theme} loggedIn={loggedIn}/>;
