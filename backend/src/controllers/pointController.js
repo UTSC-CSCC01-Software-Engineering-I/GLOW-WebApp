@@ -70,6 +70,7 @@ exports.getUserPoints = async (req, res) => {
 
     // Format the response to match the frontend expectations
     const formattedPoints = points.map(point => ({
+      _id: point._id,
       lat: point.lat,
       lon: point.lon,
       temp: point.temp,
@@ -83,6 +84,107 @@ exports.getUserPoints = async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching user points:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+};
+
+exports.editPoint = async (req, res) => {
+  try {
+    const { pointId } = req.params;
+    const { lat, lon, temp } = req.body;
+
+    if (!lat || !lon || !temp) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required fields: lat, lon, temp' 
+      });
+    }
+
+    // Get logged-in user
+    const user = await User.findById(req.userId).select('email');
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Find the point and verify ownership
+    const point = await Point.findOne({ 
+      _id: pointId, 
+      'user.email': user.email 
+    });
+
+    if (!point) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Point not found or you do not have permission to edit it' 
+      });
+    }
+
+    // Update the point
+    point.lat = lat;
+    point.lon = lon;
+    point.temp = temp;
+    
+    await point.save();
+
+    return res.json({ 
+      success: true, 
+      message: 'Point updated successfully',
+      point: {
+        _id: point._id,
+        lat: point.lat,
+        lon: point.lon,
+        temp: point.temp,
+        timestamp: point.createdAt,
+        source: 'user'
+      }
+    });
+  } catch (err) {
+    console.error('Error editing point:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error' 
+    });
+  }
+};
+
+exports.deletePoint = async (req, res) => {
+  try {
+    const { pointId } = req.params;
+
+    // Get logged-in user
+    const user = await User.findById(req.userId).select('email');
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
+    }
+
+    // Find and delete the point, verifying ownership
+    const deletedPoint = await Point.findOneAndDelete({ 
+      _id: pointId, 
+      'user.email': user.email 
+    });
+
+    if (!deletedPoint) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Point not found or you do not have permission to delete it' 
+      });
+    }
+
+    return res.json({ 
+      success: true, 
+      message: 'Point deleted successfully' 
+    });
+  } catch (err) {
+    console.error('Error deleting point:', err);
     return res.status(500).json({ 
       success: false, 
       message: 'Server error' 

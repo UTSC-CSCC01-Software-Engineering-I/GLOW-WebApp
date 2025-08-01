@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [editForm, setEditForm] = useState({ temp: '', lat: '', lon: '' });
   const [profileForm, setProfileForm] = useState({ firstName: '', lastName: '', currentPassword: '', newPassword: '', confirmPassword: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -27,6 +27,20 @@ export default function Dashboard() {
       setActiveView(view);
     }
   }, []);
+
+  useEffect(() => {
+    // Close mobile menu on escape key
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     // Fetch user data
@@ -240,6 +254,17 @@ export default function Dashboard() {
     }
   };
 
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  // Handle mobile navigation
+  const handleMobileNavigation = (view) => {
+    setActiveView(view);
+    setMobileMenuOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="dashboard-page">
@@ -270,6 +295,55 @@ export default function Dashboard() {
   
   return (
     <div className="dashboard-page">
+      {/* Mobile Menu Button */}
+      <button 
+        className={`mobile-menu-btn ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={toggleMobileMenu}
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      <div 
+        className={`mobile-sidebar-overlay ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      ></div>
+
+      {/* Mobile Sidebar */}
+      <div className={`mobile-sidebar ${mobileMenuOpen ? 'active' : ''}`}>
+        <h1 className='logotop'>GLOW</h1>
+        <h2 className='logobottom'>by Microsofties</h2>
+        
+        <div className="mapbut nav-item" onClick={() => window.location.href = '/'}>
+          <span>▶ Open Maps</span>
+        </div>
+        
+        <div 
+          className={`nav-item ${activeView === 'dashboard' ? 'active' : ''}`} 
+          onClick={() => handleMobileNavigation('dashboard')}
+        >
+          <span>Dashboard</span>
+        </div>
+        <div 
+          className={`nav-item ${activeView === 'manage-points' ? 'active' : ''}`} 
+          onClick={() => handleMobileNavigation('manage-points')}
+        >
+          <span>Manage Points</span>
+        </div>
+        <div 
+          className={`nav-item ${activeView === 'manage-profile' ? 'active' : ''}`} 
+          onClick={() => handleMobileNavigation('manage-profile')}
+        >
+          <span>Manage Profile</span>
+        </div>
+        
+        <div className="nav-item del" onClick={handleLogout}>
+          <span>🢀 Logout</span>
+        </div>
+      </div>
+
       <div className="dashboard-container">
         {/* Left Sidebar */}
         <div className="sidebar">
@@ -337,15 +411,15 @@ export default function Dashboard() {
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.max}</div>
-                      <div className="stat-label">Max<br/>Temperature From Contributions</div>
+                      <div className="stat-label">Your<br/>Max Temperature</div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.min}</div>
-                      <div className="stat-label">Min<br/>Temperature From Contributions</div>
+                      <div className="stat-label">Youe<br/>MIN Temperature</div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.avg}</div>
-                      <div className="stat-label">Average<br/>Temperature From Contributions</div>
+                      <div className="stat-label">YOUR<br/>Average Temperature</div>
                     </div>
                     
                   </div>

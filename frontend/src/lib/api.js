@@ -114,7 +114,7 @@ export const pointsAPI = {
 
   // Add a new point
   addPoint: async (pointData) => {
-    return apiCall('/points', {
+    return apiCall('/add-point', {
       method: 'POST',
       body: JSON.stringify(pointData),
     });
