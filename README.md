@@ -12,6 +12,11 @@
 ### Dashboard
 <img width="1484" height="888" alt="image" src="https://github.com/user-attachments/assets/84529e0d-1b41-487b-85a7-5702286c859c" />
 
+### Side Menu
+<img width="1186" height="887" alt="image" src="https://github.com/user-attachments/assets/7ee0df9e-6232-4f2f-be81-ea5580e74935" />
+<img width="1178" height="885" alt="image" src="https://github.com/user-attachments/assets/c1d7fdb0-5214-48a8-936e-e643649e12cf" />
+
+
 ### Mobile View
 <img width="529" height="889" alt="image" src="https://github.com/user-attachments/assets/7d1c741f-5a57-4a7f-8cb0-ae4c176d23ff" />
 
