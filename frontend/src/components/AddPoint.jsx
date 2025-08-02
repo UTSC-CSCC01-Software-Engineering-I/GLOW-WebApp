@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { authAPI, pointsAPI } from '../lib/api';
+import { ThemeManager } from '../utils/themeManager';
 
 export default function AddPoint() {
   const [lat, setLat] = useState('');
@@ -15,8 +16,18 @@ export default function AddPoint() {
   const [showFullscreenConfirmation, setShowFullscreenConfirmation] = useState(false);
   const [addedPoint, setAddedPoint] = useState(null);
   const [referrerPage, setReferrerPage] = useState('map');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
 
   useEffect(() => {
+    // Initialize theme
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
+
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
+
     // Check URL parameters for referrer
     const urlParams = new URLSearchParams(window.location.search);
     const from = urlParams.get('from');
@@ -57,6 +68,8 @@ export default function AddPoint() {
         () => setError('Could not retrieve location')
       );
     }
+
+    return removeListener;
   }, []);
 
   const handleSubmit = async (e) => {
@@ -178,18 +191,18 @@ export default function AddPoint() {
     return (
       <div style={{
         minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: theme === 'dark' ? '#000' : '#fff',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: 'Inter, sans-serif'
       }}>
-        <div style={{ textAlign: 'center', color: '#6b7280' }}>
+        <div style={{ textAlign: 'center', color: theme === 'dark' ? 'white' : 'black' }}>
           <div style={{
             width: '40px',
             height: '40px',
-            border: '3px solid #f3f4f6',
-            borderTop: '3px solid #fbbf24',
+            border: `3px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            borderTop: '3px solid rgba(0, 217, 255, 0.6)',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
             margin: '0 auto 20px'
@@ -330,7 +343,7 @@ export default function AddPoint() {
       {/* Main Content */}
       <div style={{
         minHeight: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: theme === 'dark' ? '#000' : '#fff',
         fontFamily: 'Inter, sans-serif',
         padding: '20px',
         display: 'flex',
@@ -340,9 +353,11 @@ export default function AddPoint() {
         <div style={{
           maxWidth: '500px',
           width: '100%',
-          backgroundColor: 'white',
+          backgroundColor: '#ffffff44',
+          border: theme === 'light' ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: '24px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          boxShadow: theme === 'light' ? '0 8px 32px rgba(0,0,0,0.1)' : '0 8px 32px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(10px)',
           padding: '40px',
           position: 'relative'
         }}>
@@ -353,23 +368,21 @@ export default function AddPoint() {
               position: 'absolute',
               top: '20px',
               left: '20px',
-              background: '#f9fafb',
-              border: '1px solid #e5e7eb',
+              background: 'transparent',
+              border: 'none',
               borderRadius: '12px',
               padding: '8px 16px',
               fontSize: '14px',
               fontWeight: '500',
-              color: '#6b7280',
+              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
               cursor: 'pointer',
               transition: 'all 0.2s ease'
             }}
             onMouseOver={(e) => {
-              e.target.style.background = '#f3f4f6';
-              e.target.style.color = '#374151';
+              e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
             }}
             onMouseOut={(e) => {
-              e.target.style.background = '#f9fafb';
-              e.target.style.color = '#6b7280';
+              e.target.style.backgroundColor = 'transparent';
             }}
           >
             {getBackLabel()}
@@ -380,21 +393,23 @@ export default function AddPoint() {
             <h1 style={{
               fontSize: '28px',
               fontWeight: '700',
-              color: '#1f2937',
-              margin: '0 0 8px 0'
+              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+              margin: '0 0 8px 0',
+              letterSpacing: '-0.02em'
             }}>
               Hello, {user?.firstName || 'User'}! 👋
             </h1>
             <p style={{
               fontSize: '16px',
-              color: '#6b7280',
-              margin: '0 0 4px 0'
+              color: theme === 'dark' ? 'rgb(240,240,240)' : 'rgb(60,60,60)',
+              margin: '0 0 4px 0',
+              fontWeight: '500'
             }}>
               Add a temperature point to your account
             </p>
             <p style={{
               fontSize: '14px',
-              color: '#9ca3af',
+              color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
               margin: '0',
               fontStyle: 'italic'
             }}>
@@ -409,7 +424,7 @@ export default function AddPoint() {
               display: 'block',
               fontSize: '14px',
               fontWeight: '600',
-              color: '#374151',
+              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
               marginBottom: '6px'
             }}>
               Latitude
@@ -423,17 +438,23 @@ export default function AddPoint() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                border: '2px solid #e5e7eb',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '12px',
                 fontSize: '16px',
-                color: '#1a1a1a',
-                background: '#ffffff',
-                transition: 'border-color 0.2s ease',
-                boxSizing: 'border-box'
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
+                backdropFilter: 'blur(10px)',
+                outline: 'none'
               }}
               placeholder="Auto-detected latitude"
-              onFocus={(e) => e.target.style.borderColor = '#fbbf24'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+              onFocus={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+              }}
             />
           </div>
 
@@ -442,7 +463,7 @@ export default function AddPoint() {
               display: 'block',
               fontSize: '14px',
               fontWeight: '600',
-              color: '#374151',
+              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
               marginBottom: '6px'
             }}>
               Longitude
@@ -456,17 +477,23 @@ export default function AddPoint() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                border: '2px solid #e5e7eb',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '12px',
                 fontSize: '16px',
-                color: '#1a1a1a',
-                background: '#ffffff',
-                transition: 'border-color 0.2s ease',
-                boxSizing: 'border-box'
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
+                backdropFilter: 'blur(10px)',
+                outline: 'none'
               }}
               placeholder="Auto-detected longitude"
-              onFocus={(e) => e.target.style.borderColor = '#fbbf24'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+              onFocus={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+              }}
             />
           </div>
 
@@ -475,10 +502,10 @@ export default function AddPoint() {
               display: 'block',
               fontSize: '14px',
               fontWeight: '600',
-              color: '#374151',
+              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
               marginBottom: '6px'
             }}>
-              Temperature (°C)
+              🌡️ Temperature (°C)
             </label>
             <input
               type="number"
@@ -489,17 +516,24 @@ export default function AddPoint() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                border: '2px solid #e5e7eb',
+                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
                 borderRadius: '12px',
                 fontSize: '16px',
-                color: '#1a1a1a',
-                background: '#ffffff',
-                transition: 'border-color 0.2s ease',
-                boxSizing: 'border-box'
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                transition: 'all 0.2s ease',
+                boxSizing: 'border-box',
+                backdropFilter: 'blur(10px)',
+                outline: 'none',
+                fontWeight: '600'
               }}
               placeholder="Enter temperature in Celsius"
-              onFocus={(e) => e.target.style.borderColor = '#fbbf24'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+              onFocus={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+              }}
+              onBlur={(e) => {
+                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+              }}
             />
           </div>
 
@@ -510,15 +544,14 @@ export default function AddPoint() {
             style={{
               width: '100%',
               padding: '14px 24px',
-              background: submitting ? '#d1d5db' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-              border: 'none',
+              backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? '#fff' : '#333'),
+              border: '1px solid rgba(0,0,0,0.1)',
               borderRadius: '12px',
               fontSize: '16px',
               fontWeight: '600',
-              color: submitting ? '#6b7280' : '#1a1a1a',
+              color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#000' : '#fff'),
               cursor: submitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: submitting ? 'none' : '0 4px 15px rgba(251, 191, 36, 0.3)',
               marginTop: '10px',
               display: 'flex',
               alignItems: 'center',
@@ -527,16 +560,12 @@ export default function AddPoint() {
             }}
             onMouseOver={(e) => {
               if (!submitting) {
-                e.target.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 25px rgba(251, 191, 36, 0.4)';
+                e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
               }
             }}
             onMouseOut={(e) => {
               if (!submitting) {
-                e.target.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 15px rgba(251, 191, 36, 0.3)';
+                e.target.style.backgroundColor = theme === 'light' ? '#fff' : '#333';
               }
             }}
           >
@@ -562,27 +591,23 @@ export default function AddPoint() {
               width: '100%',
               padding: '14px 24px',
               background: 'transparent',
-              border: `2px solid ${submitting ? '#f3f4f6' : '#e5e7eb'}`,
+              border: '1px solid rgba(0,0,0,0.1)',
               borderRadius: '12px',
               fontSize: '16px',
               fontWeight: '500',
-              color: submitting ? '#d1d5db' : '#6b7280',
+              color: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)'),
               cursor: submitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               opacity: submitting ? 0.5 : 1
             }}
             onMouseOver={(e) => {
               if (!submitting) {
-                e.target.style.borderColor = '#d1d5db';
-                e.target.style.background = '#f9fafb';
-                e.target.style.color = '#374151';
+                e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
               }
             }}
             onMouseOut={(e) => {
               if (!submitting) {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.background = 'transparent';
-                e.target.style.color = '#6b7280';
+                e.target.style.backgroundColor = 'transparent';
               }
             }}
           >
@@ -597,12 +622,13 @@ export default function AddPoint() {
           <div style={{
             marginTop: '20px',
             padding: '12px 16px',
-            background: '#d1fae5',
-            border: '1px solid #a7f3d0',
+            backgroundColor: 'rgba(52, 199, 89, 0.1)',
+            border: '1px solid rgba(52, 199, 89, 0.2)',
             borderRadius: '12px',
-            color: '#065f46',
+            color: '#34c759',
             fontSize: '14px',
-            fontWeight: '500'
+            fontWeight: '500',
+            backdropFilter: 'blur(10px)'
           }}>
             ✅ Temperature point added successfully!
           </div>
@@ -613,12 +639,13 @@ export default function AddPoint() {
           <div style={{
             marginTop: '20px',
             padding: '12px 16px',
-            background: '#fee2e2',
-            border: '1px solid #fecaca',
+            backgroundColor: 'rgba(255, 59, 48, 0.1)',
+            border: '1px solid rgba(255, 59, 48, 0.2)',
             borderRadius: '12px',
-            color: '#dc2626',
+            color: '#ff3b30',
             fontSize: '14px',
-            fontWeight: '500'
+            fontWeight: '500',
+            backdropFilter: 'blur(10px)'
           }}>
             ❌ {error}
           </div>

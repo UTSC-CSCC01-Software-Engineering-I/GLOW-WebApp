@@ -72,18 +72,25 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
         className={`map-mobile-sidebar-overlay ${isOpen ? 'active' : ''}`}
         onClick={onClose}
       ></div>
-      <div className={`map-mobile-sidebar ${isOpen ? 'active' : ''}`}>
+      <div className={`map-mobile-sidebar ${isOpen ? 'active' : ''}`} 
+      style={{backgroundColor: theme === 'dark' 
+              ? 'rgba(2, 2, 2, 0.5)' 
+              : 'rgba(255, 255, 255, 0.1)'}}>
         <div className="map-sidebar-header">
           
           <h1 className='map-logotop' style={{ fontFamily: 'inter'}}>glow</h1>
-          <h2 className='map-logobottom' style={{ fontFamily: 'inter'}} >by MicroSofties</h2>
+          <h2 className='map-logobottom' style={{ fontFamily: 'sans-serif'}} >by MicroSofties</h2>
           
         </div>
+
+        {/* <div style={{ borderBottom: '1px solid #e5e5e5'}} ></div> */}
         
-        <div className="map-menu-items">
+        <div className="map-menu-items" >
           <div 
               className="map-nav-item active"
-              
+              style={{backgroundColor: theme === 'light' 
+              ? 'rgba(2, 2, 2, 0.5)' 
+              : 'rgba(255, 255, 255, 0.1)'}}
             >
               <span>MAPS</span>
             </div>
@@ -102,6 +109,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
               <span>User Dashboard</span>
             </div>
           )}
+          <div style={{ borderBottom: '1px solid #e5e5e5' , marginBottom: '1rem'}} ></div>
           <div 
             className="map-nav-item map-add-point"
             onClick={() => {

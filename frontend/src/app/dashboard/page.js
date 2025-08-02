@@ -408,6 +408,9 @@ export default function Dashboard() {
         >
           <span>Manage Profile</span>
         </div>
+
+        
+
         
         <div className="nav-item theme-toggle" onClick={toggleTheme}>
           <span className="theme-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
@@ -419,7 +422,8 @@ export default function Dashboard() {
           <span>Switch to °{unit === 'C' ? 'F' : 'C'}</span>
         </div>
         
-        <div className="nav-item del" onClick={handleLogout}>
+        <div className="nav-item del " onClick={handleLogout} 
+        style={{ marginTop: 'auto'}}>
           <span>🢀 Logout</span>
         </div>
       </div>
@@ -448,11 +452,12 @@ export default function Dashboard() {
               <span className="nav-icon"></span>
               <span>Manage Points</span>
             </div>
+            
             <div className={`nav-item ${activeView === 'manage-profile' ? 'active' : ''}`} onClick={() => setActiveView('manage-profile')}>
               <span className="nav-icon"></span>
               <span>Manage Profile</span>
             </div>
-            
+            <div style={{ borderBottom: '1px solid #e5e5e5' , marginBottom: '1rem', marginTop : '1rem'}} ></div>
             <div className="nav-item theme-toggle" onClick={toggleTheme}>
               <span className="nav-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
               <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>

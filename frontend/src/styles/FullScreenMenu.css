@@ -60,7 +60,7 @@
     right: -100%;
     width: 280px;
     height: 100vh;
-    background: rgba(40, 40, 40, 0.922);
+    background-color: rgba(160, 160, 160, 0.922);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
     z-index: 10000;
@@ -68,7 +68,7 @@
     display: flex;
     flex-direction: column;
     backdrop-filter: blur(10px);
-    padding: 80px 20px 30px;
+    padding: 35px 20px 30px;
     box-shadow: -2px 0 20px rgba(0, 0, 0, 0.3);
     font-family: 'Inter', sans-serif;
 }
@@ -84,21 +84,21 @@
 }
 
 .map-logotop {
+    margin-bottom: -1rem;
     color: white;
-    font-family: Inter, sans-serif;
+    font-family: Inter;
     font-weight: 800;
     font-size: 4rem;
-    margin-bottom: -1rem;
-    margin: 0;
 }
 
 .map-logobottom {
-    color: white;
-    margin-left: 0.5rem;
-    font-family: 'Inter', sans-serif;
-    font-style: italic;
+    color: #fff;
+    text-align: left;
+    margin-left: 1.2rem;
+    font-family: sans-serif;
     font-size: 1rem;
-    margin: 0 0 2rem 0.5rem;
+    font-style: italic;
+    font-weight: 300;
 }
 
 /* Menu Items */
@@ -110,15 +110,21 @@
     margin-top: 1rem;
 }
 
+.unselected {
+    /* border: 1px solid white; */
+    background-color: rgba(255, 255, 255, 0.064);
+}
+
 .map-nav-item {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 16px 20px;
+    
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
     color: white;
     margin-bottom: 8px;

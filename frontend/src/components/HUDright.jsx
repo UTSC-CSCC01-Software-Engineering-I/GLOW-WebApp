@@ -10,11 +10,16 @@ function MenuBlock({ theme, onMenuToggle, isMenuOpen }) {
   
   return (
     <div className='top-right-hud'>
-      <div className='menu' style={{ backgroundColor: theme === 'dark' ? 'white': 'black' }}>
+      <div className='menu' style={{ border: theme === 'light'
+          ? '1px solid rgba(255,255,255,0.3)'
+          : '1px solid rgba(255,255,255,0.1)',
+        boxShadow: theme === 'light'
+          ? '0 8px 32px rgba(0,0,0,0.1)'
+          : '0 8px 32px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)' }}>
         <button 
           className={`menubutton mobile-menu-btn-map ${isMenuOpen ? 'active' : ''}`}
           onClick={onMenuToggle}
-          style={{ color: theme === 'light' ? 'white': 'black', fontFamily: 'Inter, sans-serif'}}
+          style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter, sans-serif'}}
         >
           <span></span>
           <span></span>

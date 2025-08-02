@@ -25,7 +25,12 @@ function LogoBlock() {
   return (
   
   <div >
-    <div className='AppLogoBlock' style={{ }}>
+    <div className='AppLogoBlock' style={{ border: theme === 'light'
+          ? '1px solid rgba(255,255,255,0.3)'
+          : '1px solid rgba(255,255,255,0.1)',
+        boxShadow: theme === 'light'
+          ? '0 8px 32px rgba(0,0,0,0.1)'
+          : '0 8px 32px rgba(0,0,0,0.3)'}}>
         <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter', fontWeight: '900', 
           fontSize: '1.5rem'
         }}>GLOW</h1>

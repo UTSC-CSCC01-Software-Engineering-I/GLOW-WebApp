@@ -66,7 +66,7 @@
 .user-profile {
     text-align: left;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e5e5e5;
+    /* border-bottom: 1px solid #e5e5e5; */
 }
 
 .user-avatar {
@@ -1739,12 +1739,13 @@
 .mapbut:hover {
     
 }
+.logout {
+    margin-top: 'auto';
+}
 
 /* Desktop Theme Toggle Styles */
 .sidebar .nav-item.theme-toggle {
     background-color: rgba(255, 255, 255, 0.2);
-    margin-top: auto;
-    margin-bottom: 1rem;
     color: white;
 }
 
