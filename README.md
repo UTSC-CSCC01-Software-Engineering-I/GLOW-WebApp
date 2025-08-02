@@ -2,17 +2,18 @@
 # GLOW by Microsofties
 ## Landing Page
 ### Light Theme
-![image](https://github.com/user-attachments/assets/423a6938-ac8a-4fa8-9053-4a1df4953a29)
+<img width="1482" height="888" alt="image" src="https://github.com/user-attachments/assets/d42afd9e-c0de-4266-a466-f120465f75c5" />
+
+
 
 ### Dark Theme
-![image](https://github.com/user-attachments/assets/c59da4b9-b53c-49fe-a3dd-eb4daffeb407)
+<img width="1479" height="888" alt="image" src="https://github.com/user-attachments/assets/295c2659-a06c-4fc0-98d1-80e79379a619" />
 
-## API Fetching
-![image](https://github.com/user-attachments/assets/616d476c-deea-4b9a-b23d-420893362116)
+### Dashboard
+<img width="1484" height="888" alt="image" src="https://github.com/user-attachments/assets/84529e0d-1b41-487b-85a7-5702286c859c" />
 
-## API Fetching Complete
-![image](https://github.com/user-attachments/assets/50c3953d-5757-4cd9-b82e-e3ec8df14004)
-
+### Mobile View
+<img width="529" height="889" alt="image" src="https://github.com/user-attachments/assets/7d1c741f-5a57-4a7f-8cb0-ae4c176d23ff" />
 
 ## Project Overview
 
