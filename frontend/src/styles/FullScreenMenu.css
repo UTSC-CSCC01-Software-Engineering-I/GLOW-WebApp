@@ -1,0 +1,206 @@
+/* FullScreenMenu Component Styles */
+*{
+    font-family: 'Inter';
+}
+    
+/* Mobile Menu Button */
+.mobile-menu-btn-map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px;
+    transition: all 0.3s ease;
+    transform: none !important;
+}
+
+.mobile-menu-btn-map span {
+    width: 18px;
+    height: 2px;
+    background-color: currentColor;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.mobile-menu-btn-map.active span:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+}
+
+.mobile-menu-btn-map.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-btn-map.active span:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+}
+
+/* Mobile Sidebar Overlay */
+.map-mobile-sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.map-mobile-sidebar-overlay.active {
+    display: block;
+}
+
+/* Mobile Sidebar */
+.map-mobile-sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background-color: rgba(160, 160, 160, 0.922);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    z-index: 10000;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px);
+    padding: 35px 20px 30px;
+    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.3);
+    font-family: 'Inter', sans-serif;
+}
+
+.map-mobile-sidebar.active {
+    right: 0;
+}
+
+/* Sidebar Header */
+.map-sidebar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.map-logotop {
+    margin-bottom: -1rem;
+    color: white;
+    font-family: Inter;
+    font-weight: 800;
+    font-size: 4rem;
+}
+
+.map-logobottom {
+    color: #fff;
+    text-align: left;
+    margin-left: 1.2rem;
+    font-family: sans-serif;
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: 300;
+}
+
+/* Menu Items */
+.map-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    margin-top: 1rem;
+}
+
+.unselected {
+    /* border: 1px solid white; */
+    background-color: rgba(255, 255, 255, 0.064);
+}
+
+.map-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.map-nav-item:hover {
+    background: #3d3d3d;
+    color: #ffffff;
+}
+
+.map-nav-item.active {
+    background: rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+    color: white;
+}
+
+.map-nav-icon {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+}
+
+.map-nav-logout {
+    color: rgb(255, 0, 0);
+    font-weight: 500;
+    background-color: rgb(255, 255, 255);
+    margin-top: auto;
+}
+
+.map-nav-logout:hover {
+   color: white;
+    font-weight: 800;
+    background-color: red;
+}
+
+/* Theme toggle and unit toggle special styling */
+.map-nav-item.map-theme-toggle,
+.map-nav-item.map-unit-toggle {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.map-nav-item.map-theme-toggle:hover,
+.map-nav-item.map-unit-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.map-nav-item.map-theme-toggle .map-nav-icon,
+.map-nav-item.map-unit-toggle .map-nav-icon {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+}
+
+/* Special styling for add water point button */
+.map-nav-item.map-add-point {
+    color: white;
+    font-weight: 700;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.map-nav-item.map-add-point:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Animations */
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+

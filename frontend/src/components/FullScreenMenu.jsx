@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { UnitManager } from '../utils/unitManager';
+import '../styles/FullScreenMenu.css';
+
 
 export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }) {
   const router = useRouter();
+  const [unit, setUnit] = useState(() => UnitManager.getUnit());
 
   // Handle ESC key press
   useEffect(() => {
@@ -26,6 +30,20 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
     };
   }, [isOpen, onClose]);
 
+  // Listen for unit changes
+  useEffect(() => {
+    // Initialize unit using UnitManager
+    const currentUnit = UnitManager.getUnit();
+    setUnit(currentUnit);
+
+    // Listen for unit changes
+    const removeListener = UnitManager.addUnitChangeListener((newUnit) => {
+      setUnit(newUnit);
+    });
+
+    return removeListener;
+  }, []);
+
   const handleLogin = () => {
     router.push('/default');
     onClose();
@@ -37,129 +55,106 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
   };
 
   const handleLogout = () => {
-    // Add logout logic here
+    localStorage.removeItem('authToken');
+    window.location.reload();
     onClose();
   };
 
-  if (!isOpen) return null;
+  const toggleUnit = () => {
+    const newUnit = unit === 'C' ? 'F' : 'C';
+    UnitManager.setUnit(newUnit);
+  };
+
 
   return (
-    <div className="fullscreen-menu-overlay" onClick={onClose}>
-      <div className="fullscreen-menu-content" onClick={(e) => e.stopPropagation()}>
-        <div className="menu-header">
-          <h1 style={{ 
-            color: 'white',
-            fontFamily: 'Inter',
-            fontWeight: '900',
-            fontSize: '3rem',
-            margin: 0
-          }}>
-            MENU
-          </h1>
-          <button 
-            className="close-button"
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'white',
-              fontSize: '2rem',
-              cursor: 'pointer',
-              padding: '0.5rem'
-            }}
-            aria-label="Close menu"
-          >
-            ×
-          </button>
+    <>
+      <div 
+        className={`map-mobile-sidebar-overlay ${isOpen ? 'active' : ''}`}
+        onClick={onClose}
+      ></div>
+      <div className={`map-mobile-sidebar ${isOpen ? 'active' : ''}`} 
+      style={{backgroundColor: theme === 'dark' 
+              ? 'rgba(2, 2, 2, 0.5)' 
+              : 'rgba(255, 255, 255, 0.1)'}}>
+        <div className="map-sidebar-header">
+          
+          <h1 className='map-logotop' style={{ fontFamily: 'inter'}}>glow</h1>
+          <h2 className='map-logobottom' style={{ fontFamily: 'sans-serif'}} >by MicroSofties</h2>
+          
         </div>
 
-        <div className="menu-items">
-          <div className="menu-item">
-            <button 
-              onClick={toggleTheme}
-              className="menu-action-button"
-              style={{
-                backgroundColor: theme === 'dark' ? 'white' : 'black',
-                color: theme === 'dark' ? 'black' : 'white', border: "1px solid white"
-              }}
+        {/* <div style={{ borderBottom: '1px solid #e5e5e5'}} ></div> */}
+        
+        <div className="map-menu-items" >
+          <div 
+              className="map-nav-item active"
+              style={{backgroundColor: theme === 'light' 
+              ? 'rgba(2, 2, 2, 0.5)' 
+              : 'rgba(255, 255, 255, 0.1)'}}
             >
-              <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
-                {theme === 'dark' ? '☀' : '🌙'}
-              </span>
-              Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme
-            </button>
-          </div>
-
-          <div className="menu-item">
-            {!loggedIn ? (
-              <button 
-                onClick={handleLogin}
-                className="menu-action-button"
-                style={{
-                  backgroundColor: '#007acc',
-                  color: 'white'
-                }}
-              >
-                <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
-                  👤
-                </span>
-                Login / Sign Up
-              </button>
-            ) : (
-              <button 
-                onClick={handleDashboard}
-                className="menu-action-button"
-                style={{
-                  backgroundColor: '#007acc',
-                  color: 'white'
-                }}
-              >
-                <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
-                  👤
-                </span>
-                User Dashboard
-              </button>
-            )}
-          </div>
-
-          {loggedIn && (
-            <div className="menu-item">
-              <button 
-                onClick={handleLogout}
-                className="menu-action-button"
-                style={{
-                  backgroundColor: '#dc3545',
-                  color: 'white'
-                }}
-              >
-                <span style={{ fontSize: '1.5rem', marginRight: '1rem' }}>
-                  🚪
-                </span>
-                Logout
-              </button>
+              <span>MAPS</span>
+            </div>
+          {!loggedIn ? (
+            <div 
+              className="map-nav-item"
+              onClick={handleLogin}
+            >
+              <span>Login / Sign Up</span>
+            </div>
+          ) : (
+            <div 
+              className="map-nav-item"
+              onClick={handleDashboard}
+            >
+              <span>User Dashboard</span>
             </div>
           )}
-
-          <div className="menu-item">
-            <button 
-              onClick={() => {
-                router.push('/add-point');
-                onClose();
-              }}
-              className="menu-action-button"
-              style={{
-                backgroundColor: '#28a745',
-                color: 'white'
-              }}
-            >
-              <span style={{ fontSize: '2rem', marginRight: '1rem' }}>
-                +
-              </span>
-              Add Water Point
-            </button>
+          <div style={{ borderBottom: '1px solid #e5e5e5' , marginBottom: '1rem'}} ></div>
+          <div 
+            className="map-nav-item map-add-point"
+            onClick={() => {
+              loggedIn ? router.push('/add-point') : router.push('/default');
+              onClose();
+            }}
+          >
+            <span className="map-nav-icon">+</span>
+            <span>Add Water Point</span>
           </div>
+          
+          <div 
+            className="map-nav-item map-theme-toggle"
+            onClick={() => {
+              toggleTheme();
+              onClose();
+            }}
+          >
+            <span className="map-nav-icon">{theme === 'dark' ? '☀' : '🌙'}</span>
+            <span>Switch to {theme === 'dark' ? 'Light' : 'Dark'} Theme</span>
+          </div>
+
+          <div 
+            className="map-nav-item map-unit-toggle"
+            onClick={() => {
+              toggleUnit();
+              onClose();
+            }}
+          >
+            <span className="map-nav-icon">°{unit}</span>
+            <span>Switch to °{unit === 'C' ? 'F' : 'C'}</span>
+          </div>
+
+          
+
+          {loggedIn && (
+            <div 
+              className="map-nav-item map-nav-logout"
+              onClick={handleLogout}
+            >
+              <span>🢀 Logout</span>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

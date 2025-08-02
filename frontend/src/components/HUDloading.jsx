@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeManager } from '../utils/themeManager';
 
 function LoginBox({ theme, loading }) {
   const router = useRouter();
@@ -36,27 +37,31 @@ function LoginBox({ theme, loading }) {
 }
 
 export function HUDloading() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      if (typeof window !== 'undefined' && window.globalTheme && window.loadedAPI){
-        setTheme(window.globalTheme);
+      // Initialize theme using ThemeManager
+      const currentTheme = ThemeManager.getTheme();
+      setTheme(currentTheme);
+
+      if (typeof window !== 'undefined' && window.loadedAPI){
         setLoading(window.loadedAPI);
       }
   
-      const handleThemeChange = () => {
-        setTheme(window.globalTheme); // update local state
-      };
+      // Listen for theme changes
+      const removeThemeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+        setTheme(newTheme);
+      });
+
       const handleLoadingText = () => {
         setLoading(window.loadedAPI); // update local state
       };
   
-      window.addEventListener('themechange', handleThemeChange);
       window.addEventListener('dataloaded', handleLoadingText);
 
        return () => {
-        window.removeEventListener('themechange', handleThemeChange);
+        removeThemeListener();
         window.removeEventListener('dataloaded', handleLoadingText);
       };
     }, []);

@@ -79,6 +79,20 @@ export const authAPI = {
     });
   },
 
+  // Delete user account
+  deleteAccount: async () => {
+    const response = await apiCall('/auth/profile', {
+      method: 'DELETE',
+    });
+
+    // Remove token on successful deletion
+    if (response.success) {
+      localStorage.removeItem('authToken');
+    }
+
+    return response;
+  },
+
   // Check if user is authenticated
   isAuthenticated: () => {
     if (typeof window === 'undefined') return false;
@@ -100,9 +114,24 @@ export const pointsAPI = {
 
   // Add a new point
   addPoint: async (pointData) => {
-    return apiCall('/points', {
+    return apiCall('/add-point', {
       method: 'POST',
       body: JSON.stringify(pointData),
+    });
+  },
+
+  // Update a point
+  updatePoint: async (pointId, pointData) => {
+    return apiCall(`/points/${pointId}`, {
+      method: 'PUT',
+      body: JSON.stringify(pointData),
+    });
+  },
+
+  // Delete a point
+  deletePoint: async (pointId) => {
+    return apiCall(`/points/${pointId}`, {
+      method: 'DELETE',
     });
   },
 

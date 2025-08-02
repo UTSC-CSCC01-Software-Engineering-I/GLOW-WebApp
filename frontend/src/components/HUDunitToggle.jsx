@@ -1,19 +1,27 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { UnitManager } from '../utils/unitManager';
 
 export function HUDunitToggle() {
-  const [unit, setUnit] = useState('C');
+  const [unit, setUnit] = useState(() => UnitManager.getUnit());
 
   useEffect(() => {
-    window.temperatureUnit = unit;
-  }, [unit]);
+    // Initialize unit using UnitManager
+    const currentUnit = UnitManager.getUnit();
+    setUnit(currentUnit);
+
+    // Listen for unit changes
+    const removeListener = UnitManager.addUnitChangeListener((newUnit) => {
+      setUnit(newUnit);
+    });
+
+    return removeListener;
+  }, []);
 
   const toggle = () => {
-    const next = unit === 'C' ? 'F' : 'C';
-    setUnit(next);
-    window.temperatureUnit = next;
-    window.dispatchEvent(new Event('unitchange'));
+    const newUnit = unit === 'C' ? 'F' : 'C';
+    UnitManager.setUnit(newUnit);
   };
 
   return (

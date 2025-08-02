@@ -1,10 +1,10 @@
 .loginpage {
     min-height: 100vh;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background: linear-gradient(-45deg, #23a6d5, #34c759, rgb(155, 155, 155));
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
     position: relative;
-    font-family: 'Inter, sans-serif';
+    font-family: 'Inter', sans-serif;
 }
 
 @keyframes gradient {
@@ -37,7 +37,7 @@
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 2rem;
-    font-family: 'Inter, sans-serif';
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 // Dynamic import of the actual map component to avoid SSR issues
 const DynamicMap = dynamic(() => import('./MapComponent'), {
   ssr: false,
-  loading: () => <div style={{position: 'fixed', top: '50vh', right: '46vh' }}> <h1>A MicroSofties Application</h1></div>
+  loading: () => <div style={{position: 'fixed', top: '50vh', right: '46vh' }}> <h1 style={{ fontSize: '2rem'}}>A MicroSofties Application</h1></div>
 });
 
 export function MapView() {

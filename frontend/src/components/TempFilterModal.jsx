@@ -36,14 +36,14 @@ function TempFilterModal({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 9999, 
-        backdropFilter: 'blur(4px)'
+        backdropFilter: 'blur(4 px)'
       }}>
       <div
         onClick={e => e.stopPropagation()}
         style={{
           backgroundColor: theme === 'light'
-            ? 'rgba(255,255,255,0.98)'
-            : 'rgba(25,25,25,0.98)',
+            ? 'rgba(255,255,255,0.1)'
+            : 'rgba(25,25,25,0.1)',
           color: theme === 'light' ? '#000' : '#fff',
           padding: '2rem',
           borderRadius: '1rem',
@@ -64,7 +64,7 @@ function TempFilterModal({
           fontWeight: '600',
           textAlign: 'center'
         }}>
-          Temperature Filter
+          Filter
         </h2>
         
         <p style={{
@@ -101,8 +101,8 @@ function TempFilterModal({
                 padding: '0.5rem',
                 borderRadius: '0.5rem',
                 border: theme === 'light'
-                  ? '2px solid rgba(0,0,0,0.1)'
-                  : '2px solid rgba(255,255,255,0.2)',
+                  ? '1px solid rgba(0,0,0,0.1)'
+                  : '1px solid rgba(255,255,255,0.2)',
                 backgroundColor: theme === 'light'
                   ? '#fff'
                   : 'rgba(255,255,255,0.1)',
@@ -137,8 +137,8 @@ function TempFilterModal({
                 padding: '0.5rem',
                 borderRadius: '0.5rem',
                 border: theme === 'light'
-                  ? '2px solid rgba(0,0,0,0.1)'
-                  : '2px solid rgba(255,255,255,0.2)',
+                  ? '1px solid rgba(0,0,0,0.1)'
+                  : '1px solid rgba(255,255,255,0.2)',
                 backgroundColor: theme === 'light'
                   ? '#fff'
                   : 'rgba(255,255,255,0.1)',
@@ -216,6 +216,7 @@ function TempFilterModal({
           <button
             onClick={applyTempFilter}
             style={{
+              width: '100%',
               padding: '0.4rem 0.9rem',
               backgroundColor: theme === 'light' ? '#34c759' : '#30D158',
               border: 'none',

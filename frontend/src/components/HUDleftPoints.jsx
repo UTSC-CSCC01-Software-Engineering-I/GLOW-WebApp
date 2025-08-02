@@ -5,11 +5,12 @@ import '../styles/HudBeaches.css';
 import { globalBeach } from './MapComponent.jsx';
 import '../styles/homepage.css';
 import TempFilterModal from './TempFilterModal';
+import { ThemeManager } from '../utils/themeManager';
 
 
 
 function LogoBlock() {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
   const [locaList, setLocaList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,16 +24,16 @@ function LogoBlock() {
   const [tempFilter, setTempFilter] = useState({ min: '', max: '' });
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.globalTheme){
-      setTheme(window.globalTheme);
-    }
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
 
-    const handleThemeChange = () => {
-      setTheme(window.globalTheme); // update local state
-    };
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
 
-    window.addEventListener('themechange', handleThemeChange);
-    return () => window.removeEventListener('themechange', handleThemeChange);
+    return removeListener;
   }, []);
 
   useEffect(() => {
@@ -167,7 +168,7 @@ const resetTempFilter = () => {
     <div 
       className="boxwithpoints"
       style={{
-        backgroundColor: theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(15,15,15,0.85)',
+        // backgroundColor: theme === 'light' ? '#ffffff44' : '#ffffff44',
         border: theme === 'light'
           ? '1px solid rgba(255,255,255,0.3)'
           : '1px solid rgba(255,255,255,0.1)',
@@ -203,7 +204,7 @@ const resetTempFilter = () => {
             type="text"
             value={searchTerm}
             onChange={handleInputChange}
-            placeholder="Search beaches…"
+            placeholder="search"
             style={{
               width: '100%',
               padding: '0.75rem 2.5rem 0.75rem 1rem',
@@ -264,25 +265,29 @@ const resetTempFilter = () => {
               color: theme === 'light' ? '#000' : '#fff',
               cursor: 'pointer'
             }}
-          >Sort</button>
+          >↕</button>
           
           {showSortMenu && (
             <div style={{
               position: 'absolute',
               top: '100%',
               right: 0,
-              backgroundColor: theme === 'light' ? '#fff' : '#333',
+              backgroundColor: theme === 'light' ? '#ffffff44' : '#ffffff44',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               color: theme === 'light' ? '#000' : '#fff',
               borderRadius: '0.25rem',
               overflow: 'hidden',
-              zIndex: 10
+              zIndex: 10,
+              width: '8rem',
+              borderRadius: '1rem',
+              backdropFilter: 'blur(10px)'
             }}>
               <button
                 onClick={handleSortAsc}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                 style={{
+                  
                   display: 'block',
                   width: '100%',
                   padding: '0.5rem 1rem',
@@ -343,7 +348,7 @@ const resetTempFilter = () => {
             cursor: 'pointer'
           }}
         >
-          Filter
+          ⋮
         </button>
 
       </div>

@@ -15,4 +15,10 @@ router.get('/points', authMiddleware, PointController.getUserPoints);
 // POST /api/add-point → add a new point (protected)
 router.post('/add-point', authMiddleware, PointController.addPoint);
 
+// PUT /api/points/:pointId → edit a point (protected)
+router.put('/points/:pointId', authMiddleware, PointController.editPoint);
+
+// DELETE /api/points/:pointId → delete a point (protected)
+router.delete('/points/:pointId', authMiddleware, PointController.deletePoint);
+
 module.exports = router;
