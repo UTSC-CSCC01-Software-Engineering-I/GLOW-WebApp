@@ -1,28 +1,24 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/RwYFkG2A)
 # GLOW by Microsofties
 
-## Updated Mobile + Desktop UI
-<video width="600" controls>
-  <source src="doc/readme1.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-### List Data
-![WhatsApp Image 2025-07-05 at 02 55 35_83685e48](https://github.com/user-attachments/assets/9b06bec6-53a8-48f1-967e-a847fe7096f1)
-
-## Landing Page
 ### Light Theme
-![image](https://github.com/user-attachments/assets/423a6938-ac8a-4fa8-9053-4a1df4953a29)
+<img width="1482" height="888" alt="image" src="https://github.com/user-attachments/assets/d42afd9e-c0de-4266-a466-f120465f75c5" />
+
+
 
 ### Dark Theme
-![image](https://github.com/user-attachments/assets/c59da4b9-b53c-49fe-a3dd-eb4daffeb407)
+<img width="1479" height="888" alt="image" src="https://github.com/user-attachments/assets/295c2659-a06c-4fc0-98d1-80e79379a619" />
 
-## API Fetching
-![image](https://github.com/user-attachments/assets/616d476c-deea-4b9a-b23d-420893362116)
+### Dashboard
+<img width="1484" height="888" alt="image" src="https://github.com/user-attachments/assets/84529e0d-1b41-487b-85a7-5702286c859c" />
 
-## API Fetching Complete
-![image](https://github.com/user-attachments/assets/50c3953d-5757-4cd9-b82e-e3ec8df14004)
+### Side Menu
+<img width="1186" height="887" alt="image" src="https://github.com/user-attachments/assets/7ee0df9e-6232-4f2f-be81-ea5580e74935" />
+<img width="1178" height="885" alt="image" src="https://github.com/user-attachments/assets/c1d7fdb0-5214-48a8-936e-e643649e12cf" />
 
+
+### Mobile View
+<img width="529" height="889" alt="image" src="https://github.com/user-attachments/assets/7d1c741f-5a57-4a7f-8cb0-ae4c176d23ff" />
 
 ## Project Overview
 
