@@ -3,14 +3,6 @@ const bcrypt = require('bcrypt');
 
 // User Schema (Model in MVC)
 const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: [true, 'Username is required'],
-    unique: true,
-    trim: true,
-    minlength: [3, 'Username must be at least 3 characters long'],
-    maxlength: [30, 'Username cannot exceed 30 characters']
-  },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -52,7 +44,10 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
   // Only hash the password if it's been modified (or is new)
   if (!this.isModified('password')) return next();
-  
+
+  // Check if the password is already hashed (optional safeguard)
+  if (this.password.startsWith('$2b$')) return next(); // bcrypt hashes start with "$2b$"
+
   try {
     // Hash password with cost of 12
     const hashedPassword = await bcrypt.hash(this.password, 12);

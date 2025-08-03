@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const waterDataRoutes = require('./routes/waterDataRoute');
+const pointRoutes = require('./routes/pointRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -11,16 +13,21 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize cron jobs
+require('./cron/cronJob'); // Start periodic tasks
+
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api', require('./routes/waterDataRoute'));
+app.use('/api', waterDataRoutes);
+app.use('/api', pointRoutes);
+
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -46,8 +53,8 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 GLOW Backend Server is running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`GLOW Backend Server is running on port ${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/api/health`);
 });
 
 module.exports = app;

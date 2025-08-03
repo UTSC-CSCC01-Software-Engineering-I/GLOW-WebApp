@@ -1,6 +1,6 @@
 // API utility functions for connecting frontend to backend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api';
 
 // Generic API call function
 async function apiCall(endpoint, options = {}) {
@@ -79,6 +79,20 @@ export const authAPI = {
     });
   },
 
+  // Delete user account
+  deleteAccount: async () => {
+    const response = await apiCall('/auth/profile', {
+      method: 'DELETE',
+    });
+
+    // Remove token on successful deletion
+    if (response.success) {
+      localStorage.removeItem('authToken');
+    }
+
+    return response;
+  },
+
   // Check if user is authenticated
   isAuthenticated: () => {
     if (typeof window === 'undefined') return false;
@@ -91,9 +105,45 @@ export const authAPI = {
   },
 };
 
+// Points API functions
+export const pointsAPI = {
+  // Get all points for the current user
+  getUserPoints: async () => {
+    return apiCall('/points');
+  },
+
+  // Add a new point
+  addPoint: async (pointData) => {
+    return apiCall('/add-point', {
+      method: 'POST',
+      body: JSON.stringify(pointData),
+    });
+  },
+
+  // Update a point
+  updatePoint: async (pointId, pointData) => {
+    return apiCall(`/points/${pointId}`, {
+      method: 'PUT',
+      body: JSON.stringify(pointData),
+    });
+  },
+
+  // Delete a point
+  deletePoint: async (pointId) => {
+    return apiCall(`/points/${pointId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Get all points (public)
+  getAllPoints: async () => {
+    return apiCall('/points/all');
+  },
+};
+
 // Health check
 export const healthCheck = async () => {
   return apiCall('/health');
 };
 
-export default { authAPI, healthCheck };
+export default { authAPI, pointsAPI, healthCheck };

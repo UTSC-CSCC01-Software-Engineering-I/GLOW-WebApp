@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeManager } from '../utils/themeManager';
 
 function LoginBox({ theme, loading }) {
   const router = useRouter();
@@ -12,9 +13,9 @@ function LoginBox({ theme, loading }) {
       opacity: loading ? 1 : 0,
       transition: 'opacity 5s ease-in'}}>
         
-        <h1 style={{ 
+        <div style={{ 
           color: 'white', 
-          fontFamily: 'hubot sans', 
+          fontFamily: 'Inter, sans-serif', 
           fontWeight: '300', 
           fontSize: '1rem', 
           border: 'none',
@@ -27,12 +28,8 @@ function LoginBox({ theme, loading }) {
           display:'flex',
           flexDirection: 'row',
           gap: '0.5rem',
-          alignItems: 'center'
-
-          
-          
-        }}
-        ><h1 style={{ fontSize: '1.4rem', marginBottom: '0.1rem' }}>🛈</h1>{loading ? 'Fetching latest data from api...' : 'Latest data loaded!'}</h1>
+          alignItems: 'center'}}
+        ><h1 style={{ fontSize: '1.4rem', marginBottom: '0.1rem' }}>🛈</h1>{loading ? 'Fetching latest data from api...' : 'Latest data loaded!'}</div>
   </div>
     
   
@@ -40,27 +37,31 @@ function LoginBox({ theme, loading }) {
 }
 
 export function HUDloading() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-      if (typeof window !== 'undefined' && window.globalTheme && window.loadedAPI){
-        setTheme(window.globalTheme);
+      // Initialize theme using ThemeManager
+      const currentTheme = ThemeManager.getTheme();
+      setTheme(currentTheme);
+
+      if (typeof window !== 'undefined' && window.loadedAPI){
         setLoading(window.loadedAPI);
       }
   
-      const handleThemeChange = () => {
-        setTheme(window.globalTheme); // update local state
-      };
+      // Listen for theme changes
+      const removeThemeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+        setTheme(newTheme);
+      });
+
       const handleLoadingText = () => {
         setLoading(window.loadedAPI); // update local state
       };
   
-      window.addEventListener('themechange', handleThemeChange);
       window.addEventListener('dataloaded', handleLoadingText);
 
        return () => {
-        window.removeEventListener('themechange', handleThemeChange);
+        removeThemeListener();
         window.removeEventListener('dataloaded', handleLoadingText);
       };
     }, []);

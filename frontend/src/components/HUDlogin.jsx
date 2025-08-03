@@ -2,95 +2,145 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeManager } from '../utils/themeManager';
 
-function LoginBox({ toggleTheme, theme }) {
+function LoginBox({ toggleTheme, theme, loggedIn }) {
   const router = useRouter();
-  return (
-    <div className='top-right-hud'>
-      <div style={{ backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)': 'black', width: '2.5rem', height: '2.5rem', top: '1.2rem',
-      right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
-          <button onClick={toggleTheme} style={{ 
-                  color: theme === 'dark' ? 'yellow': 'black',
-                  fontFamily: 'sans-serif', 
-                  fontWeight: '900', 
-                  fontSize: '1.5rem', 
-                  border: 'none',
-                  borderRadius: '4rem',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  width: '100%',
-                  height: '100%',
-                  
-                  
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >{ theme === 'light' ? '⏾' : '☀'}</button></div>
-      
-    <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '7rem', height: '3rem', top: '1rem',
-      right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
-      alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
+  if (!loggedIn) {
+    return (
+      <div className='top-right-hud' >
+        <div style={{ backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)': 'black', width: '2.5rem', height: '2.5rem', top: '1.2rem',
+        right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
+            <button onClick={toggleTheme} style={{ 
+                    color: theme === 'dark' ? 'yellow': 'black',
+                    fontFamily: 'Inter, sans-serif', 
+                    fontWeight: '900', 
+                    fontSize: '10rem', 
+                    border: 'none',
+                    borderRadius: '4rem',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    width: '100%',
+                    height: '100%',
+                    
+                    
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >{ theme === 'light' ? '⏾' : '☀'}</button></div>
         
-        <button onClick={() => router.push('/default')} style={{ 
-          color: theme === 'dark' ? 'white': 'black', 
-          fontFamily: 'hubot', 
-          fontWeight: '400', 
-          fontSize: '1rem', 
-          border: 'none',
-          borderRadius: '0.6rem',
-          backgroundColor: 'transparent',
-          cursor: 'pointer',
-          width: '100%',
-          height: '100%'
+      <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '7rem', height: '3rem', top: '1rem',
+        right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
+        alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
           
-        }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-        >Login/Sign up</button>
-        
-        
+          <button onClick={() => router.push('/default')} style={{ 
+            color: theme === 'dark' ? 'white': 'black', 
+            fontFamily: 'Inter, sans-serif', 
+            fontWeight: '400', 
+            fontSize: '1rem', 
+            border: 'none',
+            borderRadius: '0.6rem',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            width: '100%',
+            height: '100%'
+            
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >Login/Sign up</button>
+          
+          
+      </div>
     </div>
-  </div>
+      
     
-  
-  );
+    );
+  } else {
+    return (
+      <div className='top-right-hud' >
+        <div style={{ backgroundColor: theme === 'light' ? 'rgb(255, 255, 255)': 'black', width: '2.5rem', height: '2.5rem', top: '1.2rem',
+        right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
+            <button onClick={toggleTheme} style={{ 
+                    color: theme === 'dark' ? 'yellow': 'black',
+                    fontFamily: 'Inter, sans-serif', 
+                    fontWeight: '900', 
+                    fontSize: '1.5rem', 
+                    border: 'none',
+                    borderRadius: '4rem',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    width: '100%',
+                    height: '100%',
+                    
+                    
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0, 217, 255, 0.6)'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                  >{ theme === 'light' ? '⏾' : '☀'}</button></div>
+        
+      <div style={{ backgroundColor: theme === 'dark' 
+              ? 'rgba(25, 25, 25, 1)' 
+              : 'rgba(255, 255, 255, 1)', width: '9rem', height: '3rem', top: '1rem',
+        right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
+        alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
+          
+          <button onClick={() => router.push('/dashboard')} style={{ 
+            color: theme === 'dark' ? 'white': 'black', 
+            fontFamily: 'Inter', 
+            fontWeight: '400', 
+            fontSize: '1rem', 
+            border: 'none',
+            borderRadius: '0.6rem',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            width: '100%',
+            height: '100%'
+            
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(90, 90, 90, 1)'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+          >Dashboard</button>
+          
+          
+      </div>
+    </div>
+      
+    
+    );
+  }
 }
 
 export function HUDlogin() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => ThemeManager.getTheme());
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    window.globalTheme = theme;
-    window.dispatchEvent(new Event('themechange'));
-  });
+    const token = localStorage.getItem('authToken');
+    setLoggedIn(!!token); // Update loggedIn state based on token existence
+    
+    // Initialize theme using ThemeManager
+    const currentTheme = ThemeManager.getTheme();
+    setTheme(currentTheme);
+
+    // Listen for theme changes
+    const removeListener = ThemeManager.addThemeChangeListener((newTheme) => {
+      setTheme(newTheme);
+    });
+
+    return removeListener;
+  }, []);
 
   const toggleTheme = () => {
     console.log('Toggle theme clicked!'); // Debug log
+    console.log('current login state:', loggedIn); // Debug log
     
-    const map = window.leafletMap;
-    const lightLayer = window.lightLayer;
-    const darkLayer = window.darkLayer;
-
-    console.log('Map:', map, 'Light:', lightLayer, 'Dark:', darkLayer); // Debug log
-
-    if (!map || !lightLayer || !darkLayer) {
-      console.log('Map or layers not available yet');
-      return;
-    }
-
-    if (theme === 'light') {
-      console.log('Switching to dark theme');
-      map.removeLayer(lightLayer);
-      map.addLayer(darkLayer);
-      setTheme('dark');
-    } else {
-      console.log('Switching to light theme');
-      map.removeLayer(darkLayer);
-      map.addLayer(lightLayer);
-      setTheme('light');
-    }
+    const newTheme = theme === 'light' ? 'dark' : 'light';
     
+    // Use ThemeManager to update theme globally
+    // The map will automatically switch layers via its own theme listener
+    ThemeManager.setTheme(newTheme);
   };
 
-  return <LoginBox toggleTheme={toggleTheme} theme={theme}/>;
+  return <LoginBox toggleTheme={toggleTheme} theme={theme} loggedIn={loggedIn}/>;
 }
