@@ -30,13 +30,13 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >{ theme === 'light' ? '⏾' : '☀'}</button></div>
         
-      <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '7rem', height: '3rem', top: '1rem',
+      <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '10rem', height: '3rem', top: '1rem',
         right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
         alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
           
           <button onClick={() => router.push('/default')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'Inter, sans-serif', 
+            fontFamily: 'Inter', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
