@@ -19,7 +19,8 @@ function LogoBlock() {
   const [filteredList, setFilteredList] = useState([]);
   const [sortOrder, setSortOrder] = useState(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [unit, setUnit] = useState(window.temperatureUnit || 'C');
+  // Fix: Initialize with 'C' and update in useEffect
+  const [unit, setUnit] = useState('C');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [tempFilter, setTempFilter] = useState({ min: '', max: '' });
 
@@ -152,15 +153,27 @@ const resetTempFilter = () => {
     setShowSuggestions(false);
   };
     
+  // Update the useEffect that handles unit changes
   useEffect(() => {
     const handleUnitChange = () => {
-      setUnit(window.temperatureUnit || 'C');
+      // Check if window exists before accessing it
+      if (typeof window !== 'undefined') {
+        setUnit(window.temperatureUnit || 'C');
+      }
     };
-    window.addEventListener('unitchange', handleUnitChange);
-    // initialize on mount
+    
+    // Initialize on mount
     handleUnitChange();
+    
+    // Add event listener
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unitchange', handleUnitChange);
+    }
+    
     return () => {
-      window.removeEventListener('unitchange', handleUnitChange);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('unitchange', handleUnitChange);
+      }
     };
   }, []);
 
@@ -435,7 +448,8 @@ const resetTempFilter = () => {
               lineHeight: 1.4,
               transition: 'color 0.3s ease'
             }}>
-              {item.siteName}
+              {/* Display "User Point" for user-generated points, otherwise use siteName */}
+              {item.isUserPoint ? 'User Point' : (item.siteName || 'User Point')}
             </h2>
             <p style={{
               fontSize: '0.75rem',
@@ -445,14 +459,25 @@ const resetTempFilter = () => {
                 : 'rgba(0,0,0,0.6)'
             }}>
               { item.timestamp
-                ? new Date(
-                    // drop the "Z" so this is parsed as local midnight
-                    item.timestamp.replace(' ', 'T')
-                  ).toLocaleDateString('en-US', {
-                    day:   'numeric',
-                    month: 'short',
-                    year:  'numeric'
-                  })
+                ? (() => {
+                    // Handle different timestamp formats
+                    let date;
+                    if (item.isUserPoint) {
+                      // For user points, timestamp is from updatedAt (ISO string)
+                      date = new Date(item.timestamp);
+                    } else {
+                      // For official data, timestamp might be in different format
+                      date = new Date(item.timestamp.replace(' ', 'T'));
+                    }
+                    
+                    return date.toLocaleDateString('en-US', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: item.isUserPoint ? '2-digit' : undefined,
+                      minute: item.isUserPoint ? '2-digit' : undefined
+                    });
+                  })()
                 : '—' }
             </p>
           </div>
