@@ -458,25 +458,57 @@ const resetTempFilter = () => {
                 ? 'rgba(255,255,255,0.6)'
                 : 'rgba(0,0,0,0.6)'
             }}>
-              { item.timestamp
+              { item.timestamp || item.updatedAt || item.createdAt
                 ? (() => {
-                    // Handle different timestamp formats
-                    let date;
-                    if (item.isUserPoint) {
-                      // For user points, timestamp is from updatedAt (ISO string)
-                      date = new Date(item.timestamp);
-                    } else {
-                      // For official data, timestamp might be in different format
-                      date = new Date(item.timestamp.replace(' ', 'T'));
+                    // More detailed debugging for user points
+                    if (!item.siteName) {
+                      console.log('USER POINT DATA:', item);
+                      console.log('updatedAt type:', typeof item.updatedAt);
+                      console.log('updatedAt value:', item.updatedAt);
+                      console.log('createdAt value:', item.createdAt);
+                      
+                      // Check if updatedAt is nested inside another object
+                      if (item.metadata) console.log('metadata:', item.metadata);
                     }
                     
-                    return date.toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: item.isUserPoint ? '2-digit' : undefined,
-                      minute: item.isUserPoint ? '2-digit' : undefined
-                    });
+                    // Handle different timestamp formats
+                    let date;
+                    try {
+                      if (item.updatedAt) {
+                        // For user points
+                        date = new Date(item.updatedAt);
+                        console.log('Parsed updatedAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.createdAt) {
+                        // Try createdAt if updatedAt isn't available
+                        date = new Date(item.createdAt);
+                        console.log('Parsed createdAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.timestamp) {
+                        // For official data
+                        const formattedTimestamp = item.timestamp.replace ? item.timestamp.replace(' ', 'T') : item.timestamp;
+                        date = new Date(formattedTimestamp);
+                        console.log('Parsed timestamp date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else {
+                        console.log('No valid timestamp found');
+                        return '—';
+                      }
+                      
+                      // Check if the date is valid
+                      if (isNaN(date.getTime())) {
+                        console.log('Date is invalid');
+                        return '—';
+                      }
+                      
+                      return date.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch (error) {
+                      console.error('Error parsing date:', error);
+                      return '—';
+                    }
                   })()
                 : '—' }
             </p>
