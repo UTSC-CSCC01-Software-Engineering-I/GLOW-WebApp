@@ -24,9 +24,10 @@
     "react-leaflet": "^4.2.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.20.0",
-    "@babel/preset-react": "^7.18.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "@eslint/eslintrc": "^3",
+    "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",

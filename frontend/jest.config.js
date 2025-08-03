@@ -17,7 +17,7 @@ module.exports = {
     '**/src/**/*.test.{js,jsx}'
   ],
   transform: {
-    '^.+\\.(js|jsx)$': 'babel-jest'
+    '^.+\\.(js|jsx)$': ['@swc/jest'],
   },
   moduleFileExtensions: ['js', 'jsx', 'json'],
   transformIgnorePatterns: [
