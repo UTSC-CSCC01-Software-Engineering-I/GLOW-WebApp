@@ -39,6 +39,7 @@
 
   /* 🟢 Thin black outline around text */
   text-shadow: 0 0 2px black;
+  /* -webkit-text-stroke: 0.5px black; */
 }
   /* Gradient Legend (temperature scale) */
   .legend {
@@ -79,4 +80,91 @@
     justify-content: space-between;
     height: 200px; /* match bar height */
   }
+/* Add these accessible styles */
+.accessible-marker {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  min-height: 44px !important; /* WCAG minimum touch target */
+  min-width: 44px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.accessible-marker:hover,
+.accessible-marker:focus {
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  outline: 3px solid #0066cc !important;
+  outline-offset: 2px !important;
+}
+
+.accessible-marker:focus-visible {
+  outline: 3px solid #0066cc !important;
+  outline-offset: 2px !important;
+}
+
+.temp-symbol {
+  font-size: 1rem !important;
+  margin-right: 0.2rem !important;
+}
+
+.temp-value {
+  font-weight: bold !important;
+  font-size: 1rem !important;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .temp-label {
+    border: 2px solid currentColor !important;
+    background-color: ButtonFace !important;
+    color: ButtonText !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .accessible-marker {
+    transition: none !important;
+  }
   
+  .accessible-marker:hover,
+  .accessible-marker:focus {
+    transform: none !important;
+  }
+}
+
+/* Temperature category styles for additional visual context */
+.temp-label[data-temp-category="very-cold"] {
+  border-left: 4px solid #0066cc !important;
+}
+
+.temp-label[data-temp-category="cold"] {
+  border-left: 4px solid #4d79a6 !important;
+}
+
+.temp-label[data-temp-category="cool"] {
+  border-left: 4px solid #7ea6d1 !important;
+}
+
+.temp-label[data-temp-category="warm"] {
+  border-left: 4px solid #ff9500 !important;
+}
+
+.temp-label[data-temp-category="hot"] {
+  border-left: 4px solid #ff3b30 !important;
+}
