@@ -123,6 +123,7 @@ export default function MapComponent() {
         const map = L.map(mapRef.current, {
           center: [43.647216678117736, -79.36719310664458],
           zoom: 12,
+          zoomControl: false,
           layers: [isDarkTheme ? darkLayer : lightLayer]
         });
         
