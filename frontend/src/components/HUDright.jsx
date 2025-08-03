@@ -19,7 +19,7 @@ function MenuBlock({ theme, onMenuToggle, isMenuOpen }) {
         <button 
           className={`menubutton mobile-menu-btn-map ${isMenuOpen ? 'active' : ''}`}
           onClick={onMenuToggle}
-          style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter, sans-serif'}}
+          style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'LEMONMILK, sans-serif'}}
         >
           <span></span>
           <span></span>

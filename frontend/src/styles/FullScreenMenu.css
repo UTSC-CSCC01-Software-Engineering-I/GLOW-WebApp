@@ -1,6 +1,6 @@
 /* FullScreenMenu Component Styles */
 *{
-    font-family: 'Inter';
+    font-family: 'LEMONMILK';
 }
     
 /* Mobile Menu Button */
@@ -70,7 +70,7 @@
     backdrop-filter: blur(10px);
     padding: 35px 20px 30px;
     box-shadow: -2px 0 20px rgba(0, 0, 0, 0.3);
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
 }
 
 .map-mobile-sidebar.active {
@@ -86,7 +86,7 @@
 .map-logotop {
     margin-bottom: -1rem;
     color: white;
-    font-family: Inter;
+    font-family: 'LEMONMILK';
     font-weight: 800;
     font-size: 4rem;
 }
@@ -95,7 +95,7 @@
     color: #fff;
     text-align: left;
     margin-left: 1.2rem;
-    font-family: sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-size: 1rem;
     font-style: italic;
     font-weight: 300;

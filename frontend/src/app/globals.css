@@ -1,59 +1,59 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicBook.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicMedium.ttf') format('truetype');
-  font-weight: 500;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicDemi.ttf') format('truetype');
-  font-weight: 600;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicBold.ttf') format('truetype');
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicExtraBold.ttf') format('truetype');
-  font-weight: 800;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicHeavy.ttf') format('truetype');
-  font-weight: 900;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicLight.ttf') format('truetype');
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-Light.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Futura';
-  src: url('/fonts/FuturaCyrillicLight.ttf') format('truetype');
-  font-weight: 100;
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-Regular.otf') format('opentype');
+  font-weight: 400;
   font-style: normal;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-LightItalic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-RegularItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'LEMONMILK';
+  src: url('/fonts/LEMONMILK-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
 }
 
 :root {
@@ -71,7 +71,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Futura', sans-serif;
+  font-family: 'LEMONMILK', sans-serif;
 }
 
 
