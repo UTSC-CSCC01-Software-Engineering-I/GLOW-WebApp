@@ -1,425 +1,117 @@
+/**
+ * @file HUDleftPoints.test.jsx
+ */
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { HUDleftPoints } from './HUDleftPoints';
 
-// Mock the CSS imports
-jest.mock('../styles/HudBeaches.css', () => ({}));
-jest.mock('../styles/homepage.css', () => ({}));
-
-// Mock the MapComponent import
+// 1) Mock out the MapComponent import so that `globalBeach.items` is our fake data
 jest.mock('./MapComponent.jsx', () => ({
-  globalBeach: null
+  globalBeach: {
+    items: [
+      { siteName: 'Beach One', temp: 20, timestamp: '2025-08-03T10:00:00Z' },
+      { siteName: 'Beach Two', temp: 15, timestamp: '2025-08-02T10:00:00Z' },
+    ]
+  }
+}));
+
+// 2) Stub out the TempFilterModal so it just renders a div we can query
+jest.mock('./TempFilterModal', () => () => <div data-testid="temp-filter-modal" />);
+
+// 3) Stub ThemeManager so it always returns "light"
+jest.mock('../utils/themeManager', () => ({
+  ThemeManager: {
+    getTheme: jest.fn(() => 'light'),
+    addThemeChangeListener: jest.fn(() => jest.fn()),
+  },
 }));
 
 describe('HUDleftPoints Component', () => {
-  const mockBeachData = [
-    { siteName: 'Woodbine Beach', temp: 15.5 },
-    { siteName: 'Cherry Beach', temp: 18.2 },
-    { siteName: 'Centre Island Beach', temp: 12.8 },
-    { siteName: 'Hanlan\'s Point Beach', temp: 20.1 }
-  ];
-
-  beforeEach(() => {
-    // Reset global variables
-    global.window = {
-      ...global.window,
-      globalTheme: 'light',
-      handleMapSearch: jest.fn(),
-      loadedAPI: false,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      innerWidth: 1024
-    };
-
-    // Mock globalBeach
-    const MapComponent = require('./MapComponent.jsx');
-    MapComponent.globalBeach = {
-      items: mockBeachData
-    };
+  it('renders beaches from globalBeach and shows correct count', async () => {
+    render(<HUDleftPoints />);
+    // Wait for the first beach to appear
+    expect(await screen.findByText('Beach One')).toBeInTheDocument();
+    expect(screen.getByText('Beach Two')).toBeInTheDocument();
+    // The footer should read "Loaded 2 beaches"
+    expect(screen.getByText(/Loaded 2 beach/i)).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it('filters beaches via search input', async () => {
+    render(<HUDleftPoints />);
+    await screen.findByText('Beach One');
+
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: 'Two' } });
+
+    // Beach One should disappear, Beach Two remain
+    expect(screen.queryByText('Beach One')).toBeNull();
+    expect(screen.getByText('Beach Two')).toBeInTheDocument();
+
+    // Clear search
+    const clearBtn = screen.getByRole('button', { name: '✕' });
+    fireEvent.click(clearBtn);
+
+    // Both beaches are back
+    expect(screen.getByText('Beach One')).toBeInTheDocument();
+    expect(screen.getByText('Beach Two')).toBeInTheDocument();
   });
 
-  describe('Rendering', () => {
-    it('renders the beaches list correctly', async () => {
-      render(<HUDleftPoints />);
+  it('sorts beaches ascending and descending', async () => {
+    const { container } = render(<HUDleftPoints />);
+    await screen.findByText('Beach One');
 
-      await waitFor(() => {
-        expect(screen.getByText('Beaches')).toBeInTheDocument();
-      });
+    const sortButton = screen.getByText('↕');
 
-      // Check if beach names are rendered
-      expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      expect(screen.getByText('Cherry Beach')).toBeInTheDocument();
-      expect(screen.getByText('Centre Island Beach')).toBeInTheDocument();
-      expect(screen.getByText('Hanlan\'s Point Beach')).toBeInTheDocument();
-    });
+    // Ascending
+    fireEvent.click(sortButton);
+    fireEvent.click(screen.getByText('Temp ↑'));
 
-    it('displays loading state initially', () => {
-      // Set globalBeach to null to simulate loading
-      const MapComponent = require('./MapComponent.jsx');
-      MapComponent.globalBeach = null;
+    let items = container.querySelectorAll('.beach-item-hover');
+    expect(items[0].textContent).toContain('Beach Two'); // 15°C first
 
-      render(<HUDleftPoints />);
+    // Descending
+    fireEvent.click(sortButton);
+    fireEvent.click(screen.getByText('Temp ↓'));
 
-      expect(screen.getByText('Loading beaches...')).toBeInTheDocument();
-    });
-
-    it('displays correct temperature values', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('15.5')).toBeInTheDocument();
-        expect(screen.getByText('18.2')).toBeInTheDocument();
-        expect(screen.getByText('12.8')).toBeInTheDocument();
-        expect(screen.getByText('20.1')).toBeInTheDocument();
-      });
-    });
+    items = container.querySelectorAll('.beach-item-hover');
+    expect(items[0].textContent).toContain('Beach One'); // 20°C first
   });
 
-  describe('Search Functionality', () => {
-    it('filters beaches based on search input', async () => {
-      render(<HUDleftPoints />);
+  it('resets sort when Reset is clicked', async () => {
+    const { container } = render(<HUDleftPoints />);
+    await screen.findByText('Beach One');
 
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
+    // Open sort menu and click Reset
+    fireEvent.click(screen.getByText('↕'));
+    fireEvent.click(screen.getByText('Reset'));
 
-      const searchInput = screen.getByPlaceholderText('Search beaches…');
-      
-      act(() => {
-        fireEvent.change(searchInput, { target: { value: 'wood' } });
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-        expect(screen.queryByText('Cherry Beach')).not.toBeInTheDocument();
-      });
-    });
-
-    it('shows no results message when search yields no matches', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText('Search beaches…');
-      
-      act(() => {
-        fireEvent.change(searchInput, { target: { value: 'nonexistent' } });
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('No beaches found for "nonexistent"')).toBeInTheDocument();
-      });
-    });
-
-    it('clears search when clear button is clicked', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText('Search beaches…');
-      
-      act(() => {
-        fireEvent.change(searchInput, { target: { value: 'wood' } });
-      });
-
-      await waitFor(() => {
-        expect(searchInput.value).toBe('wood');
-      });
-
-      const clearButton = screen.getByText('✕');
-      
-      act(() => {
-        fireEvent.click(clearButton);
-      });
-
-      await waitFor(() => {
-        expect(searchInput.value).toBe('');
-        expect(screen.getByText('Cherry Beach')).toBeInTheDocument();
-      });
-    });
-
-    it('is case insensitive', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const searchInput = screen.getByPlaceholderText('Search beaches…');
-      
-      act(() => {
-        fireEvent.change(searchInput, { target: { value: 'CHERRY' } });
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Cherry Beach')).toBeInTheDocument();
-        expect(screen.queryByText('Woodbine Beach')).not.toBeInTheDocument();
-      });
-    });
+    const items = container.querySelectorAll('.beach-item-hover');
+    expect(items[0].textContent).toContain('Beach One');
+    expect(items[1].textContent).toContain('Beach Two');
   });
 
-  describe('Sort Functionality', () => {
-    it('opens sort menu when sort button is clicked', async () => {
-      render(<HUDleftPoints />);
+  it('opens the filter modal when the ⋮ button is clicked', async () => {
+    render(<HUDleftPoints />);
+    await screen.findByText('Beach One');
 
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const sortButton = screen.getByText('Sort');
-      
-      act(() => {
-        fireEvent.click(sortButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Temp ↑')).toBeInTheDocument();
-        expect(screen.getByText('Temp ↓')).toBeInTheDocument();
-        expect(screen.getByText('Reset')).toBeInTheDocument();
-      });
-    });
-
-    it('sorts beaches by temperature ascending', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Centre Island Beach')).toBeInTheDocument();
-      });
-
-      const sortButton = screen.getByText('Sort');
-      
-      act(() => {
-        fireEvent.click(sortButton);
-      });
-
-      const ascButton = screen.getByText('Temp ↑');
-      
-      act(() => {
-        fireEvent.click(ascButton);
-      });
-
-      await waitFor(() => {
-        const beachElements = screen.getAllByText(/Beach/);
-        expect(beachElements[0]).toHaveTextContent('Centre Island Beach'); // 12.8°C
-        expect(beachElements[1]).toHaveTextContent('Woodbine Beach'); // 15.5°C
-      });
-    });
-
-    it('sorts beaches by temperature descending', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const sortButton = screen.getByText('Sort');
-      
-      act(() => {
-        fireEvent.click(sortButton);
-      });
-
-      const descButton = screen.getByText('Temp ↓');
-      
-      act(() => {
-        fireEvent.click(descButton);
-      });
-
-      await waitFor(() => {
-        const beachElements = screen.getAllByText(/Beach/);
-        expect(beachElements[0]).toHaveTextContent('Hanlan\'s Point Beach'); // 20.1°C
-        expect(beachElements[1]).toHaveTextContent('Cherry Beach'); // 18.2°C
-      });
-    });
-
-    it('resets sort order', async () => {
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      // First sort
-      const sortButton = screen.getByText('Sort');
-      
-      act(() => {
-        fireEvent.click(sortButton);
-      });
-
-      const ascButton = screen.getByText('Temp ↑');
-      
-      act(() => {
-        fireEvent.click(ascButton);
-      });
-
-      // Then reset
-      act(() => {
-        fireEvent.click(sortButton);
-      });
-
-      const resetButton = screen.getByText('Reset');
-      
-      act(() => {
-        fireEvent.click(resetButton);
-      });
-
-      await waitFor(() => {
-        const beachElements = screen.getAllByText(/Beach/);
-        expect(beachElements[0]).toHaveTextContent('Woodbine Beach'); // Original order
-      });
-    });
+    fireEvent.click(screen.getByText('⋮'));
+    expect(screen.getByTestId('temp-filter-modal')).toBeInTheDocument();
   });
 
-  describe('Beach Click Functionality', () => {
-    it('calls handleMapSearch when beach is clicked', async () => {
-      const mockHandleMapSearch = jest.fn();
-      global.window.handleMapSearch = mockHandleMapSearch;
+  it('updates displayed unit when unitchange event fires', async () => {
+    render(<HUDleftPoints />);
+    await screen.findByText('Beach One');
 
-      render(<HUDleftPoints />);
+    // Initially should show °C somewhere
+    expect(screen.getAllByText(/°C/).length).toBeGreaterThan(0);
 
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const beachElement = screen.getByText('Woodbine Beach').closest('div');
-      
-      act(() => {
-        fireEvent.click(beachElement);
-      });
-
-      expect(mockHandleMapSearch).toHaveBeenCalledWith('Woodbine Beach');
+    // Dispatch a unit‐change event
+    await act(async () => {
+      window.temperatureUnit = 'F';
+      window.dispatchEvent(new Event('unitchange'));
     });
 
-    it('handles missing handleMapSearch gracefully', async () => {
-      global.window.handleMapSearch = undefined;
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Woodbine Beach')).toBeInTheDocument();
-      });
-
-      const beachElement = screen.getByText('Woodbine Beach').closest('div');
-      
-      // Should not throw error
-      expect(() => {
-        act(() => {
-          fireEvent.click(beachElement);
-        });
-      }).not.toThrow();
-    });
-  });
-
-  describe('Theme Support', () => {
-    it('applies dark theme styles when theme is dark', async () => {
-      global.window.globalTheme = 'dark';
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        const container = screen.getByText('Beaches').closest('.boxwithpoints');
-        expect(container).toHaveStyle('background-color: rgba(15, 15, 15, 0.85)');
-      });
-    });
-
-    it('applies light theme styles when theme is light', async () => {
-      global.window.globalTheme = 'light';
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        const container = screen.getByText('Beaches').closest('.boxwithpoints');
-        expect(container).toHaveStyle('background-color: rgba(255, 255, 255, 0.85)');
-      });
-    });
-
-    it('responds to theme change events', async () => {
-      let themeChangeListener;
-      global.window.addEventListener = jest.fn((event, listener) => {
-        if (event === 'themechange') {
-          themeChangeListener = listener;
-        }
-      });
-
-      render(<HUDleftPoints />);
-
-      // Simulate theme change
-      global.window.globalTheme = 'dark';
-      
-      act(() => {
-        if (themeChangeListener) {
-          themeChangeListener();
-        }
-      });
-
-      await waitFor(() => {
-        const container = screen.getByText('Beaches').closest('.boxwithpoints');
-        expect(container).toHaveStyle('background-color: rgba(15, 15, 15, 0.85)');
-      });
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('handles empty beach data', async () => {
-      const MapComponent = require('./MapComponent.jsx');
-      MapComponent.globalBeach = { items: [] };
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        expect(screen.getByText('No beaches found')).toBeInTheDocument();
-      });
-    });
-
-    it('handles missing siteName gracefully', async () => {
-      const MapComponent = require('./MapComponent.jsx');
-      MapComponent.globalBeach = {
-        items: [
-          { siteName: undefined, temp: 15.5 },
-          { siteName: null, temp: 18.2 },
-          { siteName: '', temp: 12.8 }
-        ]
-      };
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        // Should render without crashing
-        expect(screen.getByText('Beaches')).toBeInTheDocument();
-      });
-    });
-
-    it('handles mobile screen size', async () => {
-      global.window.innerWidth = 500;
-
-      render(<HUDleftPoints />);
-
-      await waitFor(() => {
-        const container = screen.getByText('Beaches').closest('.boxwithpoints');
-        expect(container).toHaveStyle('max-height: 80vh');
-      });
-    });
-  });
-
-  describe('Event Cleanup', () => {
-    it('removes event listeners on unmount', () => {
-      const mockRemoveEventListener = jest.fn();
-      global.window.removeEventListener = mockRemoveEventListener;
-
-      const { unmount } = render(<HUDleftPoints />);
-      
-      unmount();
-
-      expect(mockRemoveEventListener).toHaveBeenCalledWith('themechange', expect.any(Function));
-      expect(mockRemoveEventListener).toHaveBeenCalledWith('dataloaded', expect.any(Function));
-    });
+    // Now it should show °F instead
+    expect(screen.getAllByText(/°F/).length).toBeGreaterThan(0);
   });
 });

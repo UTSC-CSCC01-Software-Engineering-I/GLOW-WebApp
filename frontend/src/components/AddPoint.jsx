@@ -420,16 +420,19 @@ export default function AddPoint() {
         {/* Form */}
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              marginBottom: '6px'
-            }}>
+            <label htmlFor="latitude"
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                marginBottom: '6px'
+              }}
+            >
               Latitude
             </label>
             <input
+              id="latitude"
               type="number"
               value={lat}
               onChange={e => setLat(e.target.value)}
@@ -459,16 +462,19 @@ export default function AddPoint() {
           </div>
 
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              marginBottom: '6px'
-            }}>
+            <label htmlFor="longitude"
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                marginBottom: '6px'
+              }}
+            >
               Longitude
             </label>
             <input
+              id="longitude"
               type="number"
               value={lon}
               onChange={e => setLon(e.target.value)}
@@ -498,16 +504,19 @@ export default function AddPoint() {
           </div>
 
           <div>
-            <label style={{
-              display: 'block',
-              fontSize: '14px',
-              fontWeight: '600',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              marginBottom: '6px'
-            }}>
+            <label htmlFor="temperature"
+              style={{
+                display: 'block',
+                fontSize: '14px',
+                fontWeight: '600',
+                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                marginBottom: '6px'
+              }}
+            >
               🌡️ Temperature (°C)
             </label>
             <input
+              id="temperature"
               type="number"
               value={temp}
               onChange={e => setTemp(e.target.value)}
