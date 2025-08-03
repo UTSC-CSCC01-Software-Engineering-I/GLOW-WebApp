@@ -16,6 +16,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
                     fontFamily: 'Inter, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '10rem', 
+                    fontSize: '1.5rem',
                     border: 'none',
                     borderRadius: '4rem',
                     backgroundColor: 'transparent',
