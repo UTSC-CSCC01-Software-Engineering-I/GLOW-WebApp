@@ -18,17 +18,20 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.11",
-    "jest": "^29.5.0",
-    "supertest": "^6.3.0",
-    "@testing-library/react": "^13.4.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/user-event": "^14.4.3"
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "autoprefixer": "^10.4.21",
+    "jest": "^29.5.0",
+    "postcss": "^8.5.6",
+    "supertest": "^6.3.0",
+    "tailwindcss": "^4.1.11"
   },
   "jest": {
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/frontend/src/setupTests.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/frontend/src/setupTests.js"
+    ],
     "moduleNameMapping": {
       "\\.(css|less|scss|sass)$": "identity-obj-proxy"
     },
