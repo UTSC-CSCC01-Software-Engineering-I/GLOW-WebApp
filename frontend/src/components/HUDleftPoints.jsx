@@ -240,10 +240,13 @@ function LogoBlock() {
     setFilteredList(filteredItems);
   };
 
-  const handleBeachClick = (name) => {
+  const handleBeachClick = (item) => {
     // Also trigger map search if the function exists
     if (window.handleMapSearch) {
-      window.handleMapSearch(name.siteName);
+      // Use siteName for API points or coordinates for user points
+      const searchIdentifier = item.siteName || 
+                              (item.isUserPoint ? `User Point (${item.lat},${item.lon})` : 'Unknown Point');
+      window.handleMapSearch(searchIdentifier, item.lat, item.lon);
     }
   };
 
