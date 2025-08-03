@@ -5,9 +5,12 @@ import { authAPI, pointsAPI } from '../../lib/api';
 import { ThemeManager } from '../../utils/themeManager';
 import { UnitManager } from '../../utils/unitManager';
 import { formatTemperature, convertTemperature, getTemperatureForInput, convertTemperatureForStorage } from '../../utils/temperatureUtils';
+import { useRouter } from 'next/navigation';
 import '../../styles/dashboard.css';
 
 export default function Dashboard() {
+  const router = useRouter();
+
   const [user, setUser] = useState(null);
   const [userPoints, setUserPoints] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +89,7 @@ export default function Dashboard() {
     const fetchUserData = async () => {
       try {
         if (!authAPI.isAuthenticated()) {
-          window.location.href = '/';
+          router.push('/');
           return;
         }
 
@@ -137,7 +140,7 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     authAPI.logout();
-    window.location.href = '/';
+    router.push('/');
   };
 
   // Get initials for avatar
@@ -291,7 +294,7 @@ export default function Dashboard() {
       if (response.success) {
         alert('Account deleted successfully');
         authAPI.logout();
-        window.location.href = '/';
+        router.push('/');
       } else {
         alert('Failed to delete account: ' + response.message);
       }
@@ -386,7 +389,7 @@ export default function Dashboard() {
         <h1 className='logotop' style={{ fontFamily: 'inter'}}>GLOW</h1>
         <h2 className='logobottom' style={{ fontFamily: 'inter'}}>by Microsofties</h2>
         
-        <div className="mapbut nav-item" onClick={() => window.location.href = '/'}>
+        <div className="mapbut nav-item" onClick={() => router.push('/')}>
           <span>▶ Open Maps</span>
         </div>
         
@@ -436,7 +439,7 @@ export default function Dashboard() {
           <h2 className='logobottom'>by Microsofties</h2>
           <div className="user-profile">
             
-            <div className="mapbut nav-item " onClick={() => window.location.href = '/'}
+            <div className="mapbut nav-item " onClick={() => router.push('/')}
               >
                 <span>▶ Open Maps </span>
             </div>
@@ -562,7 +565,7 @@ export default function Dashboard() {
                 <div className="header-actions">
                   <button 
                     className="add-btn"
-                    onClick={() => window.location.href = '/add-point?from=manage-points'}
+                    onClick={() => router.push('/add-point?from=manage-points')}
                   >
                     Add New Point
                   </button>
@@ -577,7 +580,7 @@ export default function Dashboard() {
                     <p>You haven't added any temperature points yet.</p>
                     <button 
                       className="add-btn"
-                      onClick={() => window.location.href = '/add-point?from=manage-points'}
+                      onClick={() => router.push('/add-point?from=manage-points')}
                     >
                       Add Your First Point
                     </button>
