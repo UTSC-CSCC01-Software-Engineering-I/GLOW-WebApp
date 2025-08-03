@@ -195,7 +195,7 @@ export default function AddPoint() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontFamily: 'Inter, sans-serif'
+        fontFamily: 'LEMONMILK, sans-serif'
       }}>
         <div style={{ textAlign: 'center', color: theme === 'dark' ? 'white' : 'black' }}>
           <div style={{
@@ -228,7 +228,7 @@ export default function AddPoint() {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1000,
-          fontFamily: 'Inter, sans-serif'
+          fontFamily: 'LEMONMILK, sans-serif'
         }}>
           <div style={{
             textAlign: 'center',
@@ -344,7 +344,7 @@ export default function AddPoint() {
       <div style={{
         minHeight: '100vh',
         backgroundColor: theme === 'dark' ? '#000' : '#fff',
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: 'LEMONMILK, sans-serif',
         padding: '20px',
         display: 'flex',
         alignItems: 'center',

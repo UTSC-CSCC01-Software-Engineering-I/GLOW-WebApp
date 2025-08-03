@@ -13,7 +13,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'Inter, sans-serif', 
+                    fontFamily: 'LEMONMILK, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '10rem', 
                     fontSize: '1.5rem',
@@ -36,7 +36,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
           
           <button onClick={() => router.push('/default')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'Inter', 
+            fontFamily: 'LEMONMILK', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
@@ -64,7 +64,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'Inter, sans-serif', 
+                    fontFamily: 'LEMONMILK, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '1.5rem', 
                     border: 'none',
@@ -88,7 +88,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
           
           <button onClick={() => router.push('/dashboard')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'Inter', 
+            fontFamily: 'LEMONMILK', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
