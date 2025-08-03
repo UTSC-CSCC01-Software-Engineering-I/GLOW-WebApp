@@ -757,14 +757,60 @@ export default function MapComponent() {
   //   };
   // }, []);
 
-  // Handle beach search by name
-  function handleSearch(selectedName) {
+  // Handle beach search by name or coordinates
+  function handleSearch(selectedName, lat, lon) {
     if (!mapInstanceRef.current) return;
-    const term = (selectedName || searchTerm).trim().toLowerCase();
+    
+    // If direct coordinates are provided, use them
+    if (lat && lon) {
+      const map = mapInstanceRef.current;
+      const targetZoom = 15;
+      const offsetY = 150;
+      const offsetX = 0;
+      const targetLatLng = [lat, lon];
+      
+      // Calculate offset points for smooth animation
+      const currentZoom = map.getZoom();
+      const pointAtCurrentZoom = map.project(targetLatLng, currentZoom);
+      const offsetPointAtCurrentZoom = pointAtCurrentZoom.subtract([offsetX, offsetY]);
+      const offsetLatLngAtCurrentZoom = map.unproject(offsetPointAtCurrentZoom, currentZoom);
+      
+      // First just pan to the location at the current zoom level
+      map.once('moveend', function() {
+        // After panning completes, smoothly zoom in
+        map.once('zoomend', function() {
+          // Find and open any popup that might be at this location
+          markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+            if (Math.abs(markerLat - lat) < 0.0001 && Math.abs(markerLon - lon) < 0.0001) {
+              marker.openPopup();
+            }
+          });
+        });
+        
+        // Animate zoom with a duration in ms
+        map.flyTo(targetLatLng, targetZoom, {
+          duration: 0.5, // seconds
+          easeLinearity: 0.2
+        });
+      });
+      
+      // Start the sequence by panning
+      map.panTo(offsetLatLngAtCurrentZoom, { 
+        animate: true,
+        duration: 0.75 // seconds
+      });
+      
+      return;
+    }
+    
+    // Otherwise continue with name-based search
+    const term = selectedName ? selectedName.trim().toLowerCase() : '';
     if (!term) return;
+    
     const match = markersRef.current.find(item =>
       item.name.toLowerCase().includes(term)
     );
+    
     if (match) {
       const map = mapInstanceRef.current;
       const currentZoom = map.getZoom();
