@@ -256,68 +256,9 @@ export default function AddPoint() {
               marginBottom: '30px',
               opacity: 0.9
             }}>
-              Temperature point added successfully
+              Temperature point recorded
             </p>
-            
-            {/* Point Details Card */}
-            {addedPoint && (
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '16px',
-                padding: '24px',
-                marginBottom: '40px',
-                textAlign: 'left'
-              }}>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: '600',
-                  marginBottom: '16px',
-                  color: '#fbbf24',
-                  textAlign: 'center'
-                }}>
-                  📊 Point Details
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', opacity: 0.8 }}>🌡️ Temperature:</span>
-                    <span style={{ fontSize: '18px', fontWeight: '600', color: '#10b981' }}>
-                      {addedPoint.temp}°C
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', opacity: 0.8 }}>📍 Latitude:</span>
-                    <span style={{ fontSize: '16px', fontWeight: '500' }}>
-                      {parseFloat(addedPoint.lat).toFixed(6)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', opacity: 0.8 }}>📍 Longitude:</span>
-                    <span style={{ fontSize: '16px', fontWeight: '500' }}>
-                      {parseFloat(addedPoint.lon).toFixed(6)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '16px', opacity: 0.8 }}>⏰ Recorded:</span>
-                    <span style={{ fontSize: '16px', fontWeight: '500' }}>
-                      {new Date(addedPoint.timestamp || new Date()).toLocaleString()}
-                    </span>
-                  </div>
-                  <div style={{ 
-                    marginTop: '16px', 
-                    padding: '12px', 
-                    background: 'rgba(16, 185, 129, 0.2)', 
-                    borderRadius: '8px',
-                    textAlign: 'center'
-                  }}>
-                    <span style={{ fontSize: '14px', color: '#10b981', fontWeight: '600' }}>
-                      ✅ Verified in database
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+          
             <button
               onClick={handleConfirmationClose}
               style={{
@@ -361,32 +302,7 @@ export default function AddPoint() {
           padding: '40px',
           position: 'relative'
         }}>
-          {/* Back Button */}
-          <button
-            onClick={handleBackToReferrer}
-            style={{
-              position: 'absolute',
-              top: '20px',
-              left: '20px',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '8px 16px',
-              fontSize: '14px',
-              fontWeight: '500',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-            }}
-          >
-            {getBackLabel()}
-          </button>
+         
 
           {/* Header with User Greeting */}
           <div style={{ marginTop: '20px', marginBottom: '30px', textAlign: 'center' }}>
@@ -397,23 +313,16 @@ export default function AddPoint() {
               margin: '0 0 8px 0',
               letterSpacing: '-0.02em'
             }}>
-              Hello, {user?.firstName || 'User'}! 👋
+              Hello, {user?.firstName || 'User'}!
             </h1>
-            <p style={{
-              fontSize: '16px',
-              color: theme === 'dark' ? 'rgb(240,240,240)' : 'rgb(60,60,60)',
-              margin: '0 0 4px 0',
-              fontWeight: '500'
-            }}>
-              Add a temperature point to your account
-            </p>
+            
             <p style={{
               fontSize: '14px',
               color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
               margin: '0',
               fontStyle: 'italic'
             }}>
-              This reading will be saved under {user?.email || 'your account'}
+               Add a temperature point to {user?.email || 'your account'}
             </p>
           </div>
 
@@ -448,7 +357,7 @@ export default function AddPoint() {
                 backdropFilter: 'blur(10px)',
                 outline: 'none'
               }}
-              placeholder="Auto-detected latitude"
+              placeholder=""
               onFocus={(e) => {
                 e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
               }}
@@ -487,7 +396,7 @@ export default function AddPoint() {
                 backdropFilter: 'blur(10px)',
                 outline: 'none'
               }}
-              placeholder="Auto-detected longitude"
+              placeholder=""
               onFocus={(e) => {
                 e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
               }}
@@ -527,7 +436,7 @@ export default function AddPoint() {
                 outline: 'none',
                 fontWeight: '600'
               }}
-              placeholder="Enter temperature in Celsius"
+              placeholder=""
               onFocus={(e) => {
                 e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
               }}
@@ -544,12 +453,12 @@ export default function AddPoint() {
             style={{
               width: '100%',
               padding: '14px 24px',
-              backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? '#fff' : '#333'),
-              border: '1px solid rgba(0,0,0,0.1)',
+              backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? 'white' : 'black'),
+              border: '1px solid #206e33',
               borderRadius: '12px',
               fontSize: '16px',
               fontWeight: '600',
-              color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#000' : '#fff'),
+              color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#206e33' : '#206e33'),
               cursor: submitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               marginTop: '10px',
@@ -560,12 +469,14 @@ export default function AddPoint() {
             }}
             onMouseOver={(e) => {
               if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
+                e.target.style.backgroundColor = theme === 'light' ? '#206e33' : '#206e33';
+                e.target.style.color = theme === 'light' ? 'white' : 'white';
               }
             }}
             onMouseOut={(e) => {
               if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#fff' : '#333';
+                e.target.style.backgroundColor = theme === 'light' ? 'white' : 'white';
+                e.target.style.color = theme === 'light' ? '#206e33' : '#206e33';
               }
             }}
           >
@@ -630,7 +541,7 @@ export default function AddPoint() {
             fontWeight: '500',
             backdropFilter: 'blur(10px)'
           }}>
-            ✅ Temperature point added successfully!
+            ✅ Success!
           </div>
         )}
 

@@ -43,7 +43,7 @@ function MenuBlock({ theme, loggedIn }) {
             color: theme === 'light' ? 'white' : 'black',
             fontFamily: 'LEMONMILK, sans-serif',
             fontWeight: '500',
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             border: 'none',
             borderRadius: '0.6rem',
             backgroundColor: 'transparent',
