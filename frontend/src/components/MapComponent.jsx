@@ -80,6 +80,42 @@ export default function MapComponent() {
     return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
   }
 
+  // Add this function for better contrast calculation
+  function getAccessibleTemperatureColor(temp, unit = 'C', mode = 'light') {
+    const tempC = unit === 'F' ? (temp - 32) * 5 / 9 : parseFloat(temp);
+
+    const min = 0;
+    const max = 30;
+    const ratio = Math.min(1, Math.max(0, (tempC - min) / (max - min)));
+
+    const hue = 270 - ratio * 270; // purple → red  
+    const saturation = 90; // Slightly reduced for better readability
+    
+    // Ensure sufficient contrast for WCAG AA compliance
+    const lightness = mode === 'dark' ? 45 : 35; // Darker colors for better contrast
+    const alpha = 0.9; // Higher opacity for better visibility
+
+    return `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+  }
+
+  // Add this function to get temperature category for screen readers
+  function getTemperatureCategory(tempC) {
+    if (tempC < 5) return 'Very Cold';
+    if (tempC < 15) return 'Cold';
+    if (tempC < 20) return 'Cool';
+    if (tempC < 25) return 'Warm';
+    return 'Hot';
+  }
+
+  // Add this function to get temperature icon/symbol
+  function getTemperatureSymbol(tempC) {
+    if (tempC < 5) return '🧊'; // ice
+    if (tempC < 15) return '❄️'; // snowflake
+    if (tempC < 20) return '🌊'; // wave
+    if (tempC < 25) return '🏊'; // swimmer
+    return '🔥'; // fire
+  }
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       window.loadedAPI = loading;
@@ -147,6 +183,7 @@ export default function MapComponent() {
         // Store the cleanup function for later use
         map._themeCleanup = removeThemeListener;
 
+        // Update the addMarkers function
         function addMarkers(items) {
           items.forEach((item, i) => {
             const lon = item.lng || item.lon || item.Longitude;
@@ -157,24 +194,71 @@ export default function MapComponent() {
             // Get current unit and format temperature
             const currentUnit = UnitManager.getUnit();
             const formattedTemp = formatTemperature(t, currentUnit);
-            const tempColor = getTemperatureColor(t, 'C'); // Always calculate color from Celsius
+            const tempColor = getAccessibleTemperatureColor(t, 'C'); // Use accessible color function
+            const tempCategory = getTemperatureCategory(t);
+            const tempSymbol = getTemperatureSymbol(t);
 
             console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${formattedTemp}`);
 
             const icon = L.divIcon({
               className: 'custom-temp-marker',
-              html: `<div class="temp-label" style="background-color: ${tempColor};">${formattedTemp}</div>`,
-              iconSize: [40, 40],
-              iconAnchor: [20, 20],
+              html: `
+                <div 
+                  class="temp-label accessible-marker" 
+                  style="background-color: ${tempColor};"
+                  role="button"
+                  tabindex="0"
+                  aria-label="Water temperature ${formattedTemp} at ${name}. Category: ${tempCategory}. Press Enter or Space to view details."
+                  data-temp-category="${tempCategory.toLowerCase().replace(' ', '-')}"
+                >
+                  <span class="temp-value">${formattedTemp}</span>
+                </div>
+              `,
+              iconSize: [50, 40], // Slightly larger for better touch targets
+              iconAnchor: [25, 20],
             });
 
             const marker = L.marker([lat, lon], { icon }).addTo(map);
 
+            // Add function to announce to screen readers (this was missing)
+            function announceToScreenReader(message) {
+              const announcement = document.createElement('div');
+              announcement.setAttribute('aria-live', 'polite');
+              announcement.setAttribute('aria-atomic', 'true');
+              announcement.className = 'sr-only';
+              announcement.textContent = message;
+              
+              document.body.appendChild(announcement);
+              
+              // Remove after announcement
+              setTimeout(() => {
+                if (document.body.contains(announcement)) {
+                  document.body.removeChild(announcement);
+                }
+              }, 1000);
+            }
+
+            // Add click handler FIRST (this is the main functionality)
             marker.on('click', async () => {
+              console.log('Marker clicked:', name); // Debug log
+              
+              // Announce to screen readers
+              try {
+                announceToScreenReader(`Viewing details for ${name} with water temperature ${formattedTemp}`);
+              } catch (e) {
+                console.log('Screen reader announcement failed:', e);
+              }
+
               const historicalData = await fetchHistoricalData(name);
 
               if (historicalData.length === 0) {
-                marker.bindPopup(`<strong>${name}</strong><br/>No historical data available`).openPopup();
+                marker.bindPopup(`
+                  <div role="dialog" aria-labelledby="popup-title-${i}">
+                    <h3 id="popup-title-${i}">${name}</h3>
+                    <p>No historical data available</p>
+                    <p>Current temperature: ${formattedTemp} (${tempCategory})</p>
+                  </div>
+                `).openPopup();
                 return;
               }
 
@@ -368,6 +452,37 @@ export default function MapComponent() {
                 if (chart && chart.resize) {
                   chart.resize();
                   console.log('Chart resized');
+                }
+              }, 100);
+            });
+
+            // Add keyboard accessibility AFTER the click handler
+            marker.on('add', () => {
+              // Small delay to ensure DOM is ready
+              setTimeout(() => {
+                const markerElement = marker.getElement();
+                if (markerElement) {
+                  const tempLabel = markerElement.querySelector('.temp-label');
+                  if (tempLabel) {
+                    // Add keyboard event listeners
+                    tempLabel.addEventListener('keydown', (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        console.log('Keyboard trigger for:', name); // Debug log
+                        marker.fire('click'); // This should trigger the click handler
+                      }
+                    });
+
+                    // Add focus styling
+                    tempLabel.addEventListener('focus', () => {
+                      tempLabel.style.outline = '3px solid #0066cc';
+                      tempLabel.style.outlineOffset = '2px';
+                    });
+
+                    tempLabel.addEventListener('blur', () => {
+                      tempLabel.style.outline = 'none';
+                    });
+                  }
                 }
               }, 100);
             });

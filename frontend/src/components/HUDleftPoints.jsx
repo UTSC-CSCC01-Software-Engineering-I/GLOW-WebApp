@@ -19,7 +19,8 @@ function LogoBlock() {
   const [filteredList, setFilteredList] = useState([]);
   const [sortOrder, setSortOrder] = useState(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [unit, setUnit] = useState(window.temperatureUnit || 'C');
+  // Fix: Initialize with 'C' and update in useEffect
+  const [unit, setUnit] = useState('C');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [tempFilter, setTempFilter] = useState({ min: '', max: '' });
 
@@ -152,15 +153,27 @@ const resetTempFilter = () => {
     setShowSuggestions(false);
   };
     
+  // Update the useEffect that handles unit changes
   useEffect(() => {
     const handleUnitChange = () => {
-      setUnit(window.temperatureUnit || 'C');
+      // Check if window exists before accessing it
+      if (typeof window !== 'undefined') {
+        setUnit(window.temperatureUnit || 'C');
+      }
     };
-    window.addEventListener('unitchange', handleUnitChange);
-    // initialize on mount
+    
+    // Initialize on mount
     handleUnitChange();
+    
+    // Add event listener
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unitchange', handleUnitChange);
+    }
+    
     return () => {
-      window.removeEventListener('unitchange', handleUnitChange);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('unitchange', handleUnitChange);
+      }
     };
   }, []);
 
@@ -435,7 +448,8 @@ const resetTempFilter = () => {
               lineHeight: 1.4,
               transition: 'color 0.3s ease'
             }}>
-              {item.siteName}
+              {/* Display "User Point" for user-generated points, otherwise use siteName */}
+              {item.isUserPoint ? 'User Point' : (item.siteName || 'User Point')}
             </h2>
             <p style={{
               fontSize: '0.75rem',
@@ -444,15 +458,58 @@ const resetTempFilter = () => {
                 ? 'rgba(255,255,255,0.6)'
                 : 'rgba(0,0,0,0.6)'
             }}>
-              { item.timestamp
-                ? new Date(
-                    // drop the "Z" so this is parsed as local midnight
-                    item.timestamp.replace(' ', 'T')
-                  ).toLocaleDateString('en-US', {
-                    day:   'numeric',
-                    month: 'short',
-                    year:  'numeric'
-                  })
+              { item.timestamp || item.updatedAt || item.createdAt
+                ? (() => {
+                    // More detailed debugging for user points
+                    if (!item.siteName) {
+                      console.log('USER POINT DATA:', item);
+                      console.log('updatedAt type:', typeof item.updatedAt);
+                      console.log('updatedAt value:', item.updatedAt);
+                      console.log('createdAt value:', item.createdAt);
+                      
+                      // Check if updatedAt is nested inside another object
+                      if (item.metadata) console.log('metadata:', item.metadata);
+                    }
+                    
+                    // Handle different timestamp formats
+                    let date;
+                    try {
+                      if (item.updatedAt) {
+                        // For user points
+                        date = new Date(item.updatedAt);
+                        console.log('Parsed updatedAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.createdAt) {
+                        // Try createdAt if updatedAt isn't available
+                        date = new Date(item.createdAt);
+                        console.log('Parsed createdAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.timestamp) {
+                        // For official data
+                        const formattedTimestamp = item.timestamp.replace ? item.timestamp.replace(' ', 'T') : item.timestamp;
+                        date = new Date(formattedTimestamp);
+                        console.log('Parsed timestamp date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else {
+                        console.log('No valid timestamp found');
+                        return '—';
+                      }
+                      
+                      // Check if the date is valid
+                      if (isNaN(date.getTime())) {
+                        console.log('Date is invalid');
+                        return '—';
+                      }
+                      
+                      return date.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch (error) {
+                      console.error('Error parsing date:', error);
+                      return '—';
+                    }
+                  })()
                 : '—' }
             </p>
           </div>
