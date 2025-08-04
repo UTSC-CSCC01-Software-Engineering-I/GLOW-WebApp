@@ -125,11 +125,7 @@ export default function MapComponent() {
 
   useEffect(() => {
     const initMap = async () => {
-      // Don't initialize if map already exists
-      if (mapInstanceRef.current) {
-        return;
-      }
-
+      if (mapInstanceRef.current) return;
       const L = (await import('leaflet')).default;
       
       // Add Leaflet CSS dynamically

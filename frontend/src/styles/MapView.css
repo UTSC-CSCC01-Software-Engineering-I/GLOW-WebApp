@@ -20,14 +20,23 @@
   border: none !important;
   box-shadow: none !important;
 }
-
+/* frontend/src/styles/MapView.css */
+.custom-temp-marker .temp-label {
+  background-color: #ff0000; /* Change to your desired color */
+  color: #ffffff; /* Text color */
+  border-radius: 50%;
+  padding: 5px;
+  text-align: center;
+}
 .temp-label {
   display: flex;
-  
+  justify-content: center;
+  align-items: center;
+
   transform: translateX(-10%) translateY(0.5rem);
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 0rem 0.3rem 0rem 0.3rem;
-  color: rgb(0, 0, 0);
+  background-color: rgba(255, 255, 255, 0.85); /* will be overridden inline */
+  padding: 0.3rem 0.6rem;
+  color: white;
   border-radius: 10rem;
   font-size: 1rem;
   font-weight: bold;
