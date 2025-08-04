@@ -320,6 +320,23 @@ function LogoBlock() {
     setShowFilterModal(false);
   };
 
+  // Listen for filterchange events and update the side‐panel list
+  useEffect(() => {
+    function handleFilterChange(e) {
+      const { min, max } = e.detail;
+      setFilteredList(
+        locaList.filter(item =>
+          (isNaN(min) || item.temp >= min) &&
+          (isNaN(max) || item.temp <= max)
+        )
+      );
+    }
+    window.addEventListener('filterchange', handleFilterChange);
+    return () => {
+      window.removeEventListener('filterchange', handleFilterChange);
+    };
+  }, [locaList]);
+
   return (
     <div 
       className="boxwithpoints"
