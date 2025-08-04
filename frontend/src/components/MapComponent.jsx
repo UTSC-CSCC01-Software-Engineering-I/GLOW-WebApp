@@ -39,7 +39,7 @@ Chart.register(
 // Async function to fetch historical data for a specific beach
 async function fetchHistoricalData(beachName) {
   try {
-    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
 
     const response = await fetch(`${NEXT_PUBLIC_API_URL}/beach-history?beachName=${encodeURIComponent(beachName)}`);
     const data = await response.json();
