@@ -20,11 +20,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend:5000/api
-    depends_on:
-      - backend
-    networks:
-      - glow-network
+      - NEXT_PUBLIC_API_URL=https://glow-backend-v4-0-0.onrender.com/api
 
   mongo:
     image: mongo:5.0
