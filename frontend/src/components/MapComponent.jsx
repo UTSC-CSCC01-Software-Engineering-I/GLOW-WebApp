@@ -252,7 +252,7 @@ export default function MapComponent() {
               const historicalData = await fetchHistoricalData(name);
 
               // add once at top of click‐handler so you can reuse
-              const popupOffset = [17, -25]; // x=0 (center), y=−45px (above marker)
+              const popupOffset = [17, -32]; // x=0 (center), y=−45px (above marker)
 
               if (historicalData.length === 0) {
                 marker.bindPopup(`
@@ -770,7 +770,7 @@ export default function MapComponent() {
   // }, []);
 
   // Handle beach search by name or coordinates
-  function handleSearch(selectedName, lat, lon) {
+  function handleSearch(selectedName, lat, lon, forcePopup = false) {
     if (!mapInstanceRef.current) return;
     
     // If direct coordinates are provided, use them
@@ -780,6 +780,16 @@ export default function MapComponent() {
       const offsetY = 150;
       const offsetX = 0;
       const targetLatLng = [lat, lon];
+      
+      // Find the marker that matches these coordinates before animation starts
+      let targetMarker = null;
+      markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+        // Use a larger tolerance for coordinate matching (0.005 is about 500m)
+        if (Math.abs(markerLat - lat) < 0.005 && Math.abs(markerLon - lon) < 0.005) {
+          console.log('Found matching marker at', markerLat, markerLon);
+          targetMarker = marker;
+        }
+      });
       
       // Calculate offset points for smooth animation
       const currentZoom = map.getZoom();
