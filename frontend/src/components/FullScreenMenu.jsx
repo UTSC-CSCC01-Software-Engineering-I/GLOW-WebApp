@@ -69,6 +69,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
   return (
     <>
       <div 
+        data-testid="overlay"
         className={`map-mobile-sidebar-overlay ${isOpen ? 'active' : ''}`}
         onClick={onClose}
       ></div>
@@ -78,8 +79,8 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
               : 'rgba(255, 255, 255, 0.1)'}}>
         <div className="map-sidebar-header">
           
-          <h1 className='map-logotop' style={{ fontFamily: 'inter'}}>glow</h1>
-          <h2 className='map-logobottom' style={{ fontFamily: 'sans-serif'}} >by MicroSofties</h2>
+          <h1 className='map-logotop' style={{ fontFamily: 'LEMONMILK'}}>glow</h1>
+          <h2 className='map-logobottom' style={{ fontFamily: 'LEMONMILK'}} >by MicroSofties</h2>
           
         </div>
 

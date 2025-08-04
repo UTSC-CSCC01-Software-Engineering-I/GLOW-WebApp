@@ -33,7 +33,7 @@ function MenuBlock({ theme, loggedIn }) {
       }}>
         <h1 style={{
           color: theme === 'light' ? 'white' : 'black',
-          fontFamily: 'Inter, sans-serif',
+          fontFamily: 'LEMONMILK, sans-serif',
           fontWeight: '900',
           fontSize: '2rem'
         }}>+</h1>
@@ -41,9 +41,9 @@ function MenuBlock({ theme, loggedIn }) {
           onClick={handleClick}
           style={{
             color: theme === 'light' ? 'white' : 'black',
-            fontFamily: 'Inter, sans-serif',
+            fontFamily: 'LEMONMILK, sans-serif',
             fontWeight: '500',
-            fontSize: '1.2rem',
+            fontSize: '1rem',
             border: 'none',
             borderRadius: '0.6rem',
             backgroundColor: 'transparent',

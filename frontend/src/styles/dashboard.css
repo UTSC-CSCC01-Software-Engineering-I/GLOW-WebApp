@@ -3,10 +3,10 @@
 .dashboard-page {
     z-index: 1;
     min-height: 100vh;
-    background: linear-gradient(-45deg,#23a6d5, #34c759, rgb(155, 155, 155));
+    background: linear-gradient(-45deg,#2f7994, #206e33);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
-    font-family: 'Inter';
+    font-family: 'LEMONMILK';
     transition: all 0.3s ease;
 }
 
@@ -48,7 +48,7 @@
 }
 .logotop{
     color: white;
-    font-family: Inter, sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 800;
     font-size: 4rem;
     margin-bottom: -1rem;
@@ -57,7 +57,7 @@
 .logobottom{
     color: white;
     margin-left: 0.5rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-style: italic;
     font-size: 1rem;
 }
@@ -544,36 +544,94 @@
 }
 
 .edit-btn, .delete-btn {
-    padding: 8px 12px;
-    border: none;
+    padding: 12px 16px;
+    border: 2px solid transparent;
     border-radius: 8px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px; /* WCAG touch target minimum */
+    min-width: 80px;
 }
 
 .edit-btn {
-    background: #f59e0b;
-    color: white;
+    background: #ffffff;
+    color: #2d7a2d;
+    border-color: #2d7a2d;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-btn:hover {
-    background: #d97706;
+    background: #2d7a2d;
+    color: #ffffff;
+    border-color: #2d7a2d;
     transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(45, 122, 45, 0.3);
+}
+
+.edit-btn:focus {
+    outline: 3px solid #2d7a2d;
+    outline-offset: 2px;
 }
 
 .delete-btn {
-    background: #ef4444;
-    color: white;
+    background: white;
+    color: #000000;
+    border-color: #000000;
 }
 
 .delete-btn:hover {
-    background: #dc2626;
+    background: #000000;
+    color: white;
+    border-color: #000000;
     transform: translateY(-1px);
+}
+
+.delete-btn:focus {
+    outline: 3px solid #000000;
+    outline-offset: 2px;
+}
+
+/* Dark theme button styles */
+.dark-theme .edit-btn {
+    background: #34c75900;
+    color:#34c759;
+    border-color: #34c759;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .edit-btn:hover {
+    background: #34c759;
+    color: black;
+    border-color: #34c759;
+    box-shadow: 0 4px 8px rgba(52, 199, 89, 0.4);
+}
+
+.dark-theme .edit-btn:focus {
+    outline: 3px solid #34c759;
+    outline-offset: 2px;
+}
+
+.dark-theme .delete-btn {
+    background: #ffffff00;
+    color: white;
+    border-color: rgb(255, 255, 255);
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .delete-btn:hover {
+    background: red;
+    color: black;
+    border-color: red;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4);
 }
 
 /* Edit Form Styles */
@@ -605,36 +663,99 @@
 
 .form-actions {
     display: flex;
-    gap: 8px;
-    justify-content: flex-end;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
 }
 
 .save-btn, .cancel-btn {
-    padding: 10px 16px;
-    border: none;
+    padding: 12px 20px;
+    border: 2px solid transparent;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-height: 44px; /* WCAG touch target minimum */
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .save-btn {
-    background: #10b981;
-    color: white;
+    background: #ffffff;
+    color: #2d7a2d;
+    border-color: #2d7a2d;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .save-btn:hover {
-    background: #059669;
+    background: #2d7a2d;
+    color: #ffffff;
+    border-color: #2d7a2d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(45, 122, 45, 0.3);
+}
+
+.save-btn:focus {
+    outline: 3px solid #2d7a2d;
+    outline-offset: 2px;
 }
 
 .cancel-btn {
-    background: #6b7280;
-    color: white;
+    background: white;
+    color: #000000;
+    border-color: #000000;
 }
 
 .cancel-btn:hover {
-    background: #4b5563;
+    background: #000000;
+    color: white;
+    border-color: #000000;
+    transform: translateY(-1px);
+}
+
+.cancel-btn:focus {
+    outline: 3px solid #000000;
+    outline-offset: 2px;
+}
+
+/* Dark theme form button styles */
+.dark-theme .save-btn {
+    background: rgba(0, 0, 0, 0);
+    color: #34c759;
+    border-color: #34c759;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .save-btn:hover {
+    background: #34c759;
+    color: black;
+    border-color: #34c759;
+    box-shadow: 0 4px 8px rgba(52, 199, 89, 0.4);
+}
+
+.dark-theme .save-btn:focus {
+    outline: 3px solid #34c759;
+    outline-offset: 2px;
+}
+
+.dark-theme .cancel-btn {
+    background: #ffffff00;
+    color: #ffffff;
+    border-color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .cancel-btn:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4);
 }
 
 .tasks-section h3,
@@ -907,14 +1028,14 @@
     flex-direction: column;
     gap: 20px;
     text-align: center;
-    color: #6b7280;
+    color: #ffffff;
 }
 
 .spinner {
     width: 40px;
     height: 40px;
     border: 3px solid #f3f4f6;
-    border-top: 3px solid #8b5cf6;
+    border-top: 3px solid #000000;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -956,7 +1077,7 @@
 
 .mobile-logotop {
     color: #1f2937;
-    font-family: Inter, sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 800;
     font-size: 1.8rem;
     margin: 0;
@@ -970,7 +1091,7 @@
 
 .mobile-logobottom {
     color: #6b7280;
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-style: italic;
     font-size: 0.75rem;
     margin: 0;
@@ -991,7 +1112,7 @@
 
 .mobile-current-menu-title {
     color: #1f2937;
-    font-family: Inter, sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 700;
     font-size: 1.5rem;
     margin: 0;
@@ -1097,7 +1218,7 @@
 
 .mobile-sidebar .logotop {
     color: white;
-    font-family: Inter, sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 800;
     font-size: 3rem;
     margin-bottom: -0.5rem;
@@ -1107,7 +1228,7 @@
 .mobile-sidebar .logobottom {
     color: white;
     margin-left: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-style: italic;
     font-size: 1rem;
     text-align: center;
@@ -1395,8 +1516,7 @@
     background: white;
     border-radius: 16px;
     padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f1f5f9;
+    /* border: 2px solid #f1f5f9; */
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -1405,8 +1525,8 @@
 
 .dark-theme .point-card {
     background: #374151;
-    border: 1px solid #4b5563;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border: 2px solid #4b5563;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .point-card:hover {
@@ -1465,8 +1585,9 @@
 
 .point-card .point-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     justify-content: center;
+    margin-top: 8px;
 }
 
 .point-card .edit-form {
@@ -1495,6 +1616,21 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.dark-theme .point-card .form-row input {
+    color: white;
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+.dark-theme .point-card .form-row input:focus {
+    border-color: #6366f1;
+    background-color: #374151;
+}
+
+.dark-point{
+    color: white;
+}
+
 /* Profile Management Styles */
 .profile-form-container {
     margin: 0 auto;
@@ -1520,7 +1656,6 @@
     font-weight: 600;
     color: #1f2937;
     margin: 0 0 16px 0;
-    border-bottom: 2px solid #f3f4f6;
     padding-bottom: 8px;
     transition: all 0.3s ease;
 }
@@ -1596,11 +1731,11 @@
     display: flex;
     justify-content: flex-start;
     padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
+    border-top: 1px solid #545454;
 }
 
 .save-profile-btn {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #206e33;
     color: white;
     border: none;
     padding: 14px 28px;
@@ -1609,7 +1744,6 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 .save-profile-btn:hover {
@@ -1736,9 +1870,12 @@
     z-index: 9999999;
     background-color: rgba(255, 255, 255, 0.132);
 }
+
 .mapbut:hover {
-    
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
 }
+
 .logout {
     margin-top: 'auto';
 }

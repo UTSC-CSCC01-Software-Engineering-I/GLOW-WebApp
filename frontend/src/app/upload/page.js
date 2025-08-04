@@ -18,7 +18,7 @@ export default function UploadPage() {
             <div className="mt-4" style={{display: 'flex', justifyContent: 'center', width: '100%'}}>
             <button 
                 onClick={() => router.push('/')}
-                style={{backgroundColor: 'black', fontFamily: 'Inter, sans-serif', padding: '0.9rem',
+                style={{backgroundColor: 'black', fontFamily: 'LEMONMILK, sans-serif', padding: '0.9rem',
                 borderRadius: '5rem', cursor: 'pointer'
             }} 
             onMouseEnter={(e) => e.target.style.backgroundColor = 'blue'}

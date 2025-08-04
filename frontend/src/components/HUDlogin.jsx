@@ -13,9 +13,10 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'Inter, sans-serif', 
+                    fontFamily: 'LEMONMILK, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '10rem', 
+                    fontSize: '1.5rem',
                     border: 'none',
                     borderRadius: '4rem',
                     backgroundColor: 'transparent',
@@ -29,13 +30,13 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
                   >{ theme === 'light' ? '⏾' : '☀'}</button></div>
         
-      <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '7rem', height: '3rem', top: '1rem',
+      <div style={{ backgroundColor: theme === 'light' ? 'white': 'black', width: '10rem', height: '3rem', top: '1rem',
         right: '7.2rem', position: 'fixed', borderRadius: '0.6rem', display: 'flex', 
         alignItems: 'center', justifyContent: 'center', flexDirection: 'row-reverse'}}>
           
           <button onClick={() => router.push('/default')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'Inter, sans-serif', 
+            fontFamily: 'LEMONMILK', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
@@ -63,7 +64,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
         right: '4.2rem', position: 'fixed', borderRadius: '4rem', display: 'flex'}}>
             <button onClick={toggleTheme} style={{ 
                     color: theme === 'dark' ? 'yellow': 'black',
-                    fontFamily: 'Inter, sans-serif', 
+                    fontFamily: 'LEMONMILK, sans-serif', 
                     fontWeight: '900', 
                     fontSize: '1.5rem', 
                     border: 'none',
@@ -87,7 +88,7 @@ function LoginBox({ toggleTheme, theme, loggedIn }) {
           
           <button onClick={() => router.push('/dashboard')} style={{ 
             color: theme === 'dark' ? 'white': 'black', 
-            fontFamily: 'Inter', 
+            fontFamily: 'LEMONMILK', 
             fontWeight: '400', 
             fontSize: '1rem', 
             border: 'none',
