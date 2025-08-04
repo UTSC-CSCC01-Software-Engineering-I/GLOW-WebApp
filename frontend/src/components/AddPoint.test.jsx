@@ -2,7 +2,8 @@
  * @file AddPoint.test.jsx
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { act } from 'react';                // ← import act from react
 import AddPoint from './AddPoint';
 
 // Mock APIs
@@ -26,20 +27,25 @@ jest.mock('../utils/themeManager', () => ({
 
 const { authAPI, pointsAPI } = require('../lib/api');
 
-beforeAll(() => {
-  jest.useFakeTimers();
-});
-afterAll(() => {
-  jest.useRealTimers();
-});
-
 describe('AddPoint Component', () => {
+  beforeAll(() => {
+    // Switch all tests to fake timers
+    jest.useFakeTimers();
+  });
+
+  afterAll(() => {
+    // Restore real timers after suite
+    jest.useRealTimers();
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock location
+
+    // Mock window.location
     delete window.location;
     window.location = { search: '', href: '' };
-    // Mock geolocation
+
+    // Mock geolocation API
     global.navigator.geolocation = {
       getCurrentPosition: jest.fn((success) =>
         success({ coords: { latitude: 10, longitude: 20 } })
@@ -56,22 +62,22 @@ describe('AddPoint Component', () => {
     return render(<AddPoint />);
   }
 
-  it('shows loading state initially and then renders form', async () => {
+  it('shows loading spinner then the form', async () => {
     mockAuthAndRender();
-
-    // Loading spinner
+    // Immediately see the loading text
     expect(screen.getByText(/Loading/i)).toBeInTheDocument();
-
-    // Wait for form after profile resolves
-    await waitFor(() =>
-      expect(screen.getByText(/Add a temperature point/i)).toBeInTheDocument()
-    );
+    // After profile loads, the form heading appears
+    expect(
+      await screen.findByText(/Add a temperature point to/i)
+    ).toBeInTheDocument();
   });
 
-  it('handles input changes and form submission success', async () => {
+  it('submits successfully and shows the fullscreen confirmation', async () => {
     mockAuthAndRender();
-    await screen.findByText(/Add a temperature point/i);
+    // Wait for the form to appear
+    await screen.findByText(/Add a temperature point to/i);
 
+    // Provide token & mock network + verification
     localStorage.setItem('authToken', 'mock-token');
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
@@ -84,37 +90,45 @@ describe('AddPoint Component', () => {
       ],
     });
 
+    // Fill out & submit
     fireEvent.change(screen.getByLabelText(/Latitude/i), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText(/Longitude/i), { target: { value: '20' } });
     fireEvent.change(screen.getByLabelText(/Temperature/i), { target: { value: '30' } });
-
     fireEvent.click(screen.getByText(/Add Temperature Point/i));
 
-    // Fast-forward the 1.5s delay
-    await act(() => jest.advanceTimersByTime(1500));
-    // Wait for modal
-    expect(await screen.findByText('Temperature point added successfully')).toBeInTheDocument();
-    expect(screen.getByText(/Success!/i)).toBeInTheDocument();
+    // Fast-forward the UX delay
+    act(() => {
+      jest.advanceTimersByTime(1500);
+    });
+
+    // Now the modal text appears
+    expect(
+      await screen.findByText('Temperature point recorded')
+    ).toBeInTheDocument();
+    
+    expect(
+      screen.getByRole('heading', { name: /Success!/i })
+    ).toBeInTheDocument();
   });
 
-  it('shows error if no token is present', async () => {
+  it('shows an error if not logged in', async () => {
     mockAuthAndRender();
-    await screen.findByText(/Add a temperature point/i);
+    await screen.findByText(/Add a temperature point to/i);
 
     localStorage.removeItem('authToken');
     fireEvent.change(screen.getByLabelText(/Latitude/i), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText(/Longitude/i), { target: { value: '20' } });
     fireEvent.change(screen.getByLabelText(/Temperature/i), { target: { value: '30' } });
-
     fireEvent.click(screen.getByText(/Add Temperature Point/i));
 
-    await screen.findByText(/You must be logged in to add a point/i);
-    expect(screen.getByText(/You must be logged in to add a point/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/You must be logged in to add a point/i)
+    ).toBeInTheDocument();
   });
 
-  it('handles API failure gracefully', async () => {
+  it('handles a server error gracefully', async () => {
     mockAuthAndRender();
-    await screen.findByText(/Add a temperature point/i);
+    await screen.findByText(/Add a temperature point to/i);
 
     localStorage.setItem('authToken', 'mock-token');
     global.fetch = jest.fn().mockResolvedValue({
@@ -125,12 +139,14 @@ describe('AddPoint Component', () => {
     fireEvent.change(screen.getByLabelText(/Latitude/i), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText(/Longitude/i), { target: { value: '20' } });
     fireEvent.change(screen.getByLabelText(/Temperature/i), { target: { value: '30' } });
-
     fireEvent.click(screen.getByText(/Add Temperature Point/i));
 
-    // Fast-forward the 1.5s delay
-    await act(() => jest.advanceTimersByTime(1500));
-    // Now the error banner should appear
-    expect(await screen.findByText(/Server error/i)).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(1500);
+    });
+
+    expect(
+      await screen.findByText(/Server error/i)
+    ).toBeInTheDocument();
   });
 });

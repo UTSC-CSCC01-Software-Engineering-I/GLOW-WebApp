@@ -62,16 +62,16 @@ describe('HUDleftPoints Component', () => {
 
     const sortButton = screen.getByText('↕');
 
-    // Ascending
+    // Ascending - low to high
     fireEvent.click(sortButton);
-    fireEvent.click(screen.getByText('Temp ↑'));
+    fireEvent.click(screen.getByText(/Low to High/i));
 
     let items = container.querySelectorAll('.beach-item-hover');
     expect(items[0].textContent).toContain('Beach Two'); // 15°C first
 
     // Descending
     fireEvent.click(sortButton);
-    fireEvent.click(screen.getByText('Temp ↓'));
+    fireEvent.click(screen.getByText(/High to Low/i));
 
     items = container.querySelectorAll('.beach-item-hover');
     expect(items[0].textContent).toContain('Beach One'); // 20°C first
@@ -83,7 +83,7 @@ describe('HUDleftPoints Component', () => {
 
     // Open sort menu and click Reset
     fireEvent.click(screen.getByText('↕'));
-    fireEvent.click(screen.getByText('Reset'));
+    fireEvent.click(screen.getByText(/Reset Sort/i));
 
     const items = container.querySelectorAll('.beach-item-hover');
     expect(items[0].textContent).toContain('Beach One');
