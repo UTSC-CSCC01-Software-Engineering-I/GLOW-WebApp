@@ -404,7 +404,7 @@ function LogoBlock() {
               position: 'absolute',
               top: 'calc(100% + 0.25rem)',
               right: 0,
-              backgroundColor: theme === 'light' ? '#e6e6e6bb' : '#00000086',
+              backgroundColor: theme === 'light' ? '#dadadae1' : '#242424f1',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               color: theme === 'light' ? '#000' : '#fff',
               borderRadius: '1rem',

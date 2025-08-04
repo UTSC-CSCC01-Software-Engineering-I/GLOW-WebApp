@@ -251,6 +251,9 @@ export default function MapComponent() {
 
               const historicalData = await fetchHistoricalData(name);
 
+              // add once at top of click‐handler so you can reuse
+              const popupOffset = [17, -25]; // x=0 (center), y=−45px (above marker)
+
               if (historicalData.length === 0) {
                 marker.bindPopup(`
                   <div role="dialog" aria-labelledby="popup-title-${i}">
@@ -258,12 +261,21 @@ export default function MapComponent() {
                     <p>No historical data available</p>
                     <p>Current temperature: ${formattedTemp} (${tempCategory})</p>
                   </div>
-                `).openPopup();
+                `, {
+                  offset: popupOffset,
+                  className: 'custom-popup'
+                }).openPopup();
                 return;
               }
 
               if (historicalData.length < 2) {
-                marker.bindPopup(`<strong>${name}</strong><br/>Not enough data to generate a graph`).openPopup();
+                marker.bindPopup(
+                  `<strong>${name}</strong><br/>Not enough data to generate a graph`,
+                  {
+                    offset: popupOffset,
+                    className: 'custom-popup'
+                  }
+                ).openPopup();
                 return;
               }
 
@@ -438,7 +450,7 @@ export default function MapComponent() {
 
               // Open popup
               const popup = L.popup({
-                offset: [10, -20],
+                offset: popupOffset,
                 maxWidth: 650,
                 maxHeight: 470,
                 className: 'custom-popup'
@@ -779,10 +791,10 @@ export default function MapComponent() {
       map.once('moveend', function() {
         // After panning completes, smoothly zoom in
         map.once('zoomend', function() {
-          // Find and open any popup that might be at this location
-          markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+          // replace marker.openPopup() with marker.fire('click')
+          markersRef.current.forEach(({ marker, lat: markerLat, lon: markerLon }) => {
             if (Math.abs(markerLat - lat) < 0.0001 && Math.abs(markerLon - lon) < 0.0001) {
-              marker.openPopup();
+              marker.fire('click');
             }
           });
         });
@@ -828,13 +840,13 @@ export default function MapComponent() {
       map.once('moveend', function() {
         // After panning completes, smoothly zoom in
         map.once('zoomend', function() {
-          // After zooming completes, open the popup
-          match.marker.openPopup();
+          // fire the click event so your click-handler builds the popup & chart
+          match.marker.fire('click');
         });
         
         // Animate zoom with a duration in ms
         map.flyTo(offsetLatLng, targetZoom, {
-          duration: 0.5, // seconds
+          duration: 0.5,
           easeLinearity: 0.2
         });
       });
