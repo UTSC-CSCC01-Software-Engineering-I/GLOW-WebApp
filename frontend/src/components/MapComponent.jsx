@@ -610,44 +610,45 @@ export default function MapComponent() {
     const removeUnitListener = UnitManager.addUnitChangeListener((newUnit) => {
       setUnit(newUnit); // Update local state for legend
       
-      markersRef.current.forEach(({ marker, tempC, name }) => {
-        // Use formatTemperature utility for consistent formatting
+      markersRef.current.forEach(({ marker, tempC }) => {
+        // 1) compute the new label
         const formattedTemp = formatTemperature(tempC, newUnit);
-        const tempColor = getTemperatureColor(tempC, 'C'); // Always calculate color from Celsius
 
-        // Update marker icon
-        marker.setIcon(window.L.divIcon({
-          className: 'custom-temp-marker',
-          html: `<div class="temp-label" style="background-color: ${tempColor};">${formattedTemp}</div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
+        // 2) find the existing <span class="temp-value"> and update it
+        const el = marker.getElement();
+        if (el) {
+          const valueSpan = el.querySelector('.temp-value');
+          if (valueSpan) valueSpan.textContent = formattedTemp;
+        }
+
+        // 3) leave the background‐color alone so it never “snaps back” after a refresh
+        // (skip marker.setIcon entirely)
+      });
+
+      // Update the graph if it exists
+      if (marker.chartInstance && marker.chartData) {
+        const chart = marker.chartInstance;
+        
+        // Convert original data to new unit with time structure
+        const newTimeBasedData = marker.chartData.map((d) => ({
+          x: new Date(d.timestamp),
+          y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
         }));
 
-        // Update the graph if it exists
-        if (marker.chartInstance && marker.chartData) {
-          const chart = marker.chartInstance;
-          
-          // Convert original data to new unit with time structure
-          const newTimeBasedData = marker.chartData.map((d) => ({
-            x: new Date(d.timestamp),
-            y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
-          }));
+        // Update dataset with time-based data
+        chart.data.datasets[0].data = newTimeBasedData;
 
-          // Update dataset with time-based data
-          chart.data.datasets[0].data = newTimeBasedData;
+        // Update the y-axis title
+        chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
+        
+        // Update y-axis tick callback
+        chart.options.scales.y.ticks.callback = function(value) {
+          return `${value}°${newUnit}`;
+        };
 
-          // Update the y-axis title
-          chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
-          
-          // Update y-axis tick callback
-          chart.options.scales.y.ticks.callback = function(value) {
-            return `${value}°${newUnit}`;
-          };
-
-          // Apply the updates
-          chart.update();
-        }
-      });
+        // Apply the updates
+        chart.update();
+      }
     });
 
     // Listen for theme changes
