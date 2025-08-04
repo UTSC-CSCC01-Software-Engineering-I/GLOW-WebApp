@@ -1,6 +1,6 @@
 // API utility functions for connecting frontend to backend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
 
 // Generic API call function
 async function apiCall(endpoint, options = {}) {
