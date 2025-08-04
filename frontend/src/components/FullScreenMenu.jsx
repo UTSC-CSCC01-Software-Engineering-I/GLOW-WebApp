@@ -69,6 +69,7 @@ export function FullScreenMenu({ isOpen, onClose, theme, toggleTheme, loggedIn }
   return (
     <>
       <div 
+        data-testid="overlay"
         className={`map-mobile-sidebar-overlay ${isOpen ? 'active' : ''}`}
         onClick={onClose}
       ></div>

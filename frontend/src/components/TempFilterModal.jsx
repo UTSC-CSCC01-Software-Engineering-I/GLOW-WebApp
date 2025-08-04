@@ -22,6 +22,7 @@ function TempFilterModal({
   // Use createPortal with a null check for document
   return typeof document !== 'undefined' ? createPortal(
     <div
+      data-testid="modal-overlay"
       onClick={handleOverlayClick}
       style={{
         position: 'fixed',
@@ -82,7 +83,7 @@ function TempFilterModal({
           marginBottom: '2rem' 
         }}>
           <div style={{ flex: 1 }}>
-            <label style={{
+            <label htmlFor="temp-min" style={{
               display: 'block',
               fontSize: '0.85rem',
               fontWeight: '500',
@@ -93,6 +94,7 @@ function TempFilterModal({
             </label>
             <input
               type="number"
+              id="temp-min"
               placeholder="e.g. 15"
               value={tempFilter.min}
               onChange={e => setTempFilter(f => ({ ...f, min: e.target.value }))}
@@ -118,7 +120,7 @@ function TempFilterModal({
           </div>
           
           <div style={{ flex: 1 }}>
-            <label style={{
+            <label htmlFor="temp-max" style={{
               display: 'block',
               fontSize: '0.85rem',
               fontWeight: '500',
@@ -129,6 +131,7 @@ function TempFilterModal({
             </label>
             <input
               type="number"
+              id="temp-max"
               placeholder="e.g. 25"
               value={tempFilter.max}
               onChange={e => setTempFilter(f => ({ ...f, max: e.target.value }))}
