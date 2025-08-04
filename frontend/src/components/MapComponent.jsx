@@ -255,6 +255,9 @@ export default function MapComponent() {
 
               const historicalData = await fetchHistoricalData(name);
 
+              // add once at top of click‐handler so you can reuse
+              const popupOffset = [17, -32]; // x=0 (center), y=−45px (above marker)
+
               if (historicalData.length === 0) {
                 marker.bindPopup(`
                   <div role="dialog" aria-labelledby="popup-title-${i}">
@@ -262,12 +265,21 @@ export default function MapComponent() {
                     <p>No historical data available</p>
                     <p>Current temperature: ${formattedTemp} (${tempCategory})</p>
                   </div>
-                `).openPopup();
+                `, {
+                  offset: popupOffset,
+                  className: 'custom-popup'
+                }).openPopup();
                 return;
               }
 
               if (historicalData.length < 2) {
-                marker.bindPopup(`<strong>${name}</strong><br/>Not enough data to generate a graph`).openPopup();
+                marker.bindPopup(
+                  `<strong>${name}</strong><br/>Not enough data to generate a graph`,
+                  {
+                    offset: popupOffset,
+                    className: 'custom-popup'
+                  }
+                ).openPopup();
                 return;
               }
 
@@ -442,7 +454,7 @@ export default function MapComponent() {
 
               // Open popup
               const popup = L.popup({
-                offset: [10, -20],
+                offset: popupOffset,
                 maxWidth: 650,
                 maxHeight: 470,
                 className: 'custom-popup'
@@ -602,44 +614,45 @@ export default function MapComponent() {
     const removeUnitListener = UnitManager.addUnitChangeListener((newUnit) => {
       setUnit(newUnit); // Update local state for legend
       
-      markersRef.current.forEach(({ marker, tempC, name }) => {
-        // Use formatTemperature utility for consistent formatting
+      markersRef.current.forEach(({ marker, tempC }) => {
+        // 1) compute the new label
         const formattedTemp = formatTemperature(tempC, newUnit);
-        const tempColor = getTemperatureColor(tempC, 'C'); // Always calculate color from Celsius
 
-        // Update marker icon
-        marker.setIcon(window.L.divIcon({
-          className: 'custom-temp-marker',
-          html: `<div class="temp-label" style="background-color: ${tempColor};">${formattedTemp}</div>`,
-          iconSize: [40, 40],
-          iconAnchor: [20, 20],
+        // 2) find the existing <span class="temp-value"> and update it
+        const el = marker.getElement();
+        if (el) {
+          const valueSpan = el.querySelector('.temp-value');
+          if (valueSpan) valueSpan.textContent = formattedTemp;
+        }
+
+        // 3) leave the background‐color alone so it never “snaps back” after a refresh
+        // (skip marker.setIcon entirely)
+      });
+
+      // Update the graph if it exists
+      if (marker.chartInstance && marker.chartData) {
+        const chart = marker.chartInstance;
+        
+        // Convert original data to new unit with time structure
+        const newTimeBasedData = marker.chartData.map((d) => ({
+          x: new Date(d.timestamp),
+          y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
         }));
 
-        // Update the graph if it exists
-        if (marker.chartInstance && marker.chartData) {
-          const chart = marker.chartInstance;
-          
-          // Convert original data to new unit with time structure
-          const newTimeBasedData = marker.chartData.map((d) => ({
-            x: new Date(d.timestamp),
-            y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
-          }));
+        // Update dataset with time-based data
+        chart.data.datasets[0].data = newTimeBasedData;
 
-          // Update dataset with time-based data
-          chart.data.datasets[0].data = newTimeBasedData;
+        // Update the y-axis title
+        chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
+        
+        // Update y-axis tick callback
+        chart.options.scales.y.ticks.callback = function(value) {
+          return `${value}°${newUnit}`;
+        };
 
-          // Update the y-axis title
-          chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
-          
-          // Update y-axis tick callback
-          chart.options.scales.y.ticks.callback = function(value) {
-            return `${value}°${newUnit}`;
-          };
-
-          // Apply the updates
-          chart.update();
-        }
-      });
+        // Apply the updates
+        chart.update();
+      }
     });
 
     // Listen for theme changes
@@ -762,7 +775,7 @@ export default function MapComponent() {
   // }, []);
 
   // Handle beach search by name or coordinates
-  function handleSearch(selectedName, lat, lon) {
+  function handleSearch(selectedName, lat, lon, forcePopup = false) {
     if (!mapInstanceRef.current) return;
     
     // If direct coordinates are provided, use them
@@ -772,6 +785,16 @@ export default function MapComponent() {
       const offsetY = 150;
       const offsetX = 0;
       const targetLatLng = [lat, lon];
+      
+      // Find the marker that matches these coordinates before animation starts
+      let targetMarker = null;
+      markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+        // Use a larger tolerance for coordinate matching (0.005 is about 500m)
+        if (Math.abs(markerLat - lat) < 0.005 && Math.abs(markerLon - lon) < 0.005) {
+          console.log('Found matching marker at', markerLat, markerLon);
+          targetMarker = marker;
+        }
+      });
       
       // Calculate offset points for smooth animation
       const currentZoom = map.getZoom();
@@ -783,10 +806,10 @@ export default function MapComponent() {
       map.once('moveend', function() {
         // After panning completes, smoothly zoom in
         map.once('zoomend', function() {
-          // Find and open any popup that might be at this location
-          markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+          // replace marker.openPopup() with marker.fire('click')
+          markersRef.current.forEach(({ marker, lat: markerLat, lon: markerLon }) => {
             if (Math.abs(markerLat - lat) < 0.0001 && Math.abs(markerLon - lon) < 0.0001) {
-              marker.openPopup();
+              marker.fire('click');
             }
           });
         });
@@ -832,13 +855,13 @@ export default function MapComponent() {
       map.once('moveend', function() {
         // After panning completes, smoothly zoom in
         map.once('zoomend', function() {
-          // After zooming completes, open the popup
-          match.marker.openPopup();
+          // fire the click event so your click-handler builds the popup & chart
+          match.marker.fire('click');
         });
         
         // Animate zoom with a duration in ms
         map.flyTo(offsetLatLng, targetZoom, {
-          duration: 0.5, // seconds
+          duration: 0.5,
           easeLinearity: 0.2
         });
       });

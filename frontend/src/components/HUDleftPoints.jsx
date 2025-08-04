@@ -243,10 +243,18 @@ function LogoBlock() {
   const handleBeachClick = (item) => {
     // Also trigger map search if the function exists
     if (window.handleMapSearch) {
-      // Use siteName for API points or coordinates for user points
+      // Get the exact coordinates, ensuring we're using the right property names
+      const lat = item.lat || item.Latitude;
+      const lon = item.lng || item.lon || item.Longitude;
+      
+      // Get a name for the search
       const searchIdentifier = item.siteName || 
-                              (item.isUserPoint ? `User Point (${item.lat},${item.lon})` : 'Unknown Point');
-      window.handleMapSearch(searchIdentifier, item.lat, item.lon);
+                            (item.isUserPoint ? `User Point (${lat},${lon})` : 'Unknown Point');
+      
+      // ALWAYS force popup to open with true parameter
+      window.handleMapSearch(searchIdentifier, lat, lon, true);
+      
+      console.log(`Clicked point: ${searchIdentifier} at ${lat},${lon}`);
     }
   };
 
@@ -292,6 +300,25 @@ function LogoBlock() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSortMenu]);
+
+  // NEW: dispatch filterchange event
+  const handleApplyFilter = () => {
+    const min = parseFloat(tempFilter.min);
+    const max = parseFloat(tempFilter.max);
+    window.dispatchEvent(new CustomEvent('filterchange', {
+      detail: { min: isNaN(min) ? NaN : min, max: isNaN(max) ? NaN : max }
+    }));
+    setShowFilterModal(false);
+  };
+
+  // NEW: reset filter AND dispatch
+  const handleResetFilter = () => {
+    setTempFilter({ min: '', max: '' });
+    window.dispatchEvent(new CustomEvent('filterchange', {
+      detail: { min: NaN, max: NaN }
+    }));
+    setShowFilterModal(false);
+  };
 
   return (
     <div 
@@ -404,7 +431,7 @@ function LogoBlock() {
               position: 'absolute',
               top: 'calc(100% + 0.25rem)',
               right: 0,
-              backgroundColor: theme === 'light' ? '#e6e6e6bb' : '#00000086',
+              backgroundColor: theme === 'light' ? '#dadadae1' : '#242424f1',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               color: theme === 'light' ? '#000' : '#fff',
               borderRadius: '1rem',
@@ -789,8 +816,8 @@ function LogoBlock() {
         theme={theme}
         tempFilter={tempFilter}
         setTempFilter={setTempFilter}
-        applyTempFilter={tempFilter}
-        resetTempFilter={setTempFilter}
+        applyTempFilter={handleApplyFilter}    // use handler
+        resetTempFilter={handleResetFilter}    // use handler
       />
     </div>
   );
