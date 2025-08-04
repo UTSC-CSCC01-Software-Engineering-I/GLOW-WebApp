@@ -177,3 +177,105 @@
 .temp-label[data-temp-category="hot"] {
   border-left: 4px solid #ff3b30 !important;
 }
+
+/* Mobile-optimized popup styles */
+.mobile-optimized-popup .leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.mobile-optimized-popup .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.historical-data-container {
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 95vw !important;
+    max-height: 70vh !important;
+  }
+  
+  .mobile-optimized-popup .leaflet-popup-content-wrapper {
+    border-radius: 6px !important;
+  }
+  
+  .historical-data-container {
+    min-height: 280px !important;
+  }
+  
+  
+  /* Adjust popup close button for mobile */
+  .leaflet-popup-close-button {
+    padding: 8px !important;
+    font-size: 18px !important;
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 16px !important;
+  }
+}
+
+@media (max-width: 568px) {
+  /* Move legend further up on small mobile devices */
+  .legend {
+    top: 36% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 98vw !important;
+    max-height: 60vh !important;
+  }
+  
+  .mobile-optimized-popup .leaflet-popup-content-wrapper {
+    border-radius: 4px !important;
+  }
+  
+  .historical-data-container {
+    min-height: 240px !important;
+  }
+  
+  
+  
+  /* Make popup close button more touch-friendly */
+  .leaflet-popup-close-button {
+    padding: 10px !important;
+    font-size: 20px !important;
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 16px !important;
+    background: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 50% !important;
+  }
+  
+  .leaflet-popup-close-button:hover {
+    background: rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+/* Touch-friendly chart interactions */
+@media (pointer: coarse) {
+  .historical-data-container canvas {
+    touch-action: pan-x pan-y !important;
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .historical-data-container {
+    max-height: 50vh !important;
+  }
+  
+  .leaflet-popup-content-wrapper {
+    max-height: 60vh !important;
+  }
+}
