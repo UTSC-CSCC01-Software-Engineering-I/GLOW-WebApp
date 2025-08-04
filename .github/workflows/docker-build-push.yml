@@ -47,6 +47,13 @@ jobs:
         labels: ${{ steps.meta-backend.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+    
+    - name: Trigger backend redeploy on Render
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
+      env:
+        RENDER_BACKEND_DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -85,3 +92,10 @@ jobs:
         labels: ${{ steps.meta-frontend.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+    - name: Trigger frontend redeploy on Render
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      run: |
+        curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
+      env:
+        RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
