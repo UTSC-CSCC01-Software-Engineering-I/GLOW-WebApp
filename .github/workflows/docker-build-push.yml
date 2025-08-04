@@ -39,7 +39,7 @@ jobs:
         MONGODB_URI: mongodb://localhost:27017/glow_test
 
     - name: Upload backend test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # Changed from v3 to v4
       if: always()
       with:
         name: backend-test-results
@@ -73,7 +73,7 @@ jobs:
         CI: true
 
     - name: Upload frontend test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # Changed from v3 to v4
       if: always()
       with:
         name: frontend-test-results
