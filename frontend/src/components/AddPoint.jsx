@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { authAPI, pointsAPI } from '../lib/api';
 import { ThemeManager } from '../utils/themeManager';
+import '../styles/login.css';    // ← pull in the animated gradient & centering
 
 export default function AddPoint() {
   const [lat, setLat] = useState('');
@@ -186,7 +187,7 @@ export default function AddPoint() {
     }, 500);
   };
 
-  // Loading state
+  // Loading state (optional: you can also gradient-wrap this if you prefer)
   if (loading) {
     return (
       <div style={{
@@ -281,316 +282,305 @@ export default function AddPoint() {
         </div>
       )}
 
-      {/* Main Content */}
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: theme === 'dark' ? '#000' : '#fff',
-        fontFamily: 'LEMONMILK, sans-serif',
-        padding: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          maxWidth: '500px',
-          width: '100%',
-          backgroundColor: '#ffffff44',
-          border: theme === 'light' ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '24px',
-          boxShadow: theme === 'light' ? '0 8px 32px rgba(0,0,0,0.1)' : '0 8px 32px rgba(0,0,0,0.3)',
-          backdropFilter: 'blur(10px)',
-          padding: '40px',
-          position: 'relative'
-        }}>
-         
-
-          {/* Header with User Greeting */}
-          <div style={{ marginTop: '20px', marginBottom: '30px', textAlign: 'center' }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: '700',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              margin: '0 0 8px 0',
-              letterSpacing: '-0.02em'
-            }}>
-              Hello, {user?.firstName || 'User'}!
-            </h1>
-            
-            <p style={{
-              fontSize: '14px',
-              color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-              margin: '0',
-              fontStyle: 'italic'
-            }}>
-               Add a temperature point to {user?.email || 'your account'}
-            </p>
-          </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label htmlFor="latitude"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              Latitude
-            </label>
-            <input
-              id="latitude"
-              type="number"
-              value={lat}
-              onChange={e => setLat(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="longitude"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              Longitude
-            </label>
-            <input
-              id="longitude"
-              type="number"
-              value={lon}
-              onChange={e => setLon(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="temperature"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              🌡️ Temperature (°C)
-            </label>
-            <input
-              id="temperature"
-              type="number"
-              value={temp}
-              onChange={e => setTemp(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none',
-                fontWeight: '600'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
+      {/* NEW: wrap everything in login.css classes */}
+      <div className="loginpage">
+        <div className="login-container">
+          <div className="login-form-container">
+            {/* your existing AddPoint “card” */}
+            <div style={{
+              maxWidth: '500px',
               width: '100%',
-              padding: '14px 24px',
-              backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? 'white' : 'black'),
-              border: '1px solid #206e33',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#206e33' : '#206e33'),
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              marginTop: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-            onMouseOver={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#206e33' : '#206e33';
-                e.target.style.color = theme === 'light' ? 'white' : 'white';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? 'white' : 'white';
-                e.target.style.color = theme === 'light' ? '#206e33' : '#206e33';
-              }
-            }}
-          >
-            {submitting && (
-              <div style={{
-                width: '20px',
-                height: '20px',
-                border: '2px solid #6b7280',
-                borderTop: '2px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }}></div>
-            )}
-            {submitting ? 'Adding Point...' : 'Add Temperature Point'}
-          </button>
+              backgroundColor: theme === 'light' 
+                ? 'rgba(255,255,255,0.95)' 
+                : 'rgba(25,25,25,0.95)',
+              border: theme === 'light' 
+                ? '1px solid rgba(0,0,0,0.1)' 
+                : '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '24px',
+              boxShadow: theme === 'light' 
+                ? '0 8px 32px rgba(0,0,0,0.1)' 
+                : '0 8px 32px rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(10px)',
+              padding: '40px',
+              position: 'relative',
+              fontFamily: 'LEMONMILK, sans-serif'
+            }}>
+              {/* Header with User Greeting */}
+              <div style={{ marginTop: '20px', marginBottom: '30px', textAlign: 'center' }}>
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.02em'
+                }}>
+                  Hello, {user?.firstName || 'User'}!
+                </h1>
+                
+                <p style={{
+                  fontSize: '14px',
+                  color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                  margin: '0',
+                  fontStyle: 'italic'
+                }}>
+                   Add a temperature point to {user?.email || 'your account'}
+                </p>
+              </div>
 
-          {/* Cancel Button */}
-          <button
-            type="button"
-            onClick={handleBackToReferrer}
-            disabled={submitting}
-            style={{
-              width: '100%',
-              padding: '14px 24px',
-              background: 'transparent',
-              border: '1px solid rgba(0,0,0,0.1)',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '500',
-              color: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)'),
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              opacity: submitting ? 0.5 : 1
-            }}
-            onMouseOver={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = 'transparent';
-              }
-            }}
-          >
-            {referrerPage === 'dashboard' ? 'Cancel and Return to Dashboard' : 
-             referrerPage === 'manage-points' ? 'Cancel and Return to Manage Points' : 
-             'Cancel and Return to Map'}
-          </button>
-        </form>
+              {/* Form */}
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <label htmlFor="latitude"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Latitude
+                  </label>
+                  <input
+                    id="latitude"
+                    type="number"
+                    value={lat}
+                    onChange={e => setLat(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
 
-        {/* Success Message */}
-        {success && (
-          <div style={{
-            marginTop: '20px',
-            padding: '12px 16px',
-            backgroundColor: 'rgba(52, 199, 89, 0.1)',
-            border: '1px solid rgba(52, 199, 89, 0.2)',
-            borderRadius: '12px',
-            color: '#34c759',
-            fontSize: '14px',
-            fontWeight: '500',
-            backdropFilter: 'blur(10px)'
-          }}>
-            ✅ Success!
+                <div>
+                  <label htmlFor="longitude"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Longitude
+                  </label>
+                  <input
+                    id="longitude"
+                    type="number"
+                    value={lon}
+                    onChange={e => setLon(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="temperature"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    🌡 Temperature (°C)
+                  </label>
+                  <input
+                    id="temperature"
+                    type="number"
+                    value={temp}
+                    onChange={e => setTemp(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none',
+                      fontWeight: '600'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  style={{
+                    width: '100%',
+                    padding: '14px 24px',
+                    backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? 'white' : 'black'),
+                    border: '1px solid #206e33',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#206e33' : '#206e33'),
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    marginTop: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? '#206e33' : '#206e33';
+                      e.target.style.color = theme === 'light' ? 'white' : 'white';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? 'white' : 'white';
+                      e.target.style.color = theme === 'light' ? '#206e33' : '#206e33';
+                    }
+                  }}
+                >
+                  {submitting && (
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid #6b7280',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                  )}
+                  {submitting ? 'Adding Point...' : 'Add Temperature Point'}
+                </button>
+
+                {/* Cancel Button */}
+                <button
+                  type="button"
+                  onClick={handleBackToReferrer}
+                  disabled={submitting}
+                  style={{
+                    width: '100%',
+                    padding: '14px 24px',
+                    background: 'transparent',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)'),
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: submitting ? 0.5 : 1
+                  }}
+                  onMouseOver={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  {referrerPage === 'dashboard' ? 'Cancel and Return to Dashboard' : 
+                   referrerPage === 'manage-points' ? 'Cancel and Return to Manage Points' : 
+                   'Cancel and Return to Map'}
+                </button>
+              </form>
+
+              {/* Success Message */}
+              {success && (
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                  border: '1px solid rgba(52, 199, 89, 0.2)',
+                  borderRadius: '12px',
+                  color: '#34c759',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  ✅ Success!
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                  border: '1px solid rgba(255, 59, 48, 0.2)',
+                  borderRadius: '12px',
+                  color: '#ff3b30',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  ❌ {error}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div style={{
-            marginTop: '20px',
-            padding: '12px 16px',
-            backgroundColor: 'rgba(255, 59, 48, 0.1)',
-            border: '1px solid rgba(255, 59, 48, 0.2)',
-            borderRadius: '12px',
-            color: '#ff3b30',
-            fontSize: '14px',
-            fontWeight: '500',
-            backdropFilter: 'blur(10px)'
-          }}>
-            ❌ {error}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* CSS Animations */}
       <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-30px);
-          }
-          60% {
-            transform: translateY(-15px);
-          }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0) } 40% { transform: translateY(-30px) } 60% { transform: translateY(-15px) } }
       `}</style>
-    </div>
     </>
   );
 }
