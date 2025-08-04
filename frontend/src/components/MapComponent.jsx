@@ -758,7 +758,7 @@ export default function MapComponent() {
   // }, []);
 
   // Handle beach search by name or coordinates
-  function handleSearch(selectedName, lat, lon) {
+  function handleSearch(selectedName, lat, lon, forcePopup = false) {
     if (!mapInstanceRef.current) return;
     
     // If direct coordinates are provided, use them
@@ -768,6 +768,16 @@ export default function MapComponent() {
       const offsetY = 150;
       const offsetX = 0;
       const targetLatLng = [lat, lon];
+      
+      // Find the marker that matches these coordinates before animation starts
+      let targetMarker = null;
+      markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
+        // Use a larger tolerance for coordinate matching (0.005 is about 500m)
+        if (Math.abs(markerLat - lat) < 0.005 && Math.abs(markerLon - lon) < 0.005) {
+          console.log('Found matching marker at', markerLat, markerLon);
+          targetMarker = marker;
+        }
+      });
       
       // Calculate offset points for smooth animation
       const currentZoom = map.getZoom();
@@ -779,12 +789,21 @@ export default function MapComponent() {
       map.once('moveend', function() {
         // After panning completes, smoothly zoom in
         map.once('zoomend', function() {
-          // Find and open any popup that might be at this location
-          markersRef.current.forEach(({marker, lat: markerLat, lon: markerLon}) => {
-            if (Math.abs(markerLat - lat) < 0.0001 && Math.abs(markerLon - lon) < 0.0001) {
-              marker.openPopup();
-            }
-          });
+          // After zooming completes, open the popup if we found the marker
+          if (targetMarker && forcePopup) {
+            setTimeout(() => {
+              console.log('Opening popup for marker');
+              targetMarker.openPopup();
+            }, 400); // Increased delay to ensure map is settled
+          } else if (forcePopup && !targetMarker) {
+            console.log('No marker found to open popup for coordinates:', lat, lon);
+            
+            // If we couldn't find a marker but still want to show something at this location
+            const popup = L.popup()
+              .setLatLng([lat, lon])
+              .setContent(`<div><strong>${selectedName || 'Location'}</strong><br>Coordinates: ${lat.toFixed(5)}, ${lon.toFixed(5)}</div>`)
+              .openOn(map);
+          }
         });
         
         // Animate zoom with a duration in ms

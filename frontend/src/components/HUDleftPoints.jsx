@@ -243,10 +243,18 @@ function LogoBlock() {
   const handleBeachClick = (item) => {
     // Also trigger map search if the function exists
     if (window.handleMapSearch) {
-      // Use siteName for API points or coordinates for user points
+      // Get the exact coordinates, ensuring we're using the right property names
+      const lat = item.lat || item.Latitude;
+      const lon = item.lng || item.lon || item.Longitude;
+      
+      // Get a name for the search
       const searchIdentifier = item.siteName || 
-                              (item.isUserPoint ? `User Point (${item.lat},${item.lon})` : 'Unknown Point');
-      window.handleMapSearch(searchIdentifier, item.lat, item.lon);
+                            (item.isUserPoint ? `User Point (${lat},${lon})` : 'Unknown Point');
+      
+      // ALWAYS force popup to open with true parameter
+      window.handleMapSearch(searchIdentifier, lat, lon, true);
+      
+      console.log(`Clicked point: ${searchIdentifier} at ${lat},${lon}`);
     }
   };
 
