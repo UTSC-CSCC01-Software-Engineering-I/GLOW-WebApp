@@ -541,9 +541,11 @@ export default function MapComponent() {
               let officialData = { items: [] }, userData = { items: [] };
 
               try {
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
+                
                 const [officialRes, userRes] = await Promise.all([
-                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`),
-                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/userpoints`)
+                  fetch(`${API_URL}/water-data`),
+                  fetch(`${API_URL}/userpoints`)
                 ]);
 
                 if (officialRes.ok) {
