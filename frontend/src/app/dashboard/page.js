@@ -334,7 +334,6 @@ export default function Dashboard() {
       <div className="dashboard-page">
         <div className="dashboard-loading">
           <div className="spinner"></div>
-          <span>Loading dashboard...</span>
         </div>
       </div>
     );
@@ -637,13 +636,13 @@ export default function Dashboard() {
                                 className="edit-btn"
                                 onClick={() => handleEditPoint(point)}
                               >
-                                ✏️ Edit
+                              Edit
                               </button>
                               <button 
                                 className="delete-btn"
                                 onClick={() => handleDeletePoint(point._id)}
                               >
-                                🗑️ Delete
+                              Delete
                               </button>
                             </div>
                           </>
@@ -726,17 +725,6 @@ export default function Dashboard() {
                       <button type="submit" className="save-profile-btn">Update Profile</button>
                     </div>
                   </form>
-
-                  <div className="danger-zone">
-                    <h3>Danger Zone</h3>
-                    <p>Once you delete your account, there is no going back. Please be certain.</p>
-                    <button 
-                      className="delete-account-btn"
-                      onClick={handleDeleteAccount}
-                    >
-                      Delete Account
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

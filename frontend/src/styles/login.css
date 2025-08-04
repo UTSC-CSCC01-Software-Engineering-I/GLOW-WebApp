@@ -4,7 +4,7 @@
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
     position: relative;
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
 }
 
 @keyframes gradient {
@@ -37,7 +37,7 @@
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 2rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
@@ -196,7 +196,7 @@
 }
 
 .logsignT {
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     color: #1a1a1a;
     font-weight: 700;
     font-size: 1.75rem;
@@ -206,7 +206,7 @@
 }
 
 .logsignSmall{
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     color: #666;
     font-weight: 400;
     font-size: 1rem;
@@ -216,7 +216,7 @@
 }
 
 .fieldT{
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-weight: 600;
     font-size: 0.875rem;
     color: #374151;
@@ -232,7 +232,7 @@
   padding: 0.875rem 1.5rem;
   border: none;
   border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'LEMONMILK', sans-serif;
   font-size: 1rem;
   font-weight: 600;
   color: #1a1a1a;
@@ -257,7 +257,7 @@
   padding: 0.875rem 1.5rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'LEMONMILK', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
   color: #6b7280;
@@ -291,7 +291,7 @@ input[type="text"] {
   padding: 0.875rem 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'LEMONMILK', sans-serif;
   font-size: 1rem;
   color: #1a1a1a;
   background: #ffffff;

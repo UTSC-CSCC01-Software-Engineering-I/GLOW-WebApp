@@ -6,7 +6,12 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'sans': ['LEMONMILK', 'sans-serif'],
+        'lemonmilk': ['LEMONMILK', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 };

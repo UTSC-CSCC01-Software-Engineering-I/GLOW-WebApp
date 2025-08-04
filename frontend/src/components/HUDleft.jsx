@@ -31,10 +31,10 @@ function LogoBlock() {
         boxShadow: theme === 'light'
           ? '0 8px 32px rgba(0,0,0,0.1)'
           : '0 8px 32px rgba(0,0,0,0.3)'}}>
-        <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'Inter', fontWeight: '900', 
+        <h1 style={{ color: theme === 'dark' ? 'white': 'black', fontFamily: 'LEMONMILK', fontWeight: '900', 
           fontSize: '1.5rem'
         }}>GLOW</h1>
-        <h1 style={{ color: 'gray', fontFamily: 'Inter', fontWeight: '300', 
+        <h1 style={{ color: 'gray', fontFamily: 'LEMONMILK', fontWeight: '300', 
           fontSize: '0.9rem', marginLeft: '0.5rem', marginTop: '0.5rem'
         }}>by MicroSofties</h1>
     </div>

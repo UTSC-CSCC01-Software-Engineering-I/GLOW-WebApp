@@ -33,7 +33,7 @@
   font-weight: bold;
   width: fit-content;
   text-align: center;
-  font-family: 'Inter', sans-serif;
+  font-family: 'LEMONMILK', sans-serif;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 
@@ -50,7 +50,7 @@
     flex-direction: row; /* row so bar and labels are side by side */
     align-items: flex-start;
     gap: 8px; /* space between bar and labels */
-    font-family: 'Inter', sans-serif;
+    font-family: 'LEMONMILK', sans-serif;
     font-size: 0.8rem;
     color: var(--legend-text-color);
     z-index: 1000;

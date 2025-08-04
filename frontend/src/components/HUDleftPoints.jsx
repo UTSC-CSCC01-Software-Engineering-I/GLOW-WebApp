@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import '../styles/HudBeaches.css';
 import { globalBeach } from './MapComponent.jsx';
 import '../styles/homepage.css';
 import TempFilterModal from './TempFilterModal';
 import { ThemeManager } from '../utils/themeManager';
 
-
+const formatTemperature = (tempC, unit) => {
+  if (unit === 'F') {
+    return ((tempC * 9/5) + 32).toFixed(1);
+  }
+  return parseFloat(tempC).toFixed(1);
+};
 
 function LogoBlock() {
   const [theme, setTheme] = useState(() => ThemeManager.getTheme());
@@ -19,10 +24,15 @@ function LogoBlock() {
   const [filteredList, setFilteredList] = useState([]);
   const [sortOrder, setSortOrder] = useState(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  // Fix: Initialize with 'C' and update in useEffect
   const [unit, setUnit] = useState('C');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [tempFilter, setTempFilter] = useState({ min: '', max: '' });
+  
+  // Add new state for user location
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+
+  const sortWrapperRef = useRef(null);
 
   useEffect(() => {
     // Initialize theme using ThemeManager
@@ -69,50 +79,141 @@ function LogoBlock() {
   // Sort functionality
   useEffect(() => {
     if (!sortOrder) return;
-    setFilteredList(list =>
-      [...list].sort((a, b) =>
-        sortOrder === 'asc'
-          ? a.temp - b.temp
-          : b.temp - a.temp
-      )
-    );
-  }, [sortOrder]);
+    
+    setFilteredList(list => {
+      const sorted = [...list].sort((a, b) => {
+        switch (sortOrder) {
+          case 'temp-asc':
+            return a.temp - b.temp;
+          case 'temp-desc':
+            return b.temp - a.temp;
+          case 'time-newest':
+            // Handle different timestamp formats
+            const getTimestamp = (item) => {
+              if (item.updatedAt) return new Date(item.updatedAt);
+              if (item.createdAt) return new Date(item.createdAt);
+              if (item.timestamp) {
+                const formatted = item.timestamp.replace ? item.timestamp.replace(' ', 'T') : item.timestamp;
+                return new Date(formatted);
+              }
+              return new Date(0); // Fallback to epoch
+            };
+            return getTimestamp(b) - getTimestamp(a);
+          case 'time-oldest':
+            const getTimestampOld = (item) => {
+              if (item.updatedAt) return new Date(item.updatedAt);
+              if (item.createdAt) return new Date(item.createdAt);
+              if (item.timestamp) {
+                const formatted = item.timestamp.replace ? item.timestamp.replace(' ', 'T') : item.timestamp;
+                return new Date(formatted);
+              }
+              return new Date(0);
+            };
+            return getTimestampOld(a) - getTimestampOld(b);
+          case 'distance':
+            if (!userLocation) return 0;
+            const distanceA = calculateDistance(
+              userLocation.lat, userLocation.lng,
+              a.lat || a.Latitude, a.lng || a.lon || a.Longitude
+            );
+            const distanceB = calculateDistance(
+              userLocation.lat, userLocation.lng,
+              b.lat || b.Latitude, b.lng || b.lon || b.Longitude
+            );
+            return distanceA - distanceB;
+          default:
+            return 0;
+        }
+      });
+      return sorted;
+    });
+  }, [sortOrder, userLocation]);
 
-  const handleSortAsc = () => {
-    setSortOrder('asc');
+  const handleSortTempAsc = () => {
+    setSortOrder('temp-asc');
     setShowSortMenu(false);
   };
-  const handleSortDesc = () => {
-    setSortOrder('desc');
+
+  const handleSortTempDesc = () => {
+    setSortOrder('temp-desc');
     setShowSortMenu(false);
   };
+
+  const handleSortTimeNewest = () => {
+    setSortOrder('time-newest');
+    setShowSortMenu(false);
+  };
+
+  const handleSortTimeOldest = () => {
+    setSortOrder('time-oldest');
+    setShowSortMenu(false);
+  };
+
+  const handleSortDistance = () => {
+    if (!userLocation) {
+      alert('Location access is required for distance sorting. Please enable location permissions and refresh the page.');
+      return;
+    }
+    setSortOrder('distance');
+    setShowSortMenu(false);
+  };
+
   const handleSortReset = () => {
     setSortOrder(null);
     setFilteredList(locaList);
     setShowSortMenu(false);
   };
 
-  const applyTempFilter = () => {
-  const min = parseFloat(tempFilter.min);
-  const max = parseFloat(tempFilter.max);
-  // filter the master list
-  const newList = locaList.filter(item =>
-    (isNaN(min) || item.temp >= min) &&
-    (isNaN(max) || item.temp <= max)
-  );
-  setFilteredList(newList);
-  // notify the map
-  window.dispatchEvent(new CustomEvent('filterchange',{ detail: { min, max } }));
-  setShowFilterModal(false);
-};
+  // Function to get sort status text
+  const getSortStatusText = () => {
+    switch (sortOrder) {
+      case 'temp-asc': return 'Sorted by temperature (low to high)';
+      case 'temp-desc': return 'Sorted by temperature (high to low)';
+      case 'time-newest': return 'Sorted by newest updates';
+      case 'time-oldest': return 'Sorted by oldest updates';
+      case 'distance': return 'Sorted by distance (nearest first)';
+      default: return '';
+    }
+  };
 
-const resetTempFilter = () => {
-  setTempFilter({ min: '', max: '' });
-  setFilteredList(locaList);
-  // notify the map to show all markers
-  window.dispatchEvent(new CustomEvent('filterchange', { detail: { min: NaN, max: NaN } }));
-  setShowFilterModal(false);
-};
+  useEffect(() => {
+    // Get user location on mount
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          console.log('🗺️ User location obtained:', position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.warn('📍 Location access denied or failed:', error.message);
+          setLocationError(error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    } else {
+      setLocationError('Geolocation not supported');
+    }
+  }, []);
+
+  // Function to calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lng1, lat2, lng2) => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  };
 
   // Search functionality
   const handleInputChange = (e) => {
@@ -139,10 +240,13 @@ const resetTempFilter = () => {
     setFilteredList(filteredItems);
   };
 
-  const handleBeachClick = (name) => {
+  const handleBeachClick = (item) => {
     // Also trigger map search if the function exists
     if (window.handleMapSearch) {
-      window.handleMapSearch(name.siteName);
+      // Use siteName for API points or coordinates for user points
+      const searchIdentifier = item.siteName || 
+                              (item.isUserPoint ? `User Point (${item.lat},${item.lon})` : 'Unknown Point');
+      window.handleMapSearch(searchIdentifier, item.lat, item.lon);
     }
   };
 
@@ -176,6 +280,18 @@ const resetTempFilter = () => {
       }
     };
   }, []);
+
+  // close sort menu when clicking outside
+  useEffect(() => {
+    if (!showSortMenu) return;
+    const handleClickOutside = e => {
+      if (sortWrapperRef.current && !sortWrapperRef.current.contains(e.target)) {
+        setShowSortMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSortMenu]);
 
   return (
     <div 
@@ -264,8 +380,8 @@ const resetTempFilter = () => {
           )}
         </div>
         
-        {/* Sort dropdown trigger */}
-        <div style={{ position: 'relative' }}>
+        {/* Enhanced Sort dropdown trigger */}
+        <div style={{ position: 'relative' }} ref={sortWrapperRef}>
           <button
             onClick={() => setShowSortMenu(v => !v)}
             onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
@@ -276,44 +392,36 @@ const resetTempFilter = () => {
               border: '1px solid rgba(0,0,0,0.1)',
               backgroundColor: theme === 'light' ? '#fff' : '#333',
               color: theme === 'light' ? '#000' : '#fff',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '1rem'
             }}
-          >↕</button>
+          >
+            {sortOrder ? '⚡' : '↕'}
+          </button>
           
           {showSortMenu && (
             <div style={{
               position: 'absolute',
-              top: '100%',
+              top: 'calc(100% + 0.25rem)',
               right: 0,
-              backgroundColor: theme === 'light' ? '#ffffff44' : '#ffffff44',
+              backgroundColor: theme === 'light' ? '#e6e6e6bb' : '#00000086',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               color: theme === 'light' ? '#000' : '#fff',
-              borderRadius: '0.25rem',
+              borderRadius: '1rem',
               overflow: 'hidden',
               zIndex: 10,
-              width: '8rem',
-              borderRadius: '1rem',
-              backdropFilter: 'blur(10px)'
+              width: '12rem',
+              backdropFilter: 'blur(10px)',
+              border: theme === 'light'
+                ? '1px solid rgba(255,255,255,0.3)'
+                : '1px solid rgba(255,255,255,0.1)'
             }}>
+              {/* Temperature sorting */}
+              <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                Temperature
+              </div>
               <button
-                onClick={handleSortAsc}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-                style={{
-                  
-                  display: 'block',
-                  width: '100%',
-                  padding: '0.5rem 1rem',
-                  border: 'none',
-                  background: 'transparent',
-                  textAlign: 'left',
-                  cursor: 'pointer'
-                }}
-              >
-                Temp ↑
-              </button>
-              <button
-                onClick={handleSortDesc}
+                onClick={handleSortTempAsc}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                 style={{
@@ -323,13 +431,14 @@ const resetTempFilter = () => {
                   border: 'none',
                   background: 'transparent',
                   textAlign: 'left',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  color: theme === 'light' ? '#000' : '#fff'
                 }}
               >
-                Temp ↓
+                🌡 Low to High
               </button>
               <button
-                onClick={handleSortReset}
+                onClick={handleSortTempDesc}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                 style={{
@@ -339,11 +448,99 @@ const resetTempFilter = () => {
                   border: 'none',
                   background: 'transparent',
                   textAlign: 'left',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  color: theme === 'light' ? '#000' : '#fff'
                 }}
               >
-                Reset
+                🌡 High to Low
               </button>
+
+              {/* Time sorting */}
+              <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.1)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                Last Updated
+              </div>
+              <button
+                onClick={handleSortTimeNewest}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  color: theme === 'light' ? '#000' : '#fff'
+                }}
+              >
+                ⏱ Newest First
+              </button>
+              <button
+                onClick={handleSortTimeOldest}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  color: theme === 'light' ? '#000' : '#fff'
+                }}
+              >
+                ⏱ Oldest First
+              </button>
+
+              {/* Distance sorting */}
+              <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.1)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                Location
+              </div>
+              <button
+                onClick={handleSortDistance}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '0.5rem 1rem',
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  color: theme === 'light' ? '#000' : '#fff',
+                  opacity: userLocation ? 1 : 0.5
+                }}
+                disabled={!userLocation}
+              >
+                ⚲ Nearest First
+                {!userLocation && <span style={{ fontSize: '0.7rem', display: 'block' }}>
+                  {locationError ? '(Location denied)' : '(Getting location...)'}
+                </span>}
+              </button>
+
+              {/* Reset option */}
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <button
+                  onClick={handleSortReset}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '0.5rem 1rem',
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    color: theme === 'light' ? '#000' : '#fff'
+                  }}
+                >
+                  ⟳ Reset Sort
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -363,17 +560,31 @@ const resetTempFilter = () => {
         >
           ⋮
         </button>
-
       </div>
+
+      {/* Add sort status indicator */}
+      {sortOrder && (
+        <div style={{
+          fontSize: '0.75rem',
+          color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+          marginBottom: '0.5rem',
+          padding: '0.25rem 0.5rem',
+          backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+          borderRadius: '0.25rem',
+          textAlign: 'center'
+        }}>
+          {getSortStatusText()}
+        </div>
+      )}
 
       {/* Scrollable beaches container */}
       <div style={{
         flex: 1,
         overflowY: 'scroll',
-        WebkitOverflowScrolling: 'touch', // Smooth scrolling on iOS
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE/Edge
-        paddingRight: '2px' // Small padding to prevent content cutoff
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        paddingRight: '2px'
       }}>
         {/* Hide scrollbar for webkit browsers */}
         <style dangerouslySetInnerHTML={{
@@ -458,25 +669,57 @@ const resetTempFilter = () => {
                 ? 'rgba(255,255,255,0.6)'
                 : 'rgba(0,0,0,0.6)'
             }}>
-              { item.timestamp
+              { item.timestamp || item.updatedAt || item.createdAt
                 ? (() => {
-                    // Handle different timestamp formats
-                    let date;
-                    if (item.isUserPoint) {
-                      // For user points, timestamp is from updatedAt (ISO string)
-                      date = new Date(item.timestamp);
-                    } else {
-                      // For official data, timestamp might be in different format
-                      date = new Date(item.timestamp.replace(' ', 'T'));
+                    // More detailed debugging for user points
+                    if (!item.siteName) {
+                      console.log('USER POINT DATA:', item);
+                      console.log('updatedAt type:', typeof item.updatedAt);
+                      console.log('updatedAt value:', item.updatedAt);
+                      console.log('createdAt value:', item.createdAt);
+                      
+                      // Check if updatedAt is nested inside another object
+                      if (item.metadata) console.log('metadata:', item.metadata);
                     }
                     
-                    return date.toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                      hour: item.isUserPoint ? '2-digit' : undefined,
-                      minute: item.isUserPoint ? '2-digit' : undefined
-                    });
+                    // Handle different timestamp formats
+                    let date;
+                    try {
+                      if (item.updatedAt) {
+                        // For user points
+                        date = new Date(item.updatedAt);
+                        console.log('Parsed updatedAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.createdAt) {
+                        // Try createdAt if updatedAt isn't available
+                        date = new Date(item.createdAt);
+                        console.log('Parsed createdAt date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else if (item.timestamp) {
+                        // For official data
+                        const formattedTimestamp = item.timestamp.replace ? item.timestamp.replace(' ', 'T') : item.timestamp;
+                        date = new Date(formattedTimestamp);
+                        console.log('Parsed timestamp date:', date, 'Is valid:', !isNaN(date.getTime()));
+                      } else {
+                        console.log('No valid timestamp found');
+                        return '—';
+                      }
+                      
+                      // Check if the date is valid
+                      if (isNaN(date.getTime())) {
+                        console.log('Date is invalid');
+                        return '—';
+                      }
+                      
+                      return date.toLocaleDateString('en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    } catch (error) {
+                      console.error('Error parsing date:', error);
+                      return '—';
+                    }
                   })()
                 : '—' }
             </p>
@@ -517,6 +760,7 @@ const resetTempFilter = () => {
         </div>
       ))}
       
+      {/* Status message */}
       <div style={{ 
         color: loading ? '#ff9500' : (filteredList.length === 0 ? '#ff3b30': '#34c759'),
         fontSize: '0.875rem',
@@ -545,8 +789,8 @@ const resetTempFilter = () => {
         theme={theme}
         tempFilter={tempFilter}
         setTempFilter={setTempFilter}
-        applyTempFilter={applyTempFilter}
-        resetTempFilter={resetTempFilter}
+        applyTempFilter={tempFilter}
+        resetTempFilter={setTempFilter}
       />
     </div>
   );
