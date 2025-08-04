@@ -301,6 +301,25 @@ function LogoBlock() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showSortMenu]);
 
+  // NEW: dispatch filterchange event
+  const handleApplyFilter = () => {
+    const min = parseFloat(tempFilter.min);
+    const max = parseFloat(tempFilter.max);
+    window.dispatchEvent(new CustomEvent('filterchange', {
+      detail: { min: isNaN(min) ? NaN : min, max: isNaN(max) ? NaN : max }
+    }));
+    setShowFilterModal(false);
+  };
+
+  // NEW: reset filter AND dispatch
+  const handleResetFilter = () => {
+    setTempFilter({ min: '', max: '' });
+    window.dispatchEvent(new CustomEvent('filterchange', {
+      detail: { min: NaN, max: NaN }
+    }));
+    setShowFilterModal(false);
+  };
+
   return (
     <div 
       className="boxwithpoints"
@@ -797,8 +816,8 @@ function LogoBlock() {
         theme={theme}
         tempFilter={tempFilter}
         setTempFilter={setTempFilter}
-        applyTempFilter={tempFilter}
-        resetTempFilter={setTempFilter}
+        applyTempFilter={handleApplyFilter}    // use handler
+        resetTempFilter={handleResetFilter}    // use handler
       />
     </div>
   );

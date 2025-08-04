@@ -252,7 +252,7 @@ export default function MapComponent() {
               const historicalData = await fetchHistoricalData(name);
 
               // add once at top of click‐handler so you can reuse
-              const popupOffset = [17, -25]; // x=0 (center), y=−45px (above marker)
+              const popupOffset = [17, -32]; // x=0 (center), y=−45px (above marker)
 
               if (historicalData.length === 0) {
                 marker.bindPopup(`
