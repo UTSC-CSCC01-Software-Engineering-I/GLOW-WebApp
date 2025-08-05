@@ -444,21 +444,31 @@ function LogoBlock() {
           </button>
           
           {showSortMenu && (
-            <div style={{
+            <div 
+              className="sort-menu"
+              style={{
               position: 'absolute',
               top: 'calc(100% + 0.25rem)',
               right: 0,
               backgroundColor: theme === 'light' ? '#dadadae1' : '#242424f1',
               boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              
+              height: '20vh',
+              
               color: theme === 'light' ? '#000' : '#fff',
               borderRadius: '1rem',
               overflow: 'hidden',
+              overflowY: 'scroll',
               zIndex: 10,
               width: '12rem',
               backdropFilter: 'blur(10px)',
               border: theme === 'light'
                 ? '1px solid rgba(255,255,255,0.3)'
-                : '1px solid rgba(255,255,255,0.1)'
+                : '1px solid rgba(255,255,255,0.1)',
+              scrollbarWidth: 'thin',
+              scrollbarColor: theme === 'light' 
+                ? 'rgba(0,0,0,0.3) rgba(0,0,0,0.1)' 
+                : 'rgba(255,255,255,0.3) rgba(255,255,255,0.1)'
             }}>
               {/* Temperature sorting */}
               <div style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: '600', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -635,6 +645,20 @@ function LogoBlock() {
           __html: `
             .boxwithpoints div::-webkit-scrollbar {
               display: none;
+            }
+            .sort-menu::-webkit-scrollbar {
+              width: 8px;
+            }
+            .sort-menu::-webkit-scrollbar-track {
+              background: ${theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'};
+              border-radius: 10px;
+            }
+            .sort-menu::-webkit-scrollbar-thumb {
+              background: ${theme === 'light' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'};
+              border-radius: 10px;
+            }
+            .sort-menu::-webkit-scrollbar-thumb:hover {
+              background: ${theme === 'light' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'};
             }
           `
         }} />

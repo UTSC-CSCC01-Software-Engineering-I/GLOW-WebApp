@@ -224,7 +224,7 @@ function TempFilterModal({
               backgroundColor: theme === 'light' ? '#34c759' : '#30D158',
               border: 'none',
               borderRadius: '0.35rem',
-              color: '#fff',
+              color: 'black',
               cursor: 'pointer',
               fontSize: '0.85rem',
               fontWeight: '600',

@@ -298,13 +298,31 @@ export default function MapComponent() {
                 timeDifferences.push(`${diffHours}h gap`);
               }
 
-              // Create graph container
+              // Create graph container with responsive dimensions
               const graphContainer = document.createElement('div');
-              graphContainer.style.width = '600px';
-              graphContainer.style.height = '420px';
-              graphContainer.style.padding = '15px';
+              graphContainer.className = 'historical-data-container';
+              
+              // Detect mobile viewport
+              const isMobile = window.innerWidth <= 768;
+              const isSmallMobile = window.innerWidth <= 480;
+              
+              // Set responsive dimensions
+              if (isSmallMobile) {
+                graphContainer.style.width = '340px';
+                graphContainer.style.height = '300px';
+                graphContainer.style.padding = '8px';
+              } else if (isMobile) {
+                graphContainer.style.width = '450px';
+                graphContainer.style.height = '350px';
+                graphContainer.style.padding = '10px';
+              } else {
+                graphContainer.style.width = '600px';
+                graphContainer.style.height = '420px';
+                graphContainer.style.padding = '15px';
+              }
+              
               graphContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
-              graphContainer.style.borderRadius = '12px';
+              graphContainer.style.borderRadius = isMobile ? '8px' : '12px';
               graphContainer.style.boxShadow = window.globalTheme === 'dark' 
                 ? '0 8px 32px rgba(0,0,0,0.5)' 
                 : '0 8px 32px rgba(0,0,0,0.15)';
@@ -313,8 +331,18 @@ export default function MapComponent() {
               const canvas = document.createElement('canvas');
               canvas.style.width = '100%';
               canvas.style.height = 'calc(100% - 40px)';
-              canvas.width = 570;
-              canvas.height = 380;
+              
+              // Set canvas dimensions based on screen size
+              if (isSmallMobile) {
+                canvas.width = 320;
+                canvas.height = 240;
+              } else if (isMobile) {
+                canvas.width = 420;
+                canvas.height = 290;
+              } else {
+                canvas.width = 570;
+                canvas.height = 380;
+              }
               graphContainer.appendChild(canvas);
               
               console.log('Creating chart with time-based data:', timeBasedData);
@@ -346,11 +374,11 @@ export default function MapComponent() {
                       display: true,
                       text: `Historical Data for ${name}`,
                       font: {
-                        size: 18,
+                        size: isSmallMobile ? 14 : (isMobile ? 16 : 18),
                         weight: 'bold'
                       },
                       color: window.globalTheme === 'dark' ? '#fff' : '#333',
-                      padding: 20
+                      padding: isSmallMobile ? 10 : (isMobile ? 15 : 20)
                     },
                     legend: {
                       display: false
@@ -385,26 +413,35 @@ export default function MapComponent() {
                       type: 'linear', // Use linear instead of time to avoid adapter issues
                       position: 'bottom',
                       title: {
-                        display: true,
+                        display: !isSmallMobile, // Hide title on very small screens
                         text: 'Date & Time',
                         color: window.globalTheme === 'dark' ? '#fff' : '#333',
                         font: {
-                          size: 14,
+                          size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
                           weight: 'bold'
                         }
                       },
                       ticks: {
                         color: window.globalTheme === 'dark' ? '#ccc' : '#666',
-                        maxRotation: 45,
+                        maxRotation: isMobile ? 45 : 45,
                         font: {
-                          size: 10
+                          size: isSmallMobile ? 8 : (isMobile ? 9 : 10)
                         },
-                        maxTicksLimit: 5, // Limit to prevent overcrowding
+                        maxTicksLimit: isSmallMobile ? 3 : (isMobile ? 4 : 5), // Fewer ticks on mobile
                         callback: function(value) {
                           // The value here is the actual timestamp (milliseconds)
                           const date = new Date(value);
                           if (isNaN(date.getTime())) return ''; // Invalid date
-                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                          
+                          // Mobile-friendly date formatting
+                          if (isSmallMobile) {
+                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                          } else if (isMobile) {
+                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '\n' + 
+                                   date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                          } else {
+                            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                          }
                         }
                       },
                       grid: {
@@ -413,18 +450,18 @@ export default function MapComponent() {
                     },
                     y: {
                       title: {
-                        display: true,
+                        display: !isSmallMobile, // Hide title on very small screens
                         text: `Temperature (°${currentUnit})`,
                         color: window.globalTheme === 'dark' ? '#fff' : '#333',
                         font: {
-                          size: 14,
+                          size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
                           weight: 'bold'
                         }
                       },
                       ticks: {
                         color: window.globalTheme === 'dark' ? '#ccc' : '#666',
                         font: {
-                          size: 11
+                          size: isSmallMobile ? 8 : (isMobile ? 9 : 11)
                         },
                         callback: function(value) {
                           return `${value}°${currentUnit}`;
@@ -448,12 +485,14 @@ export default function MapComponent() {
               marker.chartData = sortedData;
               marker.chartContainer = graphContainer; // Store reference to the container
 
-              // Open popup
+              // Open popup with responsive sizing
               const popup = L.popup({
                 offset: popupOffset,
-                maxWidth: 650,
-                maxHeight: 470,
-                className: 'custom-popup'
+                maxWidth: isSmallMobile ? 360 : (isMobile ? 480 : 650),
+                maxHeight: isSmallMobile ? 320 : (isMobile ? 370 : 470),
+                className: 'custom-popup mobile-optimized-popup',
+                autoPan: true,
+                autoPanPadding: [10, 10]
               })
               .setLatLng([lat, lon])
               .setContent(graphContainer)
@@ -466,6 +505,25 @@ export default function MapComponent() {
                   console.log('Chart resized');
                 }
               }, 100);
+
+              // Add resize handler for mobile orientation changes
+              const handleResize = () => {
+                if (chart && chart.resize) {
+                  setTimeout(() => {
+                    chart.resize();
+                    console.log('Chart resized after orientation change');
+                  }, 200);
+                }
+              };
+
+              window.addEventListener('resize', handleResize);
+              window.addEventListener('orientationchange', handleResize);
+
+              // Store cleanup function for the resize handlers
+              marker._resizeCleanup = () => {
+                window.removeEventListener('resize', handleResize);
+                window.removeEventListener('orientationchange', handleResize);
+              };
             });
 
             // Add keyboard accessibility AFTER the click handler
@@ -574,6 +632,10 @@ export default function MapComponent() {
                 
                 // Clear existing markers before adding new ones
                 markersRef.current.forEach(({ marker }) => {
+                  // Clean up resize handlers if they exist
+                  if (marker._resizeCleanup) {
+                    marker._resizeCleanup();
+                  }
                   map.removeLayer(marker);
                 });
                 markersRef.current = [];
