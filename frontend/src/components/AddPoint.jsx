@@ -167,9 +167,16 @@ export default function AddPoint() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     setError('');
     setSuccess(false);
-    setSubmitting(true);
+
+    // only reject when fields are actually empty strings
+    if (lat === '' || lon === '' || temp === '') {
+      setError('Missing required fields');
+      setSubmitting(false);
+      return;
+    }
   
     try {
       const token = localStorage.getItem('authToken');

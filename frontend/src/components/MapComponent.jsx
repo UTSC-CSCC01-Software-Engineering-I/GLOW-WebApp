@@ -186,9 +186,9 @@ export default function MapComponent() {
 
         // Function to add a marker for a single item - extracted for reuse
         function addMarkerForItem(item, i, isGrouped = false) {
-          const lon = item.lng || item.lon || item.Longitude;
-          const lat = item.lat || item.Latitude;
-          const t = item.temp || item.Result;
+          const lon = item.lng ?? item.lon ?? item.Longitude;
+          const lat = item.lat ?? item.Latitude;
+          const t   = parseFloat(item.temp ?? item.Result); // Convert to number here
           const name = item.siteName || item.Label || `User Point ${i + 1}`;
           
           // determine age (fallback to createdAt for user‐points)
@@ -198,7 +198,7 @@ export default function MapComponent() {
 
           const currentUnit = UnitManager.getUnit();
           const formattedTemp = formatTemperature(t, currentUnit);
-          const tempColor = getAccessibleTemperatureColor(t, 'C');
+          const tempColor = getAccessibleTemperatureColor(t, 'C'); // Now t is a number
           const tempCategory = getTemperatureCategory(t);
 
           // outline for stale, grey text for stale
