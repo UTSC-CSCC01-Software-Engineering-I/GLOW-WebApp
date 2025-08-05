@@ -191,34 +191,58 @@ export default function MapComponent() {
             const t = item.temp || item.Result;
             const name = item.siteName || item.Label || `User Point ${i + 1}`;
             
-            // Get current unit and format temperature
+            // determine age (fallback to createdAt for user‐points)
+            const rawTime = item.timestamp || item.createdAt || item.created_at;
+            const ts = new Date(rawTime).getTime();
+            const isStale = !isNaN(ts) && (Date.now() - ts) > 2 * 24 * 60 * 60 * 1000; // older than 2 days
+
             const currentUnit = UnitManager.getUnit();
             const formattedTemp = formatTemperature(t, currentUnit);
-            const tempColor = getAccessibleTemperatureColor(t, 'C'); // Use accessible color function
+            const tempColor = getAccessibleTemperatureColor(t, 'C');
             const tempCategory = getTemperatureCategory(t);
-            const tempSymbol = getTemperatureSymbol(t);
 
-            console.log(`Plotting [${i}]: ${name} @ ${lat},${lon} = ${formattedTemp}`);
+            // outline for stale, grey text for stale
+            const outlineStyle = isStale ? 'border: 2px solid grey;' : '';
+            const valueColor   = isStale ? 'color: grey;' : '';
+
+            // determine stale styling
+            const bgColor = isStale ? '#ffffff20' : tempColor;
+            const staleFilter = isStale
+              ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'
+              : '';
 
             const icon = L.divIcon({
               className: 'custom-temp-marker',
               html: `
                 <div 
-                  class="temp-label accessible-marker" 
-                  style="background-color: ${tempColor};"
+                  class="temp-label accessible-marker${isStale ? ' stale' : ''}"
+                  style="
+                    background-color: ${bgColor};
+                    ${outlineStyle}
+                    ${staleFilter}
+                  "
                   role="button"
                   tabindex="0"
-                  aria-label="Water temperature ${formattedTemp} at ${name}. Category: ${tempCategory}. Press Enter or Space to view details."
-                  data-temp-category="${tempCategory.toLowerCase().replace(' ', '-')}"
+                  aria-label="Water temperature ${formattedTemp} at ${name}. ${isStale ? 'Data older than 2 days.' : `Category: ${tempCategory}. Press Enter or Space to view details.`}"
+                  data-temp-category="${tempCategory.toLowerCase().replace(/ /g,'-')}"
                 >
-                  <span class="temp-value">${formattedTemp}</span>
+                  <span class="temp-value" style="${valueColor}">${formattedTemp}</span>
                 </div>
               `,
-              iconSize: [50, 40], // Slightly larger for better touch targets
+              iconSize: [50, 40],
               iconAnchor: [25, 20],
             });
 
-            const marker = L.marker([lat, lon], { icon }).addTo(map);
+            const marker = L.marker([lat, lon], { icon }).addTo(mapInstanceRef.current);
+
+            // bump this marker to the top on hover
+            marker.on('mouseover', () => {
+              marker.setZIndexOffset(1000);
+            });
+            // reset when mouse leaves
+            marker.on('mouseout', () => {
+              marker.setZIndexOffset(0);
+            });
 
             // Add function to announce to screen readers (this was missing)
             function announceToScreenReader(message) {
