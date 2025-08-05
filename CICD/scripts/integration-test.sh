@@ -29,7 +29,7 @@ test_endpoint() {
 test_endpoint "https://glow-backend-v4-0-0.onrender.com/api/health" "Backend health check" || exit 1
 
 # Test backend functional route
-test_endpoint "https://glow-backend-v4-0-0.onrender.com/api/users" "Backend users endpoint" || exit 1
+test_endpoint "https://glow-backend-v4-0-0.onrender.com/api/water-data" "Backend water data endpoint" || exit 1
 
 # Test frontend
 test_endpoint "https://glow-frontend-v4-0-0.onrender.com" "Frontend application" || exit 1
