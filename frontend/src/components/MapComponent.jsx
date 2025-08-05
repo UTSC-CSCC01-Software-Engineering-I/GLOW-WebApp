@@ -63,6 +63,7 @@ export default function MapComponent() {
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
   const [unit, setUnit] = useState(() => UnitManager.getUnit());
+  const userLocationRef = useRef(null);
 
   // Temperature color function - works with both Celsius and Fahrenheit
   function getTemperatureColor(temp, unit = 'C', mode = 'light') {
@@ -724,7 +725,7 @@ export default function MapComponent() {
               }, 100);
             });
 
-            markersRef.current.push({ marker, tempC: t, name, lat, lon });
+            markersRef.current.push({ marker, tempC: t, name, lat, lon, timestamp: ts });
           }
         }
 
@@ -1120,6 +1121,79 @@ export default function MapComponent() {
     return () => {
       window.removeEventListener('filterchange', handleFilter);
     };
+  }, []);
+
+  // new single useEffect to handle ALL filters
+  useEffect(() => {
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1)*Math.PI/180;
+      const dLon = (lon2 - lon1)*Math.PI/180;
+      const a = Math.sin(dLat/2)**2 +
+                Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180) *
+                Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+
+    const handleFilter = e => {
+      const { min, max, distanceMax, maxAge } = e.detail;
+      const now = Date.now();
+
+      // If distance filter is requested but no location, try to get it
+      if (!isNaN(distanceMax) && !userLocationRef.current) {
+        console.log('🔄 Distance filter requested, attempting to get location...');
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              userLocationRef.current = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+              };
+              console.log('📍 Got user location for filtering:', userLocationRef.current);
+              // Re-trigger the filter with location now available
+              handleFilter(e);
+            },
+            (error) => {
+              console.warn('❌ Could not get location for distance filter:', error.message);
+              alert('Location access is required for distance filtering. Please enable location permissions and try again.');
+            }
+          );
+          return; // Exit early, will re-run once location is obtained
+        } else {
+          alert('Geolocation is not supported by this browser.');
+          return;
+        }
+      }
+
+      markersRef.current.forEach(({ marker, tempC, lat, lon, timestamp }) => {
+        let keep = true;
+        if (!isNaN(min) && tempC < min) keep = false;
+        if (!isNaN(max) && tempC > max) keep = false;
+        
+        if (!isNaN(distanceMax) && userLocationRef.current) {
+          const d = calculateDistance(
+            userLocationRef.current.lat,
+            userLocationRef.current.lon,
+            lat, lon
+          );
+          if (d > distanceMax) keep = false;
+        }
+        
+        if (!isNaN(maxAge) && timestamp) {
+          const ageDays = (now - timestamp)/(1000*60*60*24);
+          if (ageDays > maxAge) keep = false;
+        }
+
+        if (keep) {
+          marker.addTo(mapInstanceRef.current);
+        } else {
+          mapInstanceRef.current.removeLayer(marker);
+        }
+      });
+    };
+
+    window.addEventListener('filterchange', handleFilter);
+    return () => window.removeEventListener('filterchange', handleFilter);
   }, []);
 
   return (

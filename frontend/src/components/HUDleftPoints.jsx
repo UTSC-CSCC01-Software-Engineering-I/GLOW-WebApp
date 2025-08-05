@@ -26,7 +26,11 @@ function LogoBlock() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [unit, setUnit] = useState('C');
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [tempFilter, setTempFilter] = useState({ min: '', max: '' });
+  const [tempFilter, setTempFilter] = useState({
+    min: '', max: '',
+    distanceMin: '', distanceMax: '',
+    maxAge: ''
+  });
   
   // Add new state for user location
   const [userLocation, setUserLocation] = useState(null);
@@ -303,19 +307,30 @@ function LogoBlock() {
 
   // NEW: dispatch filterchange event
   const handleApplyFilter = () => {
-    const min = parseFloat(tempFilter.min);
-    const max = parseFloat(tempFilter.max);
+    const min      = parseFloat(tempFilter.min);
+    const max      = parseFloat(tempFilter.max);
+    const distanceMax = parseFloat(tempFilter.distanceMax);
+    const maxAge   = parseFloat(tempFilter.maxAge);
     window.dispatchEvent(new CustomEvent('filterchange', {
-      detail: { min: isNaN(min) ? NaN : min, max: isNaN(max) ? NaN : max }
+      detail: {
+        min:        isNaN(min)        ? NaN : min,
+        max:        isNaN(max)        ? NaN : max,
+        distanceMax:isNaN(distanceMax)? NaN : distanceMax,
+        maxAge:     isNaN(maxAge)     ? NaN : maxAge
+      }
     }));
     setShowFilterModal(false);
   };
 
   // NEW: reset filter AND dispatch
   const handleResetFilter = () => {
-    setTempFilter({ min: '', max: '' });
+    setTempFilter({ min:'', max:'', distanceMax:'', maxAge:'' });
     window.dispatchEvent(new CustomEvent('filterchange', {
-      detail: { min: NaN, max: NaN }
+      detail: {
+        min: NaN, max: NaN,
+        distanceMax: NaN,
+        maxAge: NaN
+      }
     }));
     setShowFilterModal(false);
   };
@@ -323,19 +338,35 @@ function LogoBlock() {
   // Listen for filterchange events and update the side‐panel list
   useEffect(() => {
     function handleFilterChange(e) {
-      const { min, max } = e.detail;
-      setFilteredList(
-        locaList.filter(item =>
-          (isNaN(min) || item.temp >= min) &&
-          (isNaN(max) || item.temp <= max)
-        )
-      );
+      const { min, max, distanceMax, maxAge } = e.detail;
+      const now = Date.now();
+      setFilteredList(locaList.filter(item => {
+        const tempOK = (isNaN(min) || item.temp >= min) &&
+                       (isNaN(max) || item.temp <= max);
+
+        let distOK = true;
+        if (!isNaN(distanceMax) && userLocation) {
+          const d = calculateDistance(
+            userLocation.latitude,
+            userLocation.longitude,
+            item.lat, item.lng || item.lon
+          );
+          if (d > distanceMax) distOK = false;
+        }
+
+        let ageOK = true;
+        if (!isNaN(maxAge) && item.timestamp) {
+          const ageDays = (now - new Date(item.timestamp).getTime())
+                            / (1000*60*60*24);
+          if (ageDays > maxAge) ageOK = false;
+        }
+
+        return tempOK && distOK && ageOK;
+      }));
     }
     window.addEventListener('filterchange', handleFilterChange);
-    return () => {
-      window.removeEventListener('filterchange', handleFilterChange);
-    };
-  }, [locaList]);
+    return () => window.removeEventListener('filterchange', handleFilterChange);
+  }, [locaList, userLocation]);
 
   return (
     <div 

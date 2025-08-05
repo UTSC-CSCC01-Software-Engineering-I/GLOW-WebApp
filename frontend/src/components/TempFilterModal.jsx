@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-function TempFilterModal({ 
+export default function TempFilterModal({ 
   show, 
   onClose, 
   theme, 
@@ -80,7 +80,7 @@ function TempFilterModal({
         <div style={{ 
           display: 'flex', 
           gap: '1rem', 
-          marginBottom: '2rem' 
+          marginBottom: '1rem' 
         }}>
           <div style={{ flex: 1 }}>
             <label htmlFor="temp-min" style={{
@@ -155,6 +155,79 @@ function TempFilterModal({
               onBlur={e => e.target.style.borderColor = theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'}
             />
           </div>
+        </div>
+
+        {/* only Max Distance now */}
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="dist-max" style={{
+            display: 'block',
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            marginBottom: '0.5rem',
+            color: theme === 'light' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)'
+          }}>
+            Max Distance (km)
+          </label>
+          <input
+            type="number"
+            id="dist-max"
+            placeholder="e.g. 10"
+            value={tempFilter.distanceMax}
+            onChange={e => setTempFilter(f => ({ ...f, distanceMax: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              borderRadius: '0.5rem',
+              border: theme === 'light'
+                ? '1px solid rgba(0,0,0,0.1)'
+                : '1px solid rgba(255,255,255,0.2)',
+              backgroundColor: theme === 'light' ? '#fff' : 'rgba(255,255,255,0.1)',
+              color: theme === 'light' ? '#000' : '#fff',
+              fontSize: '1rem',
+              outline: 'none',
+              transition: 'border-color 0.2s ease',
+              boxSizing: 'border-box'
+            }}
+            onFocus={e => e.target.style.borderColor = theme === 'light' ? '#007AFF' : '#0A84FF'}
+            onBlur={e => e.target.style.borderColor = theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'}
+          />
+        </div>
+        
+        <div style={{ marginBottom: '1rem' }}>
+          <label htmlFor="max-age" style={{
+            display: 'block',
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            marginBottom: '0.5rem',
+            color: theme === 'light' ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)'
+          }}>
+            Max Age (days)
+          </label>
+          <input
+            type="number"
+            id="max-age"
+            placeholder="7"
+            value={tempFilter.maxAge}
+            onChange={e => setTempFilter(f => ({ ...f, maxAge: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              borderRadius: '0.5rem',
+              border: theme === 'light'
+                ? '1px solid rgba(0,0,0,0.1)'
+                : '1px solid rgba(255,255,255,0.2)',
+              backgroundColor: theme === 'light'
+                ? '#fff'
+                : 'rgba(255,255,255,0.1)',
+              color: theme === 'light' ? '#000' : '#fff',
+              fontSize: '1rem',
+              outline: 'none',
+              transition: 'border-color 0.2s ease',
+              boxSizing: 'border-box'
+            }}
+            onFocus={e => e.target.style.borderColor = theme === 'light' ? '#007AFF' : '#0A84FF'}
+            onBlur={e => e.target.style.borderColor = theme === 'light' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)'}
+          />
         </div>
         
         <div style={{ 
@@ -241,5 +314,3 @@ function TempFilterModal({
     document.body
   ) : null;
 }
-
-export default TempFilterModal;
