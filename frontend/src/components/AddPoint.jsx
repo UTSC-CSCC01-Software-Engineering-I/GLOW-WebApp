@@ -182,8 +182,10 @@ export default function AddPoint() {
 
       // Add a short delay for better UX
       await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
   
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-point`, {
+      const res = await fetch(`${API_URL}/add-point`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
