@@ -280,3 +280,8 @@
     max-height: 60vh !important;
   }
 }
+
+/* at the end of the file, override any data-temp-category borders on stale points */
+.temp-label.stale {
+  border-left: none !important;
+}
