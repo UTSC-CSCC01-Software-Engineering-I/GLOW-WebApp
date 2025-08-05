@@ -5,8 +5,11 @@ exports.addPoint = async (req, res) => {
   try {
     const { lat, lon, temp } = req.body;
 
-    if (!lat || !lon || !temp) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    // only reject if any value is null or undefined
+    if (lat == null || lon == null || temp == null) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Latitude, longitude and temperature are required.' });
     }
 
     // Get logged-in user

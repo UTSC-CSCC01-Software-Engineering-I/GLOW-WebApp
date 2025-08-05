@@ -184,6 +184,458 @@ export default function MapComponent() {
         // Store the cleanup function for later use
         map._themeCleanup = removeThemeListener;
 
+        // Function to add a marker for a single item - extracted for reuse
+        function addMarkerForItem(item, i, isGrouped = false) {
+          const lon = item.lng ?? item.lon ?? item.Longitude;
+          const lat = item.lat ?? item.Latitude;
+          const t   = parseFloat(item.temp ?? item.Result); // Convert to number here
+          const name = item.siteName || item.Label || `User Point ${i + 1}`;
+          
+          // determine age (fallback to createdAt for user‐points)
+          const rawTime = item.timestamp || item.createdAt || item.created_at;
+          const ts = new Date(rawTime).getTime();
+          const isStale = !isNaN(ts) && (Date.now() - ts) > 2 * 24 * 60 * 60 * 1000; // older than 2 days
+
+          const currentUnit = UnitManager.getUnit();
+          const formattedTemp = formatTemperature(t, currentUnit);
+          const tempColor = getAccessibleTemperatureColor(t, 'C'); // Now t is a number
+          const tempCategory = getTemperatureCategory(t);
+
+          // outline for stale, grey text for stale
+          const outlineStyle = isStale ? 'border: 2px solid grey;' : '';
+          const valueColor   = isStale ? 'color: grey;' : '';
+
+          // determine stale styling
+          const bgColor = isStale ? '#ffffff20' : tempColor;
+          const staleFilter = isStale
+            ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'
+            : '';
+            
+          // If this is a grouped user point, modify the marker appearance
+          const groupLabel = isGrouped && item.pointCount > 1 
+            ? `<span class="group-count">${item.pointCount}</span>` 
+            : '';
+          
+          const groupStyle = isGrouped && item.pointCount > 1
+            ? 'border: 2px solid #fff; transform: scale(1.1);'
+            : '';
+
+          const icon = L.divIcon({
+            className: 'custom-temp-marker',
+            html: `
+              <div 
+                class="temp-label accessible-marker${isStale ? ' stale' : ''}${isGrouped && item.pointCount > 1 ? ' grouped' : ''}"
+                style="
+                  background-color: ${bgColor};
+                  ${outlineStyle}
+                  ${staleFilter}
+                  ${groupStyle}
+                "
+                role="button"
+                tabindex="0"
+                aria-label="Water temperature ${formattedTemp} at ${name}. ${isGrouped && item.pointCount > 1 ? `Group of ${item.pointCount} user points. ` : ''}${isStale ? 'Data older than 2 days.' : `Category: ${tempCategory}. Press Enter or Space to view details.`}"
+                data-temp-category="${tempCategory.toLowerCase().replace(/ /g,'-')}"
+              >
+                <span class="temp-value" style="${valueColor}">${formattedTemp}</span>
+                ${groupLabel}
+              </div>
+            `,
+            iconSize: [50, 40],
+            iconAnchor: [25, 20],
+          });
+
+          const marker = L.marker([lat, lon], { icon }).addTo(mapInstanceRef.current);
+
+          // Set group information for popup display
+          if (isGrouped && item.pointCount > 1) {
+            marker.isGrouped = true;
+            marker.pointCount = item.pointCount;
+          }
+
+          // bump this marker to the top on hover
+          marker.on('mouseover', () => {
+            marker.setZIndexOffset(1000);
+          });
+          // reset when mouse leaves
+          marker.on('mouseout', () => {
+            marker.setZIndexOffset(0);
+          });
+
+          // Add function to announce to screen readers (this was missing)
+          function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            
+            document.body.appendChild(announcement);
+            
+            // Remove after announcement
+            setTimeout(() => {
+              if (document.body.contains(announcement)) {
+                document.body.removeChild(announcement);
+              }
+            }, 1000);
+          }
+
+          // Add click handler FIRST (this is the main functionality)
+          marker.on('click', async () => {
+            // add prefix for grey (stale) points
+            const labelPrefix = isStale ? '<strong>OLD:</strong> ' : '';
+            
+            // add prefix for grouped points
+            const groupPrefix = isGrouped && item.pointCount > 1 
+              ? `<strong>GROUP:</strong> ${item.pointCount} points within 1km • ` 
+              : '';
+
+            let historicalData = [];
+            
+            // For grouped user points, use the collected historical points
+            if (isGrouped && item.historicalPoints && item.historicalPoints.length > 0) {
+              historicalData = item.historicalPoints;
+            } else {
+              // For non-grouped points, fetch data from API as usual
+              historicalData = await fetchHistoricalData(name);
+            }
+            
+            const popupOffset = [17, -32];
+
+            // no historical data
+            if (historicalData.length === 0) {
+              // Ensure popup is rebinding so it can reopen
+              marker.closePopup();
+              marker.unbindPopup();
+              marker.bindPopup(`
+                <div role="dialog" aria-labelledby="popup-title-${i}">
+                  <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
+                  <p>No historical data available</p>
+                  ${
+                    isStale
+                      ? `<p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>`
+                      : `<p>Current temperature: ${formattedTemp} (${tempCategory})</p>`
+                  }
+                  ${isGrouped && item.pointCount > 1 ? '<p>This is a group of multiple user points within 1km radius. The most recent temperature is shown.</p>' : ''}
+                </div>
+              `, {
+                offset: popupOffset,
+                className: 'custom-popup'
+              });
+              marker.openPopup();
+              return;
+            }
+
+            if (historicalData.length < 2) {
+              // Rebind popup to guarantee it opens on every click
+              marker.closePopup();
+              marker.unbindPopup();
+              marker.bindPopup(`
+                <div role="dialog" aria-labelledby="popup-title-${i}">
+                  <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
+                  <p>Not enough data to generate a graph.</p>
+                  <p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>
+                </div>
+              `, {
+                offset: popupOffset,
+                className: 'custom-popup'
+              });
+              marker.openPopup();
+              return;
+            }
+
+            // Sort the historical data by timestamp
+            const sortedData = historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            // Declare currentUnit BEFORE using it
+            const currentUnit = UnitManager.getUnit();
+
+            // Create time-based data for proper spacing
+            const timeBasedData = sortedData.map((d) => ({
+              x: new Date(d.timestamp),
+              y: currentUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
+            }));
+
+            const timeDifferences = [];
+            for (let i = 1; i < sortedData.length; i++) {
+              const prevTime = new Date(sortedData[i - 1].timestamp);
+              const currTime = new Date(sortedData[i].timestamp);
+              const diffHours = Math.round((currTime - prevTime) / (1000 * 60 * 60));
+              timeDifferences.push(`${diffHours}h gap`);
+            }
+
+            // Create graph container with responsive dimensions
+            const graphContainer = document.createElement('div');
+            graphContainer.className = 'historical-data-container';
+            
+            // Detect mobile viewport
+            const isMobile = window.innerWidth <= 768;
+            const isSmallMobile = window.innerWidth <= 480;
+            
+            // Set responsive dimensions
+            if (isSmallMobile) {
+              graphContainer.style.width = '340px';
+              graphContainer.style.height = '300px';
+              graphContainer.style.padding = '8px';
+            } else if (isMobile) {
+              graphContainer.style.width = '450px';
+              graphContainer.style.height = '350px';
+              graphContainer.style.padding = '10px';
+            } else {
+              graphContainer.style.width = '600px';
+              graphContainer.style.height = '420px';
+              graphContainer.style.padding = '15px';
+            }
+            
+            graphContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
+            graphContainer.style.borderRadius = isMobile ? '8px' : '12px';
+            graphContainer.style.boxShadow = window.globalTheme === 'dark' 
+              ? '0 8px 32px rgba(0,0,0,0.5)' 
+              : '0 8px 32px rgba(0,0,0,0.15)';
+            graphContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
+
+            const canvas = document.createElement('canvas');
+            canvas.style.width = '100%';
+            canvas.style.height = 'calc(100% - 40px)';
+            
+            // Set canvas dimensions based on screen size
+            if (isSmallMobile) {
+              canvas.width = 320;
+              canvas.height = 240;
+            } else if (isMobile) {
+              canvas.width = 420;
+              canvas.height = 290;
+            } else {
+              canvas.width = 570;
+              canvas.height = 380;
+            }
+            graphContainer.appendChild(canvas);
+            
+            console.log('Creating chart with time-based data:', timeBasedData);
+            
+            // Create the chart with time scale - this gives proper spacing
+            const chart = new Chart(canvas, {
+              type: 'line',
+              data: {
+                datasets: [
+                  {
+                    data: timeBasedData, // Use time-based data {x: timestamp, y: value}
+                    borderColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
+                    backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 0.1)' : 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 6,
+                    pointHoverRadius: 10,
+                    pointBackgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
+                    pointBorderColor: window.globalTheme === 'dark' ? '#000' : '#fff',
+                    pointBorderWidth: 2,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: isGrouped && item.pointCount > 1 
+                      ? `Historical Data for Group (${item.pointCount} points within 1km)`
+                      : `Historical Data for ${name}`,
+                    font: {
+                      size: isSmallMobile ? 14 : (isMobile ? 16 : 18),
+                      weight: 'bold'
+                    },
+                    color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                    padding: isSmallMobile ? 10 : (isMobile ? 15 : 20)
+                  },
+                  legend: {
+                    display: false
+                  },
+                  tooltip: {
+                    backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+                    titleColor: window.globalTheme === 'dark' ? '#fff' : '#000',
+                    bodyColor: window.globalTheme === 'dark' ? '#fff' : '#000',
+                    borderColor: window.globalTheme === 'dark' ? '#444' : '#ddd',
+                    borderWidth: 1,
+                    displayColors: false,
+                    callbacks: {
+                      title: function(context) {
+                        const date = new Date(context[0].parsed.x);
+                        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                      },
+                      label: function(context) {
+                        return `${context.parsed.y.toFixed(1)}°${currentUnit}`;
+                      },
+                      afterBody: function(context) {
+                        const dataIndex = context[0].dataIndex;
+                        let info = [];
+                        
+                        // Add gap information
+                        if (dataIndex > 0 && timeDifferences[dataIndex - 1]) {
+                          info.push(`Gap from previous: ${timeDifferences[dataIndex - 1]}`);
+                        }
+                        
+                        // For grouped points, add additional information
+                        if (isGrouped && item.pointCount > 1) {
+                          info.push(`From group of ${item.pointCount} user points within 1km`);
+                        }
+                        
+                        return info;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    type: 'linear', // Use linear instead of time to avoid adapter issues
+                    position: 'bottom',
+                    title: {
+                      display: !isSmallMobile, // Hide title on very small screens
+                      text: 'Date & Time',
+                      color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                      font: {
+                        size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
+                        weight: 'bold'
+                      }
+                    },
+                    ticks: {
+                      color: window.globalTheme === 'dark' ? '#ccc' : '#666',
+                      maxRotation: isMobile ? 45 : 45,
+                      font: {
+                        size: isSmallMobile ? 8 : (isMobile ? 9 : 10)
+                      },
+                      maxTicksLimit: isSmallMobile ? 3 : (isMobile ? 4 : 5), // Fewer ticks on mobile
+                      callback: function(value) {
+                        // The value here is the actual timestamp (milliseconds)
+                        const date = new Date(value);
+                        if (isNaN(date.getTime())) return ''; // Invalid date
+                        
+                        // Mobile-friendly date formatting
+                        if (isSmallMobile) {
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        } else if (isMobile) {
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '\n' + 
+                                 date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        } else {
+                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        }
+                      }
+                    },
+                    grid: {
+                      color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                  },
+                  y: {
+                    title: {
+                      display: !isSmallMobile, // Hide title on very small screens
+                      text: `Temperature (°${currentUnit})`,
+                      color: window.globalTheme === 'dark' ? '#fff' : '#333',
+                      font: {
+                        size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
+                        weight: 'bold'
+                      }
+                    },
+                    ticks: {
+                      color: window.globalTheme === 'dark' ? '#ccc' : '#666',
+                      font: {
+                        size: isSmallMobile ? 8 : (isMobile ? 9 : 11)
+                      },
+                      callback: function(value) {
+                        return `${value}°${currentUnit}`;
+                      }
+                    },
+                    grid: {
+                      color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                  },
+                },
+                interaction: {
+                  intersect: false,
+                  mode: 'index'
+                }
+              },
+            });
+
+            console.log('Chart created:', chart);
+
+            marker.chartInstance = chart;
+            marker.chartData = sortedData;
+            marker.chartContainer = graphContainer; // Store reference to the container
+
+            // Open popup with responsive sizing
+            const popup = L.popup({
+              offset: popupOffset,
+              maxWidth: isSmallMobile ? 360 : (isMobile ? 480 : 650),
+              maxHeight: isSmallMobile ? 320 : (isMobile ? 370 : 470),
+              className: 'custom-popup mobile-optimized-popup',
+              autoPan: true,
+              autoPanPadding: [10, 10]
+            })
+            .setLatLng([lat, lon])
+            .setContent(graphContainer)
+            .openOn(mapInstanceRef.current);
+
+            // Force chart resize after popup is opened
+            setTimeout(() => {
+              if (chart && chart.resize) {
+                chart.resize();
+                console.log('Chart resized');
+              }
+            }, 100);
+
+            // Add resize handler for mobile orientation changes
+            const handleResize = () => {
+              if (chart && chart.resize) {
+                setTimeout(() => {
+                  chart.resize();
+                  console.log('Chart resized after orientation change');
+                }, 200);
+              }
+            };
+
+            window.addEventListener('resize', handleResize);
+            window.addEventListener('orientationchange', handleResize);
+
+            // Store cleanup function for the resize handlers
+            marker._resizeCleanup = () => {
+              window.removeEventListener('resize', handleResize);
+              window.removeEventListener('orientationchange', handleResize);
+            };
+          });
+
+          // Add keyboard accessibility AFTER the click handler
+          marker.on('add', () => {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+              const markerElement = marker.getElement();
+              if (markerElement) {
+                const tempLabel = markerElement.querySelector('.temp-label');
+                if (tempLabel) {
+                  // Add keyboard event listeners
+                  tempLabel.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      console.log('Keyboard trigger for:', name); // Debug log
+                      marker.fire('click'); // This should trigger the click handler
+                    }
+                  });
+
+                  // Add focus styling
+                  tempLabel.addEventListener('focus', () => {
+                    tempLabel.style.outline = '3px solid #0066cc';
+                    tempLabel.style.outlineOffset = '2px';
+                  });
+
+                  tempLabel.addEventListener('blur', () => {
+                    tempLabel.style.outline = 'none';
+                  });
+                }
+              }
+            }, 100);
+          });
+
+          markersRef.current.push({ marker, tempC: t, name, lat, lon, timestamp: ts });
+        }
+
         // Update the addMarkers function
         function addMarkers(items) {
           // First, separate user points from API points
@@ -275,458 +727,15 @@ export default function MapComponent() {
           groupedUserPoints.forEach((item, i) => {
             addMarkerForItem(item, i, true);
           });
-          
-          // Function to add a marker for a single item
-          function addMarkerForItem(item, i, isGrouped = false) {
-            const lon = item.lng || item.lon || item.Longitude;
-            const lat = item.lat || item.Latitude;
-            const t = item.temp || item.Result;
-            const name = item.siteName || item.Label || `User Point ${i + 1}`;
-            
-            // determine age (fallback to createdAt for user‐points)
-            const rawTime = item.timestamp || item.createdAt || item.created_at;
-            const ts = new Date(rawTime).getTime();
-            const isStale = !isNaN(ts) && (Date.now() - ts) > 2 * 24 * 60 * 60 * 1000; // older than 2 days
+        }
 
-            const currentUnit = UnitManager.getUnit();
-            const formattedTemp = formatTemperature(t, currentUnit);
-            const tempColor = getAccessibleTemperatureColor(t, 'C');
-            const tempCategory = getTemperatureCategory(t);
-
-            // outline for stale, grey text for stale
-            const outlineStyle = isStale ? 'border: 2px solid grey;' : '';
-            const valueColor   = isStale ? 'color: grey;' : '';
-
-            // determine stale styling
-            const bgColor = isStale ? '#ffffff20' : tempColor;
-            const staleFilter = isStale
-              ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'
-              : '';
-              
-            // If this is a grouped user point, modify the marker appearance
-            const groupLabel = isGrouped && item.pointCount > 1 
-              ? `<span class="group-count">${item.pointCount}</span>` 
-              : '';
-            
-            const groupStyle = isGrouped && item.pointCount > 1
-              ? 'border: 2px solid #fff; transform: scale(1.1);'
-              : '';
-
-            const icon = L.divIcon({
-              className: 'custom-temp-marker',
-              html: `
-                <div 
-                  class="temp-label accessible-marker${isStale ? ' stale' : ''}${isGrouped && item.pointCount > 1 ? ' grouped' : ''}"
-                  style="
-                    background-color: ${bgColor};
-                    ${outlineStyle}
-                    ${staleFilter}
-                    ${groupStyle}
-                  "
-                  role="button"
-                  tabindex="0"
-                  aria-label="Water temperature ${formattedTemp} at ${name}. ${isGrouped && item.pointCount > 1 ? `Group of ${item.pointCount} user points. ` : ''}${isStale ? 'Data older than 2 days.' : `Category: ${tempCategory}. Press Enter or Space to view details.`}"
-                  data-temp-category="${tempCategory.toLowerCase().replace(/ /g,'-')}"
-                >
-                  <span class="temp-value" style="${valueColor}">${formattedTemp}</span>
-                  ${groupLabel}
-                </div>
-              `,
-              iconSize: [50, 40],
-              iconAnchor: [25, 20],
-            });
-
-            const marker = L.marker([lat, lon], { icon }).addTo(mapInstanceRef.current);
-
-            // Set group information for popup display
-            if (isGrouped && item.pointCount > 1) {
-              marker.isGrouped = true;
-              marker.pointCount = item.pointCount;
-            }
-
-            // bump this marker to the top on hover
-            marker.on('mouseover', () => {
-              marker.setZIndexOffset(1000);
-            });
-            // reset when mouse leaves
-            marker.on('mouseout', () => {
-              marker.setZIndexOffset(0);
-            });
-
-            // Add function to announce to screen readers (this was missing)
-            function announceToScreenReader(message) {
-              const announcement = document.createElement('div');
-              announcement.setAttribute('aria-live', 'polite');
-              announcement.setAttribute('aria-atomic', 'true');
-              announcement.className = 'sr-only';
-              announcement.textContent = message;
-              
-              document.body.appendChild(announcement);
-              
-              // Remove after announcement
-              setTimeout(() => {
-                if (document.body.contains(announcement)) {
-                  document.body.removeChild(announcement);
-                }
-              }, 1000);
-            }
-
-            // Add click handler FIRST (this is the main functionality)
-            marker.on('click', async () => {
-              // add prefix for grey (stale) points
-              const labelPrefix = isStale ? '<strong>OLD:</strong> ' : '';
-              
-              // add prefix for grouped points
-              const groupPrefix = isGrouped && item.pointCount > 1 
-                ? `<strong>GROUP:</strong> ${item.pointCount} points within 1km • ` 
-                : '';
-
-              let historicalData = [];
-              
-              // For grouped user points, use the collected historical points
-              if (isGrouped && item.historicalPoints && item.historicalPoints.length > 0) {
-                historicalData = item.historicalPoints;
-              } else {
-                // For non-grouped points, fetch data from API as usual
-                historicalData = await fetchHistoricalData(name);
-              }
-              
-              const popupOffset = [17, -32];
-
-              // no historical data
-              if (historicalData.length === 0) {
-                // Ensure popup is rebinding so it can reopen
-                marker.closePopup();
-                marker.unbindPopup();
-                marker.bindPopup(`
-                  <div role="dialog" aria-labelledby="popup-title-${i}">
-                    <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
-                    <p>No historical data available</p>
-                    ${
-                      isStale
-                        ? `<p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>`
-                        : `<p>Current temperature: ${formattedTemp} (${tempCategory})</p>`
-                    }
-                    ${isGrouped && item.pointCount > 1 ? '<p>This is a group of multiple user points within 1km radius. The most recent temperature is shown.</p>' : ''}
-                  </div>
-                `, {
-                  offset: popupOffset,
-                  className: 'custom-popup'
-                });
-                marker.openPopup();
-                return;
-              }
-
-              if (historicalData.length < 2) {
-                // Rebind popup to guarantee it opens on every click
-                marker.closePopup();
-                marker.unbindPopup();
-                marker.bindPopup(`
-                  <div role="dialog" aria-labelledby="popup-title-${i}">
-                    <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
-                    <p>Not enough data to generate a graph.</p>
-                    <p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>
-                  </div>
-                `, {
-                  offset: popupOffset,
-                  className: 'custom-popup'
-                });
-                marker.openPopup();
-                return;
-              }
-
-              // Sort the historical data by timestamp
-              const sortedData = historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-              // Declare currentUnit BEFORE using it
-              const currentUnit = UnitManager.getUnit();
-
-              // Create time-based data for proper spacing
-              const timeBasedData = sortedData.map((d) => ({
-                x: new Date(d.timestamp),
-                y: currentUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
-              }));
-
-              const timeDifferences = [];
-              for (let i = 1; i < sortedData.length; i++) {
-                const prevTime = new Date(sortedData[i - 1].timestamp);
-                const currTime = new Date(sortedData[i].timestamp);
-                const diffHours = Math.round((currTime - prevTime) / (1000 * 60 * 60));
-                timeDifferences.push(`${diffHours}h gap`);
-              }
-
-              // Create graph container with responsive dimensions
-              const graphContainer = document.createElement('div');
-              graphContainer.className = 'historical-data-container';
-              
-              // Detect mobile viewport
-              const isMobile = window.innerWidth <= 768;
-              const isSmallMobile = window.innerWidth <= 480;
-              
-              // Set responsive dimensions
-              if (isSmallMobile) {
-                graphContainer.style.width = '340px';
-                graphContainer.style.height = '300px';
-                graphContainer.style.padding = '8px';
-              } else if (isMobile) {
-                graphContainer.style.width = '450px';
-                graphContainer.style.height = '350px';
-                graphContainer.style.padding = '10px';
-              } else {
-                graphContainer.style.width = '600px';
-                graphContainer.style.height = '420px';
-                graphContainer.style.padding = '15px';
-              }
-              
-              graphContainer.style.backgroundColor = window.globalTheme === 'dark' ? '#1a1a1a' : '#ffffff';
-              graphContainer.style.borderRadius = isMobile ? '8px' : '12px';
-              graphContainer.style.boxShadow = window.globalTheme === 'dark' 
-                ? '0 8px 32px rgba(0,0,0,0.5)' 
-                : '0 8px 32px rgba(0,0,0,0.15)';
-              graphContainer.style.border = window.globalTheme === 'dark' ? '1px solid #333' : '1px solid #ddd';
-
-              const canvas = document.createElement('canvas');
-              canvas.style.width = '100%';
-              canvas.style.height = 'calc(100% - 40px)';
-              
-              // Set canvas dimensions based on screen size
-              if (isSmallMobile) {
-                canvas.width = 320;
-                canvas.height = 240;
-              } else if (isMobile) {
-                canvas.width = 420;
-                canvas.height = 290;
-              } else {
-                canvas.width = 570;
-                canvas.height = 380;
-              }
-              graphContainer.appendChild(canvas);
-              
-              console.log('Creating chart with time-based data:', timeBasedData);
-              
-              // Create the chart with time scale - this gives proper spacing
-              const chart = new Chart(canvas, {
-                type: 'line',
-                data: {
-                  datasets: [
-                    {
-                      data: timeBasedData, // Use time-based data {x: timestamp, y: value}
-                      borderColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
-                      backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 0.1)' : 'rgba(75, 192, 192, 0.2)',
-                      fill: true,
-                      tension: 0.3,
-                      pointRadius: 6,
-                      pointHoverRadius: 10,
-                      pointBackgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 217, 255, 1)' : 'rgba(75, 192, 192, 1)',
-                      pointBorderColor: window.globalTheme === 'dark' ? '#000' : '#fff',
-                      pointBorderWidth: 2,
-                    },
-                  ],
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    title: {
-                      display: true,
-                      text: isGrouped && item.pointCount > 1 
-                        ? `Historical Data for Group (${item.pointCount} points within 1km)`
-                        : `Historical Data for ${name}`,
-                      font: {
-                        size: isSmallMobile ? 14 : (isMobile ? 16 : 18),
-                        weight: 'bold'
-                      },
-                      color: window.globalTheme === 'dark' ? '#fff' : '#333',
-                      padding: isSmallMobile ? 10 : (isMobile ? 15 : 20)
-                    },
-                    legend: {
-                      display: false
-                    },
-                    tooltip: {
-                      backgroundColor: window.globalTheme === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
-                      titleColor: window.globalTheme === 'dark' ? '#fff' : '#000',
-                      bodyColor: window.globalTheme === 'dark' ? '#fff' : '#000',
-                      borderColor: window.globalTheme === 'dark' ? '#444' : '#ddd',
-                      borderWidth: 1,
-                      displayColors: false,
-                      callbacks: {
-                        title: function(context) {
-                          const date = new Date(context[0].parsed.x);
-                          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        },
-                        label: function(context) {
-                          return `${context.parsed.y.toFixed(1)}°${currentUnit}`;
-                        },
-                        afterBody: function(context) {
-                          const dataIndex = context[0].dataIndex;
-                          let info = [];
-                          
-                          // Add gap information
-                          if (dataIndex > 0 && timeDifferences[dataIndex - 1]) {
-                            info.push(`Gap from previous: ${timeDifferences[dataIndex - 1]}`);
-                          }
-                          
-                          // For grouped points, add additional information
-                          if (isGrouped && item.pointCount > 1) {
-                            info.push(`From group of ${item.pointCount} user points within 1km`);
-                          }
-                          
-                          return info;
-                        }
-                      }
-                    }
-                  },
-                  scales: {
-                    x: {
-                      type: 'linear', // Use linear instead of time to avoid adapter issues
-                      position: 'bottom',
-                      title: {
-                        display: !isSmallMobile, // Hide title on very small screens
-                        text: 'Date & Time',
-                        color: window.globalTheme === 'dark' ? '#fff' : '#333',
-                        font: {
-                          size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
-                          weight: 'bold'
-                        }
-                      },
-                      ticks: {
-                        color: window.globalTheme === 'dark' ? '#ccc' : '#666',
-                        maxRotation: isMobile ? 45 : 45,
-                        font: {
-                          size: isSmallMobile ? 8 : (isMobile ? 9 : 10)
-                        },
-                        maxTicksLimit: isSmallMobile ? 3 : (isMobile ? 4 : 5), // Fewer ticks on mobile
-                        callback: function(value) {
-                          // The value here is the actual timestamp (milliseconds)
-                          const date = new Date(value);
-                          if (isNaN(date.getTime())) return ''; // Invalid date
-                          
-                          // Mobile-friendly date formatting
-                          if (isSmallMobile) {
-                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                          } else if (isMobile) {
-                            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '\n' + 
-                                   date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                          } else {
-                            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                          }
-                        }
-                      },
-                      grid: {
-                        color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                      }
-                    },
-                    y: {
-                      title: {
-                        display: !isSmallMobile, // Hide title on very small screens
-                        text: `Temperature (°${currentUnit})`,
-                        color: window.globalTheme === 'dark' ? '#fff' : '#333',
-                        font: {
-                          size: isSmallMobile ? 10 : (isMobile ? 12 : 14),
-                          weight: 'bold'
-                        }
-                      },
-                      ticks: {
-                        color: window.globalTheme === 'dark' ? '#ccc' : '#666',
-                        font: {
-                          size: isSmallMobile ? 8 : (isMobile ? 9 : 11)
-                        },
-                        callback: function(value) {
-                          return `${value}°${currentUnit}`;
-                        }
-                      },
-                      grid: {
-                        color: window.globalTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                      }
-                    },
-                  },
-                  interaction: {
-                    intersect: false,
-                    mode: 'index'
-                  }
-                },
-              });
-
-              console.log('Chart created:', chart);
-
-              marker.chartInstance = chart;
-              marker.chartData = sortedData;
-              marker.chartContainer = graphContainer; // Store reference to the container
-
-              // Open popup with responsive sizing
-              const popup = L.popup({
-                offset: popupOffset,
-                maxWidth: isSmallMobile ? 360 : (isMobile ? 480 : 650),
-                maxHeight: isSmallMobile ? 320 : (isMobile ? 370 : 470),
-                className: 'custom-popup mobile-optimized-popup',
-                autoPan: true,
-                autoPanPadding: [10, 10]
-              })
-              .setLatLng([lat, lon])
-              .setContent(graphContainer)
-              .openOn(mapInstanceRef.current);
-
-              // Force chart resize after popup is opened
-              setTimeout(() => {
-                if (chart && chart.resize) {
-                  chart.resize();
-                  console.log('Chart resized');
-                }
-              }, 100);
-
-              // Add resize handler for mobile orientation changes
-              const handleResize = () => {
-                if (chart && chart.resize) {
-                  setTimeout(() => {
-                    chart.resize();
-                    console.log('Chart resized after orientation change');
-                  }, 200);
-                }
-              };
-
-              window.addEventListener('resize', handleResize);
-              window.addEventListener('orientationchange', handleResize);
-
-              // Store cleanup function for the resize handlers
-              marker._resizeCleanup = () => {
-                window.removeEventListener('resize', handleResize);
-                window.removeEventListener('orientationchange', handleResize);
-              };
-            });
-
-            // Add keyboard accessibility AFTER the click handler
-            marker.on('add', () => {
-              // Small delay to ensure DOM is ready
-              setTimeout(() => {
-                const markerElement = marker.getElement();
-                if (markerElement) {
-                  const tempLabel = markerElement.querySelector('.temp-label');
-                  if (tempLabel) {
-                    // Add keyboard event listeners
-                    tempLabel.addEventListener('keydown', (e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        console.log('Keyboard trigger for:', name); // Debug log
-                        marker.fire('click'); // This should trigger the click handler
-                      }
-                    });
-
-                    // Add focus styling
-                    tempLabel.addEventListener('focus', () => {
-                      tempLabel.style.outline = '3px solid #0066cc';
-                      tempLabel.style.outlineOffset = '2px';
-                    });
-
-                    tempLabel.addEventListener('blur', () => {
-                      tempLabel.style.outline = 'none';
-                    });
-                  }
-                }
-              }, 100);
-            });
-
-            markersRef.current.push({ marker, tempC: t, name, lat, lon, timestamp: ts });
-          }
+        // Function to check if we have API points (official water data)
+        function hasAPIPoints(items) {
+          if (!items || items.length === 0) return false;
+          // API points have siteName or Label, and are NOT user points
+          return items.some(item => 
+            (item.siteName || item.Label) && !item.isUserPoint
+          );
         }
 
         // Function to add water temperature markers
@@ -748,11 +757,19 @@ export default function MapComponent() {
               // Set global variable immediately for HUDleftPoints
               globalBeach = { items: cachedItems };
               
-              // Notify HUDleftPoints that cached data is available
-              window.dispatchEvent(new Event('dataloaded'));
-              
-              addMarkers(cachedItems);
-              setLoading(false); // Hide loading immediately
+              // Check if we have API points in cache
+              if (hasAPIPoints(cachedItems)) {
+                // We have API points, load immediately
+                window.dispatchEvent(new Event('dataloaded'));
+                addMarkers(cachedItems);
+                setLoading(false); // Hide loading immediately
+              } else {
+                // No API points in cache, show loading and fetch fresh data
+                console.log('⚠️ Cache has no API points, fetching fresh data...');
+                setLoading(true);
+                window.loadedAPI = true;
+                // Continue to fetch fresh data below
+              }
             } else if (cache) {
               console.log('📦 Cache expired, loading old data while fetching fresh...');
               const cachedItems = JSON.parse(cache);
@@ -761,8 +778,8 @@ export default function MapComponent() {
               setLoading(false);
             }
 
-            // Step 2: Fetch fresh data in background (always fetch if cache is expired or missing)
-            if (!isCacheValid) {
+            // Step 2: Fetch fresh data if no valid cache OR no API points in cache
+            if (!isCacheValid || (cache && !hasAPIPoints(JSON.parse(cache)))) {
               console.log('🔄 Fetching fresh data...');
               let officialData = { items: [] }, userData = { items: [] };
 
@@ -824,10 +841,12 @@ export default function MapComponent() {
             }
             
             setLoading(false);
+            window.loadedAPI = false; // Ensure loading state is cleared
           } catch (err) {
             console.error('fetch error →', err);
             // If no cache was loaded and fetch failed, still hide loading
             setLoading(false);
+            window.loadedAPI = false;
           }
         }
 
@@ -918,6 +937,25 @@ export default function MapComponent() {
     // Add the theme event listener - THIS WAS MISSING!
     window.addEventListener('themechange', onThemeChange);
 
+    // Add listener for when new points are added
+    const handlePointAdded = (event) => {
+      console.log('🔄 Point added, adding single marker to map...');
+      const newPoint = event.detail;
+      
+      // Add the new point to globalBeach for HUDleftPoints
+      if (globalBeach && globalBeach.items) {
+        globalBeach.items.push(newPoint);
+      }
+      
+      // Add single marker to the existing map
+      addMarkerForItem(newPoint, markersRef.current.length, true);
+      
+      // Dispatch dataloaded event for HUDleftPoints to update
+      window.dispatchEvent(new Event('dataloaded'));
+    };
+    
+    window.addEventListener('pointAdded', handlePointAdded);
+
     // Function to update popup CSS dynamically
     function updatePopupCSS() {
       // Remove existing dynamic popup styles
@@ -964,6 +1002,7 @@ export default function MapComponent() {
     return () => {
       removeUnitListener(); // Clean up UnitManager listener
       window.removeEventListener('themechange', onThemeChange);
+      window.removeEventListener('pointAdded', handlePointAdded);
       if (mapInstanceRef.current) {
         // Clean up ThemeManager listener
         if (mapInstanceRef.current._themeCleanup) {

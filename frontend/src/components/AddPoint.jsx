@@ -167,9 +167,16 @@ export default function AddPoint() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     setError('');
     setSuccess(false);
-    setSubmitting(true);
+
+    // only reject when fields are actually empty strings
+    if (lat === '' || lon === '' || temp === '') {
+      setError('Missing required fields');
+      setSubmitting(false);
+      return;
+    }
   
     try {
       const token = localStorage.getItem('authToken');
@@ -223,6 +230,30 @@ export default function AddPoint() {
               setSuccess(true);
               setTemp('');
               setShowFullscreenConfirmation(true);
+              
+              // Add new point to existing cache instead of clearing it
+              const newUserPoint = {
+                lat: parseFloat(lat),
+                lng: parseFloat(lon), // Note: using 'lng' to match existing format
+                temp: parseFloat(temp),
+                timestamp: mostRecentPoint.timestamp || new Date().toISOString(),
+                createdAt: mostRecentPoint.createdAt || new Date().toISOString(),
+                updatedAt: mostRecentPoint.updatedAt || new Date().toISOString(),
+                isUserPoint: true
+              };
+              
+              // Update cache with new point
+              const existingCache = localStorage.getItem('waterData');
+              if (existingCache) {
+                const cachedData = JSON.parse(existingCache);
+                cachedData.push(newUserPoint);
+                localStorage.setItem('waterData', JSON.stringify(cachedData));
+              }
+              
+              // Dispatch custom event to add single point to map and HUD
+              window.dispatchEvent(new CustomEvent('pointAdded', {
+                detail: newUserPoint
+              }));
             } else {
               setError('Point was submitted but could not be verified in database');
             }
@@ -231,15 +262,41 @@ export default function AddPoint() {
           }
         } catch (verifyErr) {
           // Point was added but verification failed - still show success
-          setAddedPoint({
+          const newPoint = {
             lat: parseFloat(lat),
             lon: parseFloat(lon),
             temp: parseFloat(temp),
             timestamp: new Date().toISOString()
-          });
+          };
+          
+          setAddedPoint(newPoint);
           setSuccess(true);
           setTemp('');
           setShowFullscreenConfirmation(true);
+          
+          // Add new point to existing cache instead of clearing it
+          const newUserPoint = {
+            lat: newPoint.lat,
+            lng: newPoint.lon, // Note: using 'lng' to match existing format
+            temp: newPoint.temp,
+            timestamp: newPoint.timestamp,
+            createdAt: newPoint.timestamp,
+            updatedAt: newPoint.timestamp,
+            isUserPoint: true
+          };
+          
+          // Update cache with new point
+          const existingCache = localStorage.getItem('waterData');
+          if (existingCache) {
+            const cachedData = JSON.parse(existingCache);
+            cachedData.push(newUserPoint);
+            localStorage.setItem('waterData', JSON.stringify(cachedData));
+          }
+          
+          // Dispatch custom event to add single point to map and HUD
+          window.dispatchEvent(new CustomEvent('pointAdded', {
+            detail: newUserPoint
+          }));
         }
       } else {
         const errorData = await res.json();
