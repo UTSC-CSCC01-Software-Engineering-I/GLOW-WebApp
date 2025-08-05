@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  backend:
+    image: pranavm04/glow-backend:latest  # Replace with your Docker Hub username
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/glow_dev
+      - JWT_SECRET=production_jwt_secret
+      - OPENWATER_API_KEY=${OPENWATER_API_KEY}
+    depends_on:
+      - mongo
+    networks:
+      - glow-network
+
+  frontend:
+    image: pranavm04/glow-frontend:latest  # Replace with your Docker Hub username
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=https://glow-backend-v4-0-0.onrender.com/api
+
+  mongo:
+    image: mongo:5.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - glow-network
+
+volumes:
+  mongo_data:
+
+networks:
+  glow-network:
+    driver: bridge

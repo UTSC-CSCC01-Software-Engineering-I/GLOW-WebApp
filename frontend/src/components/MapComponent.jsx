@@ -39,7 +39,7 @@ Chart.register(
 // Async function to fetch historical data for a specific beach
 async function fetchHistoricalData(beachName) {
   try {
-    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
 
     const response = await fetch(`${NEXT_PUBLIC_API_URL}/beach-history?beachName=${encodeURIComponent(beachName)}`);
     const data = await response.json();
@@ -599,9 +599,11 @@ export default function MapComponent() {
               let officialData = { items: [] }, userData = { items: [] };
 
               try {
+                const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://glow-backend-v4-0-0.onrender.com/api';
+                
                 const [officialRes, userRes] = await Promise.all([
-                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/water-data`),
-                  fetch(`${process.env.NEXT_PUBLIC_API_URL}/userpoints`)
+                  fetch(`${API_URL}/water-data`),
+                  fetch(`${API_URL}/userpoints`)
                 ]);
 
                 if (officialRes.ok) {
@@ -673,45 +675,28 @@ export default function MapComponent() {
       setUnit(newUnit); // Update local state for legend
       
       markersRef.current.forEach(({ marker, tempC }) => {
-        // 1) compute the new label
-        const formattedTemp = formatTemperature(tempC, newUnit);
+      // 1) update the legend label
+      const formattedTemp = formatTemperature(tempC, newUnit);
+      const el = marker.getElement();
+      if (el) {
+        const valueSpan = el.querySelector('.temp-value');
+        if (valueSpan) valueSpan.textContent = formattedTemp;
+      }
 
-        // 2) find the existing <span class="temp-value"> and update it
-        const el = marker.getElement();
-        if (el) {
-          const valueSpan = el.querySelector('.temp-value');
-          if (valueSpan) valueSpan.textContent = formattedTemp;
-        }
-
-        // 3) leave the background‐color alone so it never “snaps back” after a refresh
-        // (skip marker.setIcon entirely)
-      });
-
-      // Update the graph if it exists
+      // 2) if this marker has a chart, update its data & options
       if (marker.chartInstance && marker.chartData) {
         const chart = marker.chartInstance;
-        
-        // Convert original data to new unit with time structure
-        const newTimeBasedData = marker.chartData.map((d) => ({
+        const newTimeBasedData = marker.chartData.map(d => ({
           x: new Date(d.timestamp),
           y: newUnit === 'F' ? (d.temp * 9) / 5 + 32 : d.temp
         }));
-
-        // Update dataset with time-based data
         chart.data.datasets[0].data = newTimeBasedData;
-
-        // Update the y-axis title
         chart.options.scales.y.title.text = `Temperature (°${newUnit})`;
-        
-        // Update y-axis tick callback
-        chart.options.scales.y.ticks.callback = function(value) {
-          return `${value}°${newUnit}`;
-        };
-
-        // Apply the updates
+        chart.options.scales.y.ticks.callback = val => `${val}°${newUnit}`;
         chart.update();
       }
     });
+});
 
     // Listen for theme changes
     const onThemeChange = () => {

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { authAPI, pointsAPI } from '../lib/api';
 import { ThemeManager } from '../utils/themeManager';
+import '../styles/login.css';    // ← pull in the animated gradient & centering
 
 export default function AddPoint() {
   const [lat, setLat] = useState('');
@@ -17,6 +18,15 @@ export default function AddPoint() {
   const [addedPoint, setAddedPoint] = useState(null);
   const [referrerPage, setReferrerPage] = useState('map');
   const [theme, setTheme] = useState(() => ThemeManager.getTheme());
+  
+  // New state for location search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const searchTimeoutRef = useRef(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchResultsRef = useRef(null);
 
   useEffect(() => {
     // Initialize theme
@@ -69,8 +79,91 @@ export default function AddPoint() {
       );
     }
 
-    return removeListener;
+    // Add click outside listener for search results
+    const handleClickOutside = (event) => {
+      if (searchResultsRef.current && !searchResultsRef.current.contains(event.target)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      removeListener();
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
+
+  // Search for locations based on query
+  const searchLocations = async (query) => {
+    if (!query || query.trim().length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      // Added countrycodes=ca to limit results to Canada
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ca&limit=5`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Search request failed');
+      }
+      
+      const data = await response.json();
+      setSearchResults(data);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Location search error:', err);
+      setError('Location search failed. Please try again or enter coordinates manually.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Handle search input change with debounce
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Clear any existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set a new timeout to debounce the search
+    searchTimeoutRef.current = setTimeout(() => {
+      searchLocations(value);
+    }, 500); // 500ms debounce time
+  };
+
+  const [locationSelected, setLocationSelected] = useState(false);
+
+  // Then modify the handleLocationSelect function
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    
+    // Make sure we're parsing the string values to numbers and then formatting them
+    const newLat = parseFloat(location.lat).toFixed(6);
+    const newLon = parseFloat(location.lon).toFixed(6);
+    
+    // Force update the coordinate fields
+    setLat(newLat);
+    setLon(newLon);
+    
+    // Update the search query text
+    setSearchQuery(location.display_name);
+    setShowSearchResults(false);
+    
+    // Show visual confirmation
+    setLocationSelected(true);
+    
+    // Reset the confirmation after 2 seconds
+    setTimeout(() => setLocationSelected(false), 2000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -186,7 +279,7 @@ export default function AddPoint() {
     }, 500);
   };
 
-  // Loading state
+  // Loading state (optional: you can also gradient-wrap this if you prefer)
   if (loading) {
     return (
       <div style={{
@@ -281,316 +374,445 @@ export default function AddPoint() {
         </div>
       )}
 
-      {/* Main Content */}
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: theme === 'dark' ? '#000' : '#fff',
-        fontFamily: 'LEMONMILK, sans-serif',
-        padding: '20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{
-          maxWidth: '500px',
-          width: '100%',
-          backgroundColor: '#ffffff44',
-          border: theme === 'light' ? '1px solid rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '24px',
-          boxShadow: theme === 'light' ? '0 8px 32px rgba(0,0,0,0.1)' : '0 8px 32px rgba(0,0,0,0.3)',
-          backdropFilter: 'blur(10px)',
-          padding: '40px',
-          position: 'relative'
-        }}>
-         
-
-          {/* Header with User Greeting */}
-          <div style={{ marginTop: '20px', marginBottom: '30px', textAlign: 'center' }}>
-            <h1 style={{
-              fontSize: '28px',
-              fontWeight: '700',
-              color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-              margin: '0 0 8px 0',
-              letterSpacing: '-0.02em'
-            }}>
-              Hello, {user?.firstName || 'User'}!
-            </h1>
-            
-            <p style={{
-              fontSize: '14px',
-              color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-              margin: '0',
-              fontStyle: 'italic'
-            }}>
-               Add a temperature point to {user?.email || 'your account'}
-            </p>
-          </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label htmlFor="latitude"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              Latitude
-            </label>
-            <input
-              id="latitude"
-              type="number"
-              value={lat}
-              onChange={e => setLat(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="longitude"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              Longitude
-            </label>
-            <input
-              id="longitude"
-              type="number"
-              value={lon}
-              onChange={e => setLon(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="temperature"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                marginBottom: '6px'
-              }}
-            >
-              🌡️ Temperature (°C)
-            </label>
-            <input
-              id="temperature"
-              type="number"
-              value={temp}
-              onChange={e => setTemp(e.target.value)}
-              required
-              step="any"
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '12px',
-                fontSize: '16px',
-                color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
-                backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
-                transition: 'all 0.2s ease',
-                boxSizing: 'border-box',
-                backdropFilter: 'blur(10px)',
-                outline: 'none',
-                fontWeight: '600'
-              }}
-              placeholder=""
-              onFocus={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
-              }}
-              onBlur={(e) => {
-                e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
-              }}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
+      {/* NEW: wrap everything in login.css classes */}
+      <div className="loginpage">
+        <div className="login-container">
+          <div className="login-form-container">
+            {/* your existing AddPoint "card" */}
+            <div style={{
+              maxWidth: '500px',
               width: '100%',
-              padding: '14px 24px',
-              backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? 'white' : 'black'),
-              border: '1px solid #206e33',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#206e33' : '#206e33'),
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              marginTop: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-            onMouseOver={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#206e33' : '#206e33';
-                e.target.style.color = theme === 'light' ? 'white' : 'white';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? 'white' : 'white';
-                e.target.style.color = theme === 'light' ? '#206e33' : '#206e33';
-              }
-            }}
-          >
-            {submitting && (
-              <div style={{
-                width: '20px',
-                height: '20px',
-                border: '2px solid #6b7280',
-                borderTop: '2px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }}></div>
-            )}
-            {submitting ? 'Adding Point...' : 'Add Temperature Point'}
-          </button>
+              backgroundColor: theme === 'light' 
+                ? 'rgba(255,255,255,0.95)' 
+                : 'rgba(25,25,25,0.95)',
+              border: theme === 'light' 
+                ? '1px solid rgba(0,0,0,0.1)' 
+                : '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '24px',
+              boxShadow: theme === 'light' 
+                ? '0 8px 32px rgba(0,0,0,0.1)' 
+                : '0 8px 32px rgba(0,0,0,0.3)',
+              backdropFilter: 'blur(10px)',
+              padding: '40px',
+              position: 'relative',
+              fontFamily: 'LEMONMILK, sans-serif'
+            }}>
+              {/* Header with User Greeting */}
+              <div style={{ marginTop: '20px', marginBottom: '30px', textAlign: 'center' }}>
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                  margin: '0 0 8px 0',
+                  letterSpacing: '-0.02em'
+                }}>
+                  Hello, {user?.firstName || 'User'}!
+                </h1>
+                
+                <p style={{
+                  fontSize: '14px',
+                  color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                  margin: '0',
+                  fontStyle: 'italic'
+                }}>
+                   Add a temperature point to {user?.email || 'your account'}
+                </p>
+              </div>
 
-          {/* Cancel Button */}
-          <button
-            type="button"
-            onClick={handleBackToReferrer}
-            disabled={submitting}
-            style={{
-              width: '100%',
-              padding: '14px 24px',
-              background: 'transparent',
-              border: '1px solid rgba(0,0,0,0.1)',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: '500',
-              color: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)'),
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              opacity: submitting ? 0.5 : 1
-            }}
-            onMouseOver={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!submitting) {
-                e.target.style.backgroundColor = 'transparent';
-              }
-            }}
-          >
-            {referrerPage === 'dashboard' ? 'Cancel and Return to Dashboard' : 
-             referrerPage === 'manage-points' ? 'Cancel and Return to Manage Points' : 
-             'Cancel and Return to Map'}
-          </button>
-        </form>
+              {/* Form */}
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* New Location Search Field */}
+                <div style={{ position: 'relative' }}>
+                  <label htmlFor="location-search"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    🔍 Search Location
+                  </label>
+                  <input
+                    id="location-search"
+                    type="text"
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    placeholder="Enter an address or place name"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none',
+                      paddingRight: searchLoading ? '40px' : '16px'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                      if (searchResults.length > 0) {
+                        setShowSearchResults(true);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                      // Don't hide results immediately to allow for clicking on them
+                      // setTimeout(() => setShowSearchResults(false), 200);
+                    }}
+                  />
+                  {searchLoading && (
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '20px',
+                      height: '20px',
+                      border: `2px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                      borderTop: `2px solid ${theme === 'dark' ? 'white' : 'black'}`,
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                  )}
+                  
+                  {/* Search Results Dropdown */}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div 
+                      ref={searchResultsRef}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        width: '100%',
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                        backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(40, 40, 40, 0.95)',
+                        border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                        zIndex: 10,
+                        marginTop: '5px',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                    >
+                      {searchResults.map((result, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleLocationSelect(result)}
+                          style={{
+                            padding: '12px 16px',
+                            borderBottom: index < searchResults.length - 1 
+                              ? (theme === 'light' ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid rgba(255, 255, 255, 0.1)')
+                              : 'none',
+                            cursor: 'pointer',
+                            color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                            transition: 'background-color 0.2s ease',
+                            fontSize: '14px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = theme === 'light' 
+                              ? 'rgba(0, 0, 0, 0.05)' 
+                              : 'rgba(255, 255, 255, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                            {result.display_name.split(',')[0]}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            opacity: 0.7,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {result.display_name}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-        {/* Success Message */}
-        {success && (
-          <div style={{
-            marginTop: '20px',
-            padding: '12px 16px',
-            backgroundColor: 'rgba(52, 199, 89, 0.1)',
-            border: '1px solid rgba(52, 199, 89, 0.2)',
-            borderRadius: '12px',
-            color: '#34c759',
-            fontSize: '14px',
-            fontWeight: '500',
-            backdropFilter: 'blur(10px)'
-          }}>
-            ✅ Success!
+                <div>
+                  <label htmlFor="latitude"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Latitude
+                  </label>
+                  <input
+                    id="latitude"
+                    type="number"
+                    value={lat}
+                    onChange={e => setLat(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="longitude"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    Longitude
+                  </label>
+                  <input
+                    id="longitude"
+                    type="number"
+                    value={lon}
+                    onChange={e => setLon(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="temperature"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    🌡 Temperature (°C)
+                  </label>
+                  <input
+                    id="temperature"
+                    type="number"
+                    value={temp}
+                    onChange={e => setTemp(e.target.value)}
+                    required
+                    step="any"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none',
+                      fontWeight: '600'
+                    }}
+                    placeholder=""
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  style={{
+                    width: '100%',
+                    padding: '14px 24px',
+                    backgroundColor: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'light' ? 'white' : 'black'),
+                    border: '1px solid #206e33',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: submitting ? 'rgba(0, 0, 0, 0.5)' : (theme === 'light' ? '#206e33' : '#206e33'),
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    marginTop: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? '#206e33' : '#206e33';
+                      e.target.style.color = theme === 'light' ? 'white' : 'white';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? 'white' : 'white';
+                      e.target.style.color = theme === 'light' ? '#206e33' : '#206e33';
+                    }
+                  }}
+                >
+                  {submitting && (
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid #6b7280',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                  )}
+                  {submitting ? 'Adding Point...' : 'Add Temperature Point'}
+                </button>
+
+                {/* Cancel Button */}
+                <button
+                  type="button"
+                  onClick={handleBackToReferrer}
+                  disabled={submitting}
+                  style={{
+                    width: '100%',
+                    padding: '14px 24px',
+                    background: 'transparent',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                    color: submitting ? 'rgba(128, 128, 128, 0.5)' : (theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)'),
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.3s ease',
+                    opacity: submitting ? 0.5 : 1
+                  }}
+                  onMouseOver={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = theme === 'light' ? '#f0f0f0' : '#444';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!submitting) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  {referrerPage === 'dashboard' ? 'Cancel and Return to Dashboard' : 
+                   referrerPage === 'manage-points' ? 'Cancel and Return to Manage Points' : 
+                   'Cancel and Return to Map'}
+                </button>
+              </form>
+
+              {/* Success Message */}
+              {success && (
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                  border: '1px solid rgba(52, 199, 89, 0.2)',
+                  borderRadius: '12px',
+                  color: '#34c759',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  ✅ Success!
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                  border: '1px solid rgba(255, 59, 48, 0.2)',
+                  borderRadius: '12px',
+                  color: '#ff3b30',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  backdropFilter: 'blur(10px)'
+                }}>
+                  ❌ {error}
+                </div>
+              )}
+
+              {/* Location Selected Message */}
+              {locationSelected && (
+                <div style={{
+                  marginTop: '5px',
+                  padding: '8px 12px',
+                  backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                  border: '1px solid rgba(52, 199, 89, 0.2)',
+                  borderRadius: '8px',
+                  color: '#34c759',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <span>✓</span> Location selected and coordinates updated
+                </div>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div style={{
-            marginTop: '20px',
-            padding: '12px 16px',
-            backgroundColor: 'rgba(255, 59, 48, 0.1)',
-            border: '1px solid rgba(255, 59, 48, 0.2)',
-            borderRadius: '12px',
-            color: '#ff3b30',
-            fontSize: '14px',
-            fontWeight: '500',
-            backdropFilter: 'blur(10px)'
-          }}>
-            ❌ {error}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* CSS Animations */}
       <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% {
-            transform: translateY(0);
-          }
-          40% {
-            transform: translateY(-30px);
-          }
-          60% {
-            transform: translateY(-15px);
-          }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0) } 40% { transform: translateY(-30px) } 60% { transform: translateY(-15px) } }
       `}</style>
-    </div>
     </>
   );
 }
