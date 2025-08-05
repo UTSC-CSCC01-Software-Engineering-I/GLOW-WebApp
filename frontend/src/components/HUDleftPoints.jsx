@@ -411,7 +411,7 @@ function LogoBlock() {
             placeholder="search"
             style={{
               width: '100%',
-              padding: '0.75rem 2.5rem 0.75rem 1rem',
+              padding: '0.5rem 2.5rem 0.5rem 1rem',
               borderRadius: '0.5rem',
               border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
               backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',

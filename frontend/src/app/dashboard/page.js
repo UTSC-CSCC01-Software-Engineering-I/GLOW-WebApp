@@ -167,7 +167,7 @@ export default function Dashboard() {
 
   // Get temperature statistics
   const getTempStats = () => {
-    if (userPoints.length === 0) return { avg: 0, min: 0, max: 0 };
+    if (userPoints.length === 0) return { avg: '-', min: '-', max: '-' };
     const temps = userPoints.map(p => convertTemperature(p.temp, unit));
     return {
       avg: (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1),
@@ -500,22 +500,22 @@ export default function Dashboard() {
                 {/* Statistics */}
                 <div className="dashboard-card">
                   <div className="statistics-section">
-                    <h3>Your Statistics</h3>
+                    <h3 style={{margin: '0'}} >Your CONTRIBUTIONS</h3>
                     <div className="stat-item">
                       <div className="stat-number">{userPoints.length}</div>
                       <div className="stat-label">Points<br/> Contributed</div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.max}°{unit}</div>
-                      <div className="stat-label">Your<br/>Max Temperature</div>
+                      <div className="stat-label">MAXIMUM<br/></div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.min}°{unit}</div>
-                      <div className="stat-label">Your<br/>MIN Temperature</div>
+                      <div className="stat-label">MinIMUM<br/></div>
                     </div>
                     <div className="stat-item">
                       <div className="stat-number">{tempStats.avg}°{unit}</div>
-                      <div className="stat-label">YOUR<br/>Average Temperature</div>
+                      <div className="stat-label">AVERAGE<br/></div>
                     </div>
                     
                   </div>
@@ -529,7 +529,7 @@ export default function Dashboard() {
                         <div className="task-icon orange"></div>
                         <div className="task-content">
                           <h4>Add your first temperature point</h4>
-                          <p>Start contributing to our weather database</p>
+                          <p>Start contributing to our temperature database</p>
                         </div>
                       </div>
                     ) : (

@@ -847,6 +847,7 @@
     flex-direction: row;
     gap: 20px;
     justify-content: space-around;
+    align-items: center;
 }
 
 .stat-item {
@@ -1107,7 +1108,7 @@
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .mobile-current-menu-title {
@@ -1336,6 +1337,7 @@
     
     .header-actions {
         justify-content: center;
+        margin-bottom: 1rem;
     }
 
     .modal-content {
