@@ -285,3 +285,25 @@
 .temp-label.stale {
   border-left: none !important;
 }
+
+/* Grouped user points styling */
+.temp-label.grouped {
+  position: relative;
+  border: 2px solid white !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+.temp-label .group-count {
+  display: none !important;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .temp-label.grouped {
+    border: 2px solid rgba(255,255,255,0.8) !important;
+  }
+  
+  .temp-label .group-count {
+    border: 1px solid rgba(0,0,0,0.8);
+  }
+}

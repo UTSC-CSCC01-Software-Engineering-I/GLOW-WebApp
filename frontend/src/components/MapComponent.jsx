@@ -185,7 +185,98 @@ export default function MapComponent() {
 
         // Update the addMarkers function
         function addMarkers(items) {
-          items.forEach((item, i) => {
+          // First, separate user points from API points
+          const apiPoints = [];
+          const userPoints = [];
+          
+          items.forEach(item => {
+            if (item.isUserPoint || (!item.siteName && !item.Label)) {
+              userPoints.push(item);
+            } else {
+              apiPoints.push(item);
+            }
+          });
+          
+          // Helper function to calculate distance between two points in kilometers (Haversine formula)
+          function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+              Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // Distance in km
+          }
+          
+          // Group user points that are within 1km of each other
+          const groupedUserPoints = [];
+
+          userPoints.forEach(point => {
+            const lon = point.lng || point.lon || point.Longitude;
+            const lat = point.lat || point.Latitude;
+            const timestamp = new Date(point.timestamp || point.createdAt || point.created_at).getTime();
+            
+            // Find if this point belongs to any existing group
+            let foundGroup = false;
+            
+            for (const group of groupedUserPoints) {
+              const distance = calculateDistance(lat, lon, group.lat, group.lon);
+              
+              if (distance <= 1) { // Within 1km
+                foundGroup = true;
+                // Add this point to the group's historical points collection
+                if (!group.historicalPoints) {
+                  group.historicalPoints = [];
+                }
+                
+                // Add this point to the historical collection
+                group.historicalPoints.push({
+                  temp: point.temp || point.Result,
+                  timestamp: point.timestamp || point.createdAt || point.created_at
+                });
+                
+                // Update the main display with the most recent point
+                const groupTimestamp = new Date(group.timestamp || group.createdAt || group.created_at).getTime();
+                
+                if (!isNaN(timestamp) && !isNaN(groupTimestamp) && timestamp > groupTimestamp) {
+                  // Update the group with this point's data but keep the group's position
+                  group.temp = point.temp || point.Result;
+                  group.timestamp = point.timestamp || point.createdAt || point.created_at;
+                }
+                
+                // Increase the count regardless
+                group.pointCount = (group.pointCount || 1) + 1;
+                break;
+              }
+            }
+            
+            // If no matching group was found, create a new one
+            if (!foundGroup) {
+              groupedUserPoints.push({
+                ...point,
+                pointCount: 1,
+                historicalPoints: [{
+                  temp: point.temp || point.Result,
+                  timestamp: point.timestamp || point.createdAt || point.created_at
+                }]
+              });
+            }
+          });
+          
+          // Add API points (these don't get grouped)
+          apiPoints.forEach((item, i) => {
+            addMarkerForItem(item, i);
+          });
+          
+          // Add the grouped user points
+          groupedUserPoints.forEach((item, i) => {
+            addMarkerForItem(item, i, true);
+          });
+          
+          // Function to add a marker for a single item
+          function addMarkerForItem(item, i, isGrouped = false) {
             const lon = item.lng || item.lon || item.Longitude;
             const lat = item.lat || item.Latitude;
             const t = item.temp || item.Result;
@@ -210,23 +301,34 @@ export default function MapComponent() {
             const staleFilter = isStale
               ? 'backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);'
               : '';
+              
+            // If this is a grouped user point, modify the marker appearance
+            const groupLabel = isGrouped && item.pointCount > 1 
+              ? `<span class="group-count">${item.pointCount}</span>` 
+              : '';
+            
+            const groupStyle = isGrouped && item.pointCount > 1
+              ? 'border: 2px solid #fff; transform: scale(1.1);'
+              : '';
 
             const icon = L.divIcon({
               className: 'custom-temp-marker',
               html: `
                 <div 
-                  class="temp-label accessible-marker${isStale ? ' stale' : ''}"
+                  class="temp-label accessible-marker${isStale ? ' stale' : ''}${isGrouped && item.pointCount > 1 ? ' grouped' : ''}"
                   style="
                     background-color: ${bgColor};
                     ${outlineStyle}
                     ${staleFilter}
+                    ${groupStyle}
                   "
                   role="button"
                   tabindex="0"
-                  aria-label="Water temperature ${formattedTemp} at ${name}. ${isStale ? 'Data older than 2 days.' : `Category: ${tempCategory}. Press Enter or Space to view details.`}"
+                  aria-label="Water temperature ${formattedTemp} at ${name}. ${isGrouped && item.pointCount > 1 ? `Group of ${item.pointCount} user points. ` : ''}${isStale ? 'Data older than 2 days.' : `Category: ${tempCategory}. Press Enter or Space to view details.`}"
                   data-temp-category="${tempCategory.toLowerCase().replace(/ /g,'-')}"
                 >
                   <span class="temp-value" style="${valueColor}">${formattedTemp}</span>
+                  ${groupLabel}
                 </div>
               `,
               iconSize: [50, 40],
@@ -234,6 +336,12 @@ export default function MapComponent() {
             });
 
             const marker = L.marker([lat, lon], { icon }).addTo(mapInstanceRef.current);
+
+            // Set group information for popup display
+            if (isGrouped && item.pointCount > 1) {
+              marker.isGrouped = true;
+              marker.pointCount = item.pointCount;
+            }
 
             // bump this marker to the top on hover
             marker.on('mouseover', () => {
@@ -266,36 +374,67 @@ export default function MapComponent() {
             marker.on('click', async () => {
               // add prefix for grey (stale) points
               const labelPrefix = isStale ? '<strong>OLD:</strong> ' : '';
+              
+              // add prefix for grouped points
+              const groupPrefix = isGrouped && item.pointCount > 1 
+                ? `<strong>GROUP:</strong> ${item.pointCount} points within 1km • ` 
+                : '';
 
-              const historicalData = await fetchHistoricalData(name);
+              let historicalData = [];
+              
+              // For grouped user points, use the collected historical points
+              if (isGrouped && item.historicalPoints && item.historicalPoints.length > 0) {
+                historicalData = item.historicalPoints;
+              } else {
+                // For non-grouped points, fetch data from API as usual
+                historicalData = await fetchHistoricalData(name);
+              }
+              
               const popupOffset = [17, -32];
 
               // no historical data
               if (historicalData.length === 0) {
+                // Ensure popup is rebinding so it can reopen
+                marker.closePopup();
+                marker.unbindPopup();
                 marker.bindPopup(`
                   <div role="dialog" aria-labelledby="popup-title-${i}">
-                    <h3 id="popup-title-${i}">${labelPrefix}${name}</h3>
+                    <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
                     <p>No historical data available</p>
-                    <p>Current temperature: ${formattedTemp} (${tempCategory})</p>
+                    ${
+                      isStale
+                        ? `<p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>`
+                        : `<p>Current temperature: ${formattedTemp} (${tempCategory})</p>`
+                    }
+                    ${isGrouped && item.pointCount > 1 ? '<p>This is a group of multiple user points within 1km radius. The most recent temperature is shown.</p>' : ''}
                   </div>
                 `, {
                   offset: popupOffset,
                   className: 'custom-popup'
-                }).openPopup();
+                });
+                marker.openPopup();
                 return;
               }
 
               if (historicalData.length < 2) {
-                marker.bindPopup(
-                  `<strong>${name}</strong><br/>Not enough data to generate a graph`,
-                  {
-                    offset: popupOffset,
-                    className: 'custom-popup'
-                  }
-                ).openPopup();
+                // Rebind popup to guarantee it opens on every click
+                marker.closePopup();
+                marker.unbindPopup();
+                marker.bindPopup(`
+                  <div role="dialog" aria-labelledby="popup-title-${i}">
+                    <h3 id="popup-title-${i}">${labelPrefix}${groupPrefix}${name}</h3>
+                    <p>Not enough data to generate a graph.</p>
+                    <p>Last updated at: ${new Date(rawTime).toLocaleString()}</p>
+                  </div>
+                `, {
+                  offset: popupOffset,
+                  className: 'custom-popup'
+                });
+                marker.openPopup();
                 return;
               }
 
+              // Sort the historical data by timestamp
               const sortedData = historicalData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
               // Declare currentUnit BEFORE using it
@@ -389,7 +528,9 @@ export default function MapComponent() {
                   plugins: {
                     title: {
                       display: true,
-                      text: `Historical Data for ${name}`,
+                      text: isGrouped && item.pointCount > 1 
+                        ? `Historical Data for Group (${item.pointCount} points within 1km)`
+                        : `Historical Data for ${name}`,
                       font: {
                         size: isSmallMobile ? 14 : (isMobile ? 16 : 18),
                         weight: 'bold'
@@ -417,10 +558,19 @@ export default function MapComponent() {
                         },
                         afterBody: function(context) {
                           const dataIndex = context[0].dataIndex;
+                          let info = [];
+                          
+                          // Add gap information
                           if (dataIndex > 0 && timeDifferences[dataIndex - 1]) {
-                            return [`Gap from previous: ${timeDifferences[dataIndex - 1]}`];
+                            info.push(`Gap from previous: ${timeDifferences[dataIndex - 1]}`);
                           }
-                          return [];
+                          
+                          // For grouped points, add additional information
+                          if (isGrouped && item.pointCount > 1) {
+                            info.push(`From group of ${item.pointCount} user points within 1km`);
+                          }
+                          
+                          return info;
                         }
                       }
                     }
@@ -575,7 +725,7 @@ export default function MapComponent() {
             });
 
             markersRef.current.push({ marker, tempC: t, name, lat, lon });
-          });
+          }
         }
 
         // Function to add water temperature markers
