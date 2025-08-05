@@ -206,7 +206,7 @@ export default function TempFilterModal({
           <input
             type="number"
             id="max-age"
-            placeholder="7"
+            placeholder="E.G. 1"
             value={tempFilter.maxAge}
             onChange={e => setTempFilter(f => ({ ...f, maxAge: e.target.value }))}
             style={{
