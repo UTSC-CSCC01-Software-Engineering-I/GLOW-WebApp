@@ -264,24 +264,17 @@ export default function MapComponent() {
 
             // Add click handler FIRST (this is the main functionality)
             marker.on('click', async () => {
-              console.log('Marker clicked:', name); // Debug log
-              
-              // Announce to screen readers
-              try {
-                announceToScreenReader(`Viewing details for ${name} with water temperature ${formattedTemp}`);
-              } catch (e) {
-                console.log('Screen reader announcement failed:', e);
-              }
+              // add prefix for grey (stale) points
+              const labelPrefix = isStale ? '<strong>OLD:</strong> ' : '';
 
               const historicalData = await fetchHistoricalData(name);
+              const popupOffset = [17, -32];
 
-              // add once at top of click‐handler so you can reuse
-              const popupOffset = [17, -32]; // x=0 (center), y=−45px (above marker)
-
+              // no historical data
               if (historicalData.length === 0) {
                 marker.bindPopup(`
                   <div role="dialog" aria-labelledby="popup-title-${i}">
-                    <h3 id="popup-title-${i}">${name}</h3>
+                    <h3 id="popup-title-${i}">${labelPrefix}${name}</h3>
                     <p>No historical data available</p>
                     <p>Current temperature: ${formattedTemp} (${tempCategory})</p>
                   </div>
