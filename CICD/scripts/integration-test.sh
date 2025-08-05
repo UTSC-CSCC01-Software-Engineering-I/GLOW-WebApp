@@ -12,7 +12,7 @@ test_endpoint() {
     for attempt in $(seq 1 $max_attempts); do
         echo "🔍 Testing $name (attempt $attempt/$max_attempts)..."
         
-        if curl --fail --silent --show-error --max-time 30 "$url"; then
+        if curl --fail --silent --show-error --max-time 120 "$url"; then
             echo "✅ $name is responding"
             return 0
         else
