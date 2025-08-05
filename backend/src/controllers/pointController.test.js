@@ -39,7 +39,10 @@ describe('pointController', () => {
             req.body = { lat: 1.0, lon: 2.0 }; // missing temp
             await addPoint(req, res);
             expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({ message: 'Missing required fields' });
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Latitude, longitude and temperature are required.',
+                success: false
+            });
         });
   
         it('404 if user not found', async () => {
