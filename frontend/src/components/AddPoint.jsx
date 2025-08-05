@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { authAPI, pointsAPI } from '../lib/api';
 import { ThemeManager } from '../utils/themeManager';
 import '../styles/login.css';    // ← pull in the animated gradient & centering
@@ -18,6 +18,15 @@ export default function AddPoint() {
   const [addedPoint, setAddedPoint] = useState(null);
   const [referrerPage, setReferrerPage] = useState('map');
   const [theme, setTheme] = useState(() => ThemeManager.getTheme());
+  
+  // New state for location search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const searchTimeoutRef = useRef(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchResultsRef = useRef(null);
 
   useEffect(() => {
     // Initialize theme
@@ -70,8 +79,91 @@ export default function AddPoint() {
       );
     }
 
-    return removeListener;
+    // Add click outside listener for search results
+    const handleClickOutside = (event) => {
+      if (searchResultsRef.current && !searchResultsRef.current.contains(event.target)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      removeListener();
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
+
+  // Search for locations based on query
+  const searchLocations = async (query) => {
+    if (!query || query.trim().length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      // Using OpenStreetMap Nominatim API for geocoding
+      // Added countrycodes=ca to limit results to Canada
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ca&limit=5`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Search request failed');
+      }
+      
+      const data = await response.json();
+      setSearchResults(data);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('Location search error:', err);
+      setError('Location search failed. Please try again or enter coordinates manually.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Handle search input change with debounce
+  const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Clear any existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set a new timeout to debounce the search
+    searchTimeoutRef.current = setTimeout(() => {
+      searchLocations(value);
+    }, 500); // 500ms debounce time
+  };
+
+  const [locationSelected, setLocationSelected] = useState(false);
+
+  // Then modify the handleLocationSelect function
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    
+    // Make sure we're parsing the string values to numbers and then formatting them
+    const newLat = parseFloat(location.lat).toFixed(6);
+    const newLon = parseFloat(location.lon).toFixed(6);
+    
+    // Force update the coordinate fields
+    setLat(newLat);
+    setLon(newLon);
+    
+    // Update the search query text
+    setSearchQuery(location.display_name);
+    setShowSearchResults(false);
+    
+    // Show visual confirmation
+    setLocationSelected(true);
+    
+    // Reset the confirmation after 2 seconds
+    setTimeout(() => setLocationSelected(false), 2000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -286,7 +378,7 @@ export default function AddPoint() {
       <div className="loginpage">
         <div className="login-container">
           <div className="login-form-container">
-            {/* your existing AddPoint “card” */}
+            {/* your existing AddPoint "card" */}
             <div style={{
               maxWidth: '500px',
               width: '100%',
@@ -329,6 +421,127 @@ export default function AddPoint() {
 
               {/* Form */}
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* New Location Search Field */}
+                <div style={{ position: 'relative' }}>
+                  <label htmlFor="location-search"
+                    style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      marginBottom: '6px'
+                    }}
+                  >
+                    🔍 Search Location
+                  </label>
+                  <input
+                    id="location-search"
+                    type="text"
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
+                    placeholder="Enter an address or place name"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                      backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)',
+                      transition: 'all 0.2s ease',
+                      boxSizing: 'border-box',
+                      backdropFilter: 'blur(10px)',
+                      outline: 'none',
+                      paddingRight: searchLoading ? '40px' : '16px'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.15)';
+                      if (searchResults.length > 0) {
+                        setShowSearchResults(true);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.backgroundColor = theme === 'light' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.1)';
+                      // Don't hide results immediately to allow for clicking on them
+                      // setTimeout(() => setShowSearchResults(false), 200);
+                    }}
+                  />
+                  {searchLoading && (
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '20px',
+                      height: '20px',
+                      border: `2px solid ${theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
+                      borderTop: `2px solid ${theme === 'dark' ? 'white' : 'black'}`,
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                  )}
+                  
+                  {/* Search Results Dropdown */}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div 
+                      ref={searchResultsRef}
+                      style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: 0,
+                        width: '100%',
+                        maxHeight: '250px',
+                        overflowY: 'auto',
+                        backgroundColor: theme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(40, 40, 40, 0.95)',
+                        border: theme === 'light' ? '1px solid rgba(0, 0, 0, 0.1)' : '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+                        zIndex: 10,
+                        marginTop: '5px',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                    >
+                      {searchResults.map((result, index) => (
+                        <div
+                          key={index}
+                          onClick={() => handleLocationSelect(result)}
+                          style={{
+                            padding: '12px 16px',
+                            borderBottom: index < searchResults.length - 1 
+                              ? (theme === 'light' ? '1px solid rgba(0, 0, 0, 0.05)' : '1px solid rgba(255, 255, 255, 0.1)')
+                              : 'none',
+                            cursor: 'pointer',
+                            color: theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(40, 40, 40)',
+                            transition: 'background-color 0.2s ease',
+                            fontSize: '14px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = theme === 'light' 
+                              ? 'rgba(0, 0, 0, 0.05)' 
+                              : 'rgba(255, 255, 255, 0.1)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          <div style={{ fontWeight: '600', marginBottom: '2px' }}>
+                            {result.display_name.split(',')[0]}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            opacity: 0.7,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}>
+                            {result.display_name}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div>
                   <label htmlFor="latitude"
                     style={{
@@ -569,6 +782,25 @@ export default function AddPoint() {
                   backdropFilter: 'blur(10px)'
                 }}>
                   ❌ {error}
+                </div>
+              )}
+
+              {/* Location Selected Message */}
+              {locationSelected && (
+                <div style={{
+                  marginTop: '5px',
+                  padding: '8px 12px',
+                  backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                  border: '1px solid rgba(52, 199, 89, 0.2)',
+                  borderRadius: '8px',
+                  color: '#34c759',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <span>✓</span> Location selected and coordinates updated
                 </div>
               )}
             </div>
