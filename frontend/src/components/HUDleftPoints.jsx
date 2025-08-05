@@ -75,9 +75,23 @@ function LogoBlock() {
       checkForData();
     };
     
-    window.addEventListener('dataloaded', handleDataLoaded);
+    // Listen for point added event to add single point instantly
+    const handlePointAdded = (event) => {
+      console.log('📡 HUD received pointAdded event, adding new point...');
+      const newPoint = event.detail;
+      
+      // Add the new point to existing lists
+      setLocaList(prevList => [...prevList, newPoint]);
+      setFilteredList(prevList => [...prevList, newPoint]);
+    };
     
-    return () => window.removeEventListener('dataloaded', handleDataLoaded);
+    window.addEventListener('dataloaded', handleDataLoaded);
+    window.addEventListener('pointAdded', handlePointAdded);
+    
+    return () => {
+      window.removeEventListener('dataloaded', handleDataLoaded);
+      window.removeEventListener('pointAdded', handlePointAdded);
+    };
   }, []);
 
   // Sort functionality
