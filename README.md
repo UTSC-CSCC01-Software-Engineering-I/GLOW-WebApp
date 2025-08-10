@@ -1,13 +1,11 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/RwYFkG2A)
-# GLOW by Microsofties
+# GLOW by Microsofties - https://glow-frontend-v4-0-0.onrender.com/
 
 ### Light Theme
-<img width="1482" height="888" alt="image" src="https://github.com/user-attachments/assets/d42afd9e-c0de-4266-a466-f120465f75c5" />
-
-
+<img width="1919" height="1092" alt="image" src="https://github.com/user-attachments/assets/8fb12f63-1e14-4425-9c57-15c3891fd353" />
 
 ### Dark Theme
-<img width="1479" height="888" alt="image" src="https://github.com/user-attachments/assets/295c2659-a06c-4fc0-98d1-80e79379a619" />
+<img width="1919" height="1094" alt="image" src="https://github.com/user-attachments/assets/05920413-91e8-453b-a5a2-9e3f8456286a" />
 
 ### Dashboard
 <img width="1484" height="888" alt="image" src="https://github.com/user-attachments/assets/84529e0d-1b41-487b-85a7-5702286c859c" />
