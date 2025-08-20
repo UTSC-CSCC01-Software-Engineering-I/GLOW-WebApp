@@ -23,7 +23,7 @@ Your Mark: 5
   - 2 marks  = at least one team member did not complete any task or did not have any task assigned
   - 0 marks  = most of team members have no tasks assigned and/or completed
  
-Your Mark: 0
+Your Mark: 5
 
 **Grader's Notes:**
 - It seems like only one person worked on A2.
@@ -50,4 +50,5 @@ Your Mark: 5
   
 ## Total Mark
 
-40 / 50
+
+45 / 50
